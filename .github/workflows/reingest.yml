@@ -1,0 +1,60 @@
+# Runs ingest.py on a schedule against a fixed set of queries, then commits
+# the updated data/chroma_db back to the repo. Render's default "auto
+# deploy on push" picks up that commit and redeploys with the fresh index
+# — no manual intervention needed once this is set up.
+#
+# Setup: nothing required beyond enabling Actions on the repo (on by
+# default). If you also want NASA ADS in the scheduled run, add an
+# ADS_API_TOKEN repo secret (Settings -> Secrets and variables -> Actions)
+# and uncomment the --ads lines below.
+#
+# Runs weekly by default — adjust the cron schedule to taste. You can also
+# trigger it manually from the Actions tab (workflow_dispatch).
+
+name: Scheduled re-ingestion
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # every Monday at 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  reingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies (Tesseract for OCR fallback)
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ingest new papers across core categories
+        run: |
+          python scripts/ingest.py --arxiv "cat:astro-ph.HE" --max-results 20
+          python scripts/ingest.py --arxiv "cat:astro-ph.CO" --max-results 20
+          python scripts/ingest.py --arxiv "cat:astro-ph.GA" --max-results 20
+          python scripts/ingest.py --arxiv "cat:astro-ph.SR" --max-results 20
+          python scripts/ingest.py --arxiv "cat:astro-ph.EP" --max-results 20
+          python scripts/ingest.py --ntrs "black holes" --max-results 15
+          python scripts/ingest.py --ntrs "exoplanets" --max-results 15
+          python scripts/ingest.py --ntrs "space exploration" --max-results 15
+          # python scripts/ingest.py --ads "dark matter" --max-results 15
+        env:
+          ADS_API_TOKEN: ${{ secrets.ADS_API_TOKEN }}
+
+      - name: Commit updated index (if anything changed)
+        run: |
+          git config user.name "spacemind-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/chroma_db
+          git diff --cached --quiet && echo "No new papers this run." || git commit -m "Scheduled re-ingestion: $(date -u +%Y-%m-%d)"
+          git push

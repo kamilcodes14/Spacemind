@@ -1,0 +1,13 @@
+.git
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+
+
+# Raw downloaded PDFs aren't needed to *serve* queries, only to (re)build
+# the index — keep the image lean. The built index itself (data/chroma_db)
+# is intentionally NOT excluded here; it needs to ship with the image.
+data/raw/

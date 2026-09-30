@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SpaceMind</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='r' x1='20' y1='20' x2='80' y2='80' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%23ffb454'/%3E%3Cstop offset='50%25' stop-color='%23fff3d6'/%3E%3Cstop offset='100%25' stop-color='%23d97b2a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='%23050608'/%3E%3Cpath d='M4 50 L36 50' stroke='%23d97b2a' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M64 50 L96 50' stroke='%23d97b2a' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='24' stroke='url(%23r)' stroke-width='8' fill='none'/%3E%3Ccircle cx='50' cy='50' r='13' fill='%23050608'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --void: #050608;
+    --ember: #7a3410;
+    --amber: #d97b2a;
+    --gold: #ffb454;
+    --flare: #fff3d6;
+    --blue: #82a6ff;
+
+    --text: #eef1f6;
+    --text-muted: #97a0b3;
+    --text-faint: #5c6577;
+
+    --panel: rgba(12, 14, 20, 0.6);
+    --panel-strong: rgba(9, 10, 15, 0.88);
+    --border: rgba(255, 255, 255, 0.1);
+    --border-soft: rgba(255, 255, 255, 0.06);
+
+    --online: #5fbf77;
+    --offline: #e2685a;
+    --checking: #97a0b3;
+
+    --user-fill: rgba(217, 123, 42, 0.15);
+    --user-border: rgba(217, 123, 42, 0.4);
+
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--void);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  button, input, textarea { font-family: inherit; }
+
+  /* ---------- background: simple, static ---------- */
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(130, 166, 255, 0.08), transparent 60%),
+      var(--void);
+  }
+
+  .stars, .stars::after {
+    position: absolute;
+    inset: -10%;
+    content: '';
+    background-image:
+      radial-gradient(1.6px 1.6px at 8% 22%, #fff, transparent 60%),
+      radial-gradient(1.2px 1.2px at 18% 68%, #fff, transparent 60%),
+      radial-gradient(1.8px 1.8px at 32% 12%, #fff, transparent 60%),
+      radial-gradient(1.1px 1.1px at 46% 82%, #fff, transparent 60%),
+      radial-gradient(1.4px 1.4px at 61% 38%, #fff, transparent 60%),
+      radial-gradient(1.1px 1.1px at 74% 66%, #fff, transparent 60%),
+      radial-gradient(1.6px 1.6px at 85% 20%, #fff, transparent 60%),
+      radial-gradient(1.2px 1.2px at 93% 54%, #fff, transparent 60%),
+      radial-gradient(1.3px 1.3px at 5% 90%, #fff, transparent 60%),
+      radial-gradient(1.5px 1.5px at 55% 6%, #fff, transparent 60%);
+    background-repeat: repeat;
+    background-size: 340px 340px;
+    opacity: 0.5;
+    animation: twinkle 6s ease-in-out infinite;
+  }
+  .stars::after {
+    background-size: 520px 520px;
+    background-position: 90px 140px;
+    opacity: 0.25;
+    animation-duration: 9s;
+    animation-delay: -3s;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stars, .stars::after { animation: none; }
+  }
+
+  /* Thinking state: a plain, subtle brightening — no glow/spin machinery. */
+  .stage.thinking {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(130, 166, 255, 0.14), transparent 60%),
+      var(--void);
+    transition: background 0.4s ease;
+  }
+
+  /* ---------- app chrome ---------- */
+
+  .app {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 24px 16px;
+  }
+
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark { flex-shrink: 0; opacity: 0.9; }
+  .brand h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.2px;
+    margin: 0;
+  }
+  .tagline {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin: 2px 0 0;
+  }
+
+  .status-wrap { position: relative; flex-shrink: 0; }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 7px 13px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+  .status:hover { color: var(--text); border-color: var(--border); }
+  .status:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--checking);
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+  }
+  .dot.online { background: var(--online); }
+  .dot.offline { background: var(--offline); }
+
+  .settings-pop {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 260px;
+    background: var(--panel-strong);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    backdrop-filter: blur(16px);
+    z-index: 5;
+  }
+  .settings-pop.open { display: block; }
+  .settings-pop label {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .settings-pop .row { display: flex; gap: 8px; }
+  .settings-pop input {
+    flex: 1;
+    min-width: 0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 9px;
+    font-size: 12.5px;
+    border-radius: 6px;
+  }
+  .settings-pop input:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .settings-pop button {
+    background: var(--amber);
+    color: #1a1305;
+    border: none;
+    padding: 0 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  /* ---------- chat column ---------- */
+
+  main.chat {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .column {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 8px 24px 32px;
+  }
+
+  .empty {
+    padding: 14vh 0 0;
+    text-align: center;
+  }
+  .empty h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 27px;
+    margin: 0 0 10px;
+  }
+  .empty p {
+    color: var(--text-muted);
+    font-size: 14px;
+    max-width: 420px;
+    margin: 0 auto 26px;
+  }
+  .starters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .starter {
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    font-size: 13px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+  .starter:hover { border-color: var(--border); background: rgba(255,255,255,0.07); }
+  .starter:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .log {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding-top: 8px;
+  }
+
+  .entry { animation: rise 0.3s ease; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user {
+    align-self: flex-end;
+    max-width: 82%;
+    margin-left: auto;
+    background: var(--user-fill);
+    border: 1px solid var(--user-border);
+    border-radius: 16px 16px 4px 16px;
+    padding: 11px 15px;
+    font-size: 14.5px;
+  }
+
+  .msg.assistant {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .avatar {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--flare), var(--gold) 45%, var(--ember) 100%);
+    margin-top: 2px;
+  }
+  .avatar.spinning {
+    background: none;
+  }
+  .avatar.spinning svg {
+    width: 100%;
+    height: 100%;
+    animation: brand-spin 1.2s linear infinite;
+    transform-origin: 50% 50%;
+  }
+  @keyframes brand-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .avatar.spinning svg { animation: none; }
+  }
+
+  /* ---------- full-screen boot splash ---------- */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--void);
+    opacity: 1;
+    transition: opacity 0.4s ease;
+  }
+  #splash svg {
+    width: 64px;
+    height: 64px;
+    animation: brand-spin 1.2s linear infinite;
+    transform-origin: 50% 50%;
+  }
+  #splash.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #splash svg { animation: none; }
+  }
+  .bubble {
+    min-width: 0;
+    background: linear-gradient(180deg, rgba(12,14,20,0.5), rgba(12,14,20,0.32));
+    border: 1px solid var(--border-soft);
+    border-radius: 4px 16px 16px 16px;
+    padding: 13px 16px;
+    backdrop-filter: blur(10px);
+  }
+
+  .pending { color: var(--text-muted); font-style: italic; font-size: 14px; }
+  .pending .ellipsis::after {
+    content: '';
+    animation: ellipsis 1.4s infinite;
+  }
+  @keyframes ellipsis {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+
+  .answer { white-space: pre-wrap; font-size: 14.5px; }
+  .error { color: var(--offline); font-size: 14px; }
+
+  .sources {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .sources-label {
+    color: var(--text-faint);
+    font-size: 11.5px;
+    margin: 0 0 8px;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-soft);
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    max-width: 100%;
+  }
+  .chip:hover { color: var(--text); border-color: var(--border); }
+  .chip:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .chip .origin {
+    text-transform: lowercase;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .chip .title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 220px;
+  }
+  .snippet {
+    display: none;
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.28);
+    border-left: 2px solid var(--border);
+    border-radius: 4px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .snippet.open { display: block; }
+
+  /* ---------- follow-ups + share ---------- */
+
+  .followups {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .followup-chip {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: rgba(130, 166, 255, 0.06);
+    border: 1px solid rgba(130, 166, 255, 0.2);
+    color: var(--blue);
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 6px;
+  }
+  .followup-chip:hover { background: rgba(130, 166, 255, 0.12); }
+  .followup-chip:last-child { margin-bottom: 0; }
+
+  .bubble-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+  .share-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid var(--border-soft);
+    color: var(--text-faint);
+    font-size: 11.5px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .share-btn:hover { color: var(--text-muted); border-color: var(--border); }
+  .share-btn svg { width: 12px; height: 12px; }
+
+  .msg.assistant.low-confidence .bubble { border-color: rgba(226, 104, 90, 0.3); }
+
+  /* ---------- depth toggle ---------- */
+
+  .depth-toggle {
+    display: flex;
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+    backdrop-filter: blur(10px);
+  }
+  .depth-toggle button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 11.5px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .depth-toggle button.active { background: var(--amber); color: #1a1305; font-weight: 600; }
+
+  .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .paths-btn {
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    color: var(--text-muted);
+    font-size: 12.5px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+  .paths-btn:hover { color: var(--text); border-color: var(--border); }
+
+  /* ---------- learning paths panel ---------- */
+
+  .paths-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .paths-overlay.open { display: flex; }
+  .paths-panel {
+    background: var(--panel-strong);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    backdrop-filter: blur(20px);
+  }
+  .paths-panel h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .paths-panel > p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+  .path-card {
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .path-card h3 {
+    font-size: 14.5px;
+    margin: 0 0 4px;
+  }
+  .path-card p {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin: 0 0 10px;
+  }
+  .path-card .followup-chip { font-size: 12.5px; }
+  .paths-close {
+    display: block;
+    margin: 6px auto 0;
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font-size: 12.5px;
+    cursor: pointer;
+    padding: 6px;
+  }
+
+  /* ---------- composer ---------- */
+
+  .composer-wrap {
+    background: var(--panel-strong);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(18px);
+  }
+  .composer-inner {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 14px 24px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+  textarea#questionInput {
+    flex: 1;
+    resize: none;
+    max-height: 160px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 14px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    border-radius: 14px;
+    outline: none;
+  }
+  textarea#questionInput:focus-visible { border-color: var(--amber); }
+  textarea#questionInput::placeholder { color: var(--text-faint); }
+
+  #askBtn {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  #askBtn svg { width: 18px; height: 18px; }
+  #askBtn:hover:not(:disabled) { filter: brightness(1.1); }
+  #askBtn:disabled { opacity: 0.45; cursor: default; }
+  #askBtn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .hint {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 11.5px;
+    margin: 0 0 10px;
+  }
+
+  @media (max-width: 560px) {
+    .topbar { padding: 18px 16px 12px; }
+    .tagline { display: none; }
+    .column { padding-left: 16px; padding-right: 16px; }
+    .composer-inner { padding-left: 16px; padding-right: 16px; }
+    .chip .title { max-width: 130px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <svg viewBox="0 0 100 100" fill="none">
+    <defs>
+      <linearGradient id="ringGradSplash" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="var(--gold)"/>
+        <stop offset="50%" stop-color="var(--flare)"/>
+        <stop offset="100%" stop-color="var(--amber)"/>
+      </linearGradient>
+    </defs>
+    <path d="M4 50 L36 50" stroke="var(--amber)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M64 50 L96 50" stroke="var(--amber)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="24" stroke="url(#ringGradSplash)" stroke-width="8" fill="none"/>
+    <circle cx="50" cy="50" r="13" fill="var(--void)"/>
+  </svg>
+</div>
+
+<div class="stage" id="stage" aria-hidden="true">
+  <div class="stars"></div>
+  <div class="hole-wrap" style="display:none">
+    <svg class="far-arc" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="blueFade" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#82a6ff" stop-opacity="0" />
+          <stop offset="45%" stop-color="#bcd0ff" stop-opacity="0.9" />
+          <stop offset="100%" stop-color="#82a6ff" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path d="M 33 15.5 Q 50 9 67 15.5" fill="none" stroke="url(#blueFade)" stroke-width="0.9" />
+    </svg>
+  </div>
+  <div class="scrim"></div>
+</div>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" width="28" height="28" viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="ringGrad" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="var(--gold)"/>
+            <stop offset="50%" stop-color="var(--flare)"/>
+            <stop offset="100%" stop-color="var(--amber)"/>
+          </linearGradient>
+          <linearGradient id="wingGradL" x1="0" y1="0" x2="34" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="var(--amber)" stop-opacity="0"/>
+            <stop offset="100%" stop-color="var(--gold)" stop-opacity="1"/>
+          </linearGradient>
+          <linearGradient id="wingGradR" x1="66" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="var(--gold)" stop-opacity="1"/>
+            <stop offset="100%" stop-color="var(--amber)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M4 50 L36 50" stroke="url(#wingGradL)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M64 50 L96 50" stroke="url(#wingGradR)" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="24" stroke="url(#ringGrad)" stroke-width="7" fill="none"/>
+        <circle cx="50" cy="50" r="13" fill="var(--void)"/>
+      </svg>
+      <div>
+        <h1>SpaceMind</h1>
+        <p class="tagline">Grounded answers from papers — and the live web when needed</p>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <div class="depth-toggle" id="webToggle">
+        <button type="button" data-web="auto" class="active">🌐 Auto</button>
+        <button type="button" data-web="always">🌐 Always</button>
+      </div>
+      <div class="depth-toggle" id="depthToggle">
+        <button type="button" data-depth="simple">Simple</button>
+        <button type="button" data-depth="technical" class="active">Technical</button>
+      </div>
+      <button class="paths-btn" id="pathsBtn" type="button">Learning paths</button>
+      <div class="status-wrap">
+        <button class="status" id="statusBtn" type="button" aria-label="Connection status, click to change API address">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">checking</span>
+        </button>
+        <div class="settings-pop" id="settingsPop">
+          <label for="apiBaseInput">API address</label>
+          <div class="row">
+            <input type="text" id="apiBaseInput" spellcheck="false">
+            <button id="apiSaveBtn" type="button">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="paths-overlay" id="pathsOverlay">
+    <div class="paths-panel">
+      <h2>Learning paths</h2>
+      <p>Curated starting points if you're new to a topic.</p>
+      <div id="pathsList"></div>
+      <button class="paths-close" id="pathsClose" type="button">Close</button>
+    </div>
+  </div>
+
+  <main class="chat" id="chatMain">
+    <div class="column">
+      <div class="empty" id="emptyState">
+        <h2>Ask something about the universe</h2>
+        <p>Every answer is grounded in your indexed NASA and arXiv papers, with sources listed underneath.</p>
+        <div class="starters" id="starters">
+          <button class="starter" type="button">What causes gamma-ray bursts?</button>
+          <button class="starter" type="button">What is dark matter made of?</button>
+          <button class="starter" type="button">How do black holes form?</button>
+          <button class="starter" type="button">What happens at the event horizon?</button>
+        </div>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+  </main>
+
+  <div class="composer-wrap">
+    <form class="composer-inner" id="askForm">
+      <textarea id="questionInput" rows="1" placeholder="Ask about black holes, dark matter, gamma-ray bursts…"></textarea>
+      <button type="submit" id="askBtn" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1a1305" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="6 11 12 5 18 11"></polyline>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+    const DEFAULT_API_BASE = location.protocol.startsWith('http') ? location.origin : 'http://localhost:8000';
+
+  function getSessionId() {
+    let id = localStorage.getItem('spacemind_session_id');
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+      localStorage.setItem('spacemind_session_id', id);
+    }
+    return id;
+  }
+
+  const state = {
+    apiBase: localStorage.getItem('spacemind_api_base') || DEFAULT_API_BASE,
+    sessionId: getSessionId(),
+    depth: localStorage.getItem('spacemind_depth') || 'technical',
+    webMode: localStorage.getItem('spacemind_web_mode') || 'auto', // 'auto' | 'always'
+  };
+
+  const el = {
+    stage: document.getElementById('stage'),
+    statusBtn: document.getElementById('statusBtn'),
+    statusDot: document.getElementById('statusDot'),
+    statusText: document.getElementById('statusText'),
+    settingsPop: document.getElementById('settingsPop'),
+    apiBaseInput: document.getElementById('apiBaseInput'),
+    apiSaveBtn: document.getElementById('apiSaveBtn'),
+    askForm: document.getElementById('askForm'),
+    questionInput: document.getElementById('questionInput'),
+    askBtn: document.getElementById('askBtn'),
+    log: document.getElementById('log'),
+    emptyState: document.getElementById('emptyState'),
+    starters: document.getElementById('starters'),
+    depthToggle: document.getElementById('depthToggle'),
+    webToggle: document.getElementById('webToggle'),
+    pathsBtn: document.getElementById('pathsBtn'),
+    pathsOverlay: document.getElementById('pathsOverlay'),
+    pathsList: document.getElementById('pathsList'),
+    pathsClose: document.getElementById('pathsClose'),
+  };
+
+  function renderApiHint() {
+    el.apiBaseInput.value = state.apiBase;
+  }
+
+  function setStatus(mode, label) {
+    el.statusDot.className = 'dot ' + mode;
+    el.statusText.textContent = label;
+  }
+
+  async function checkHealth() {
+    setStatus('checking', 'checking');
+    try {
+      const res = await fetch(state.apiBase + '/health');
+      if (!res.ok) throw new Error('bad status');
+      setStatus('online', 'connected');
+    } catch {
+      setStatus('offline', 'not reachable');
+    }
+  }
+
+  el.statusBtn.addEventListener('click', () => el.settingsPop.classList.toggle('open'));
+  document.addEventListener('click', (e) => {
+    if (!el.settingsPop.contains(e.target) && e.target !== el.statusBtn && !el.statusBtn.contains(e.target)) {
+      el.settingsPop.classList.remove('open');
+    }
+  });
+
+  el.apiSaveBtn.addEventListener('click', () => {
+    const v = el.apiBaseInput.value.trim().replace(/\/$/, '');
+    if (!v) return;
+    state.apiBase = v;
+    localStorage.setItem('spacemind_api_base', v);
+    renderApiHint();
+    el.settingsPop.classList.remove('open');
+    checkHealth();
+  });
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // Matches the API's citation schema: { source_file, origin, snippet }
+  function renderSources(citations) {
+    if (!citations || citations.length === 0) return '';
+    const chips = citations.map((c, i) => `
+      <button class="chip" type="button" data-idx="${i}">
+        <span class="origin">${escapeHtml(c.origin)}</span>
+        <span class="title">${escapeHtml(c.source_file)}</span>
+      </button>
+    `).join('');
+    const snippets = citations.map((c, i) => `
+      <div class="snippet" data-idx="${i}">${escapeHtml(c.snippet)}</div>
+    `).join('');
+    return `<div class="sources"><p class="sources-label">Sources</p><div class="chips">${chips}</div>${snippets}</div>`;
+  }
+
+  function wireSourceChips(container) {
+    container.querySelectorAll('.chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const idx = chip.getAttribute('data-idx');
+        const snippet = container.querySelector(`.snippet[data-idx="${idx}"]`);
+        if (snippet) snippet.classList.toggle('open');
+      });
+    });
+  }
+
+  function renderFollowUps(questions) {
+    if (!questions || questions.length === 0) return '';
+    const chips = questions.map((q) => `
+      <button class="followup-chip" type="button">${escapeHtml(q)}</button>
+    `).join('');
+    return `<div class="followups">${chips}</div>`;
+  }
+
+  function wireFollowUps(container) {
+    container.querySelectorAll('.followup-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        el.questionInput.value = chip.textContent;
+        submitQuestion();
+      });
+    });
+  }
+
+  function renderShareButton(shareId) {
+    if (!shareId) return '';
+    return `
+      <div class="bubble-actions">
+        <button class="share-btn" type="button" data-share-id="${shareId}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.6" y1="10.6" x2="15.4" y2="6.4"></line><line x1="8.6" y1="13.4" x2="15.4" y2="17.6"></line>
+          </svg>
+          Share
+        </button>
+      </div>
+    `;
+  }
+
+  function wireShareButton(container) {
+    const btn = container.querySelector('.share-btn');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const url = `${location.origin}${location.pathname}?share=${btn.dataset.shareId}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      } catch {
+        prompt('Copy this link:', url);
+      }
+    });
+  }
+
+  async function ask(question) {
+    el.emptyState.style.display = 'none';
+    el.stage.classList.add('thinking');
+
+    const entry = document.createElement('div');
+    entry.className = 'entry';
+    entry.innerHTML = `
+      <div class="msg user">${escapeHtml(question)}</div>
+      <div class="msg assistant">
+        <div class="avatar spinning">
+          <svg viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="ringGradSpin" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="var(--gold)"/>
+                <stop offset="50%" stop-color="var(--flare)"/>
+                <stop offset="100%" stop-color="var(--amber)"/>
+              </linearGradient>
+            </defs>
+            <path d="M4 50 L36 50" stroke="var(--amber)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M64 50 L96 50" stroke="var(--amber)" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="24" stroke="url(#ringGradSpin)" stroke-width="9" fill="none"/>
+            <circle cx="50" cy="50" r="13" fill="var(--void)"/>
+          </svg>
+        </div>
+        <div class="bubble">
+          <div class="pending"><span class="ellipsis">Reading the papers</span></div>
+        </div>
+      </div>
+    `;
+    el.log.appendChild(entry);
+    entry.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+    const assistantMsg = entry.querySelector('.msg.assistant');
+    const bubble = entry.querySelector('.bubble');
+
+    try {
+      const res = await fetch(state.apiBase + '/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question,
+          top_k: 5,
+          depth: state.depth,
+          session_id: state.sessionId,
+          use_web: state.webMode === 'always' ? true : null,
+        }),
+      });
+
+      if (res.status === 503) {
+        // Surface the real backend message (missing index vs. missing/misconfigured
+        // API key vs. something else) instead of always guessing "no papers".
+        const body = await res.json().catch(() => ({}));
+        const detail = body.detail || 'The backend reported it is not ready yet.';
+        bubble.innerHTML = `<div class="error">${escapeHtml(detail)}</div>`;
+        return;
+      }
+      if (res.status === 429) {
+        bubble.innerHTML = '<div class="error">Rate limit reached — try again in a bit.</div>';
+        return;
+      }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.detail || `Request failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      if (!data.confident) {
+        assistantMsg.classList.add('low-confidence');
+      }
+      const webBadge = data.used_web
+        ? '<div style="color:var(--text-faint); font-size:11px; margin-bottom:8px;">🌐 sourced from a live web search</div>'
+        : '';
+      bubble.innerHTML =
+        webBadge +
+        `<div class="answer">${escapeHtml(data.answer)}</div>` +
+        renderSources(data.citations) +
+        renderFollowUps(data.follow_up_questions) +
+        (data.confident ? renderShareButton(data.share_id) : '');
+      wireSourceChips(bubble);
+      wireFollowUps(bubble);
+      wireShareButton(bubble);
+    } catch (err) {
+      bubble.innerHTML = `<div class="error">Can't reach ${escapeHtml(state.apiBase)}. Check that the API is running, then try again.</div>`;
+    } finally {
+      el.stage.classList.remove('thinking');
+      const avatarEl = assistantMsg.querySelector('.avatar');
+      if (avatarEl) {
+        avatarEl.classList.remove('spinning');
+        avatarEl.innerHTML = '';
+      }
+    }
+  }
+
+  function submitQuestion() {
+    const q = el.questionInput.value.trim();
+    if (!q) return;
+    el.questionInput.value = '';
+    el.questionInput.style.height = 'auto';
+    el.askBtn.disabled = true;
+    ask(q).finally(() => { el.askBtn.disabled = false; el.questionInput.focus(); });
+  }
+
+  el.askForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitQuestion();
+  });
+
+  el.questionInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitQuestion();
+    }
+  });
+
+  el.questionInput.addEventListener('input', () => {
+    el.questionInput.style.height = 'auto';
+    el.questionInput.style.height = Math.min(el.questionInput.scrollHeight, 160) + 'px';
+  });
+
+  el.starters.querySelectorAll('.starter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      el.questionInput.value = btn.textContent;
+      submitQuestion();
+    });
+  });
+
+  // ---------- depth toggle ----------
+
+  function renderDepthToggle() {
+    el.depthToggle.querySelectorAll('button').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.depth === state.depth);
+    });
+  }
+  el.depthToggle.querySelectorAll('button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.depth = btn.dataset.depth;
+      localStorage.setItem('spacemind_depth', state.depth);
+      renderDepthToggle();
+    });
+  });
+  renderDepthToggle();
+
+  // ---------- web toggle ----------
+
+  function renderWebToggle() {
+    el.webToggle.querySelectorAll('button').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.web === state.webMode);
+    });
+  }
+  el.webToggle.querySelectorAll('button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.webMode = btn.dataset.web;
+      localStorage.setItem('spacemind_web_mode', state.webMode);
+      renderWebToggle();
+    });
+  });
+  renderWebToggle();
+
+  // ---------- learning paths ----------
+
+  async function loadLearningPaths() {
+    el.pathsList.innerHTML = '<p style="color:var(--text-faint); font-size:13px;">Loading…</p>';
+    try {
+      const res = await fetch(state.apiBase + '/learning-paths');
+      if (!res.ok) throw new Error('failed');
+      const paths = await res.json();
+      if (!paths.length) {
+        el.pathsList.innerHTML = '<p style="color:var(--text-faint); font-size:13px;">No learning paths available.</p>';
+        return;
+      }
+      el.pathsList.innerHTML = paths.map((p) => `
+        <div class="path-card">
+          <h3>${escapeHtml(p.title)}</h3>
+          <p>${escapeHtml(p.description)}</p>
+          ${(p.starter_questions || []).map((q) => `<button class="followup-chip" type="button">${escapeHtml(q)}</button>`).join('')}
+        </div>
+      `).join('');
+      el.pathsList.querySelectorAll('.followup-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          el.pathsOverlay.classList.remove('open');
+          el.questionInput.value = chip.textContent;
+          submitQuestion();
+        });
+      });
+    } catch {
+      el.pathsList.innerHTML = '<p style="color:var(--text-faint); font-size:13px;">Could not load learning paths. Check the API connection.</p>';
+    }
+  }
+
+  el.pathsBtn.addEventListener('click', () => {
+    el.pathsOverlay.classList.add('open');
+    loadLearningPaths();
+  });
+  el.pathsClose.addEventListener('click', () => el.pathsOverlay.classList.remove('open'));
+  el.pathsOverlay.addEventListener('click', (e) => {
+    if (e.target === el.pathsOverlay) el.pathsOverlay.classList.remove('open');
+  });
+
+  // ---------- shared-answer links ----------
+
+  async function loadSharedAnswer(shareId) {
+    try {
+      const res = await fetch(state.apiBase + '/share/' + shareId);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      el.emptyState.style.display = 'none';
+      const entry = document.createElement('div');
+      entry.className = 'entry';
+      entry.innerHTML = `
+        <div class="msg user">${escapeHtml(data.question)}</div>
+        <div class="msg assistant">
+          <div class="avatar"></div>
+          <div class="bubble">
+            <div class="answer">${escapeHtml(data.answer)}</div>
+            ${renderSources(data.citations)}
+            ${renderFollowUps(data.follow_up_questions)}
+          </div>
+        </div>
+      `;
+      el.log.appendChild(entry);
+      wireSourceChips(entry);
+      wireFollowUps(entry);
+    } catch {
+      // Shared link couldn't load — fail silently, the composer still works.
+    }
+  }
+
+  const sharedId = new URLSearchParams(location.search).get('share');
+  if (sharedId) loadSharedAnswer(sharedId);
+
+  const splashStart = Date.now();
+  function hideSplash() {
+    const splash = document.getElementById('splash');
+    if (!splash) return;
+    const minVisible = 600; // ms — so the spinner doesn't just flash on a fast local backend
+    const wait = Math.max(0, minVisible - (Date.now() - splashStart));
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      setTimeout(() => splash.remove(), 400);
+    }, wait);
+  }
+
+  renderApiHint();
+  checkHealth().then(hideSplash);
+  setInterval(checkHealth, 20000);
+</script>
+</body>
+</html>

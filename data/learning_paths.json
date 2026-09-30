@@ -1,0 +1,46 @@
+[
+  {
+    "id": "astronomy-career-starter",
+    "title": "Astronomy Career Starter",
+    "description": "Foundational questions for anyone considering a path into astronomy or astrophysics research.",
+    "starter_questions": [
+      "What are the main subfields within astrophysics research today?",
+      "What mathematical and physics background is expected for astrophysics research?",
+      "What is the difference between observational and theoretical astrophysics?",
+      "What kinds of open research problems exist in astrophysics right now?"
+    ]
+  },
+  {
+    "id": "black-holes-101",
+    "title": "Black Holes 101",
+    "description": "Start here for an intuitive-then-technical grounding in black hole physics.",
+    "starter_questions": [
+      "How do black holes form?",
+      "What happens at the event horizon of a black hole?",
+      "What is Hawking radiation?",
+      "How do astronomers detect black holes if they don't emit light?"
+    ]
+  },
+  {
+    "id": "cosmology-fundamentals",
+    "title": "Cosmology Fundamentals",
+    "description": "The big questions about the universe's origin, structure, and fate.",
+    "starter_questions": [
+      "What is the current leading candidate for dark matter?",
+      "What evidence supports the Big Bang theory?",
+      "What is dark energy and how was it discovered?",
+      "How do astronomers measure the age of the universe?"
+    ]
+  },
+  {
+    "id": "exoplanets-and-life",
+    "title": "Exoplanets & the Search for Life",
+    "description": "How we find planets around other stars, and what makes one potentially habitable.",
+    "starter_questions": [
+      "How do astronomers detect exoplanets?",
+      "What makes a planet potentially habitable?",
+      "What is the significance of an exoplanet's atmosphere in the search for life?",
+      "What are the most promising exoplanets found so far for habitability?"
+    ]
+  }
+]

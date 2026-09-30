@@ -1,0 +1,21 @@
+# Render blueprint — lets you deploy via "New > Blueprint" in the Render
+# dashboard pointed at your GitHub repo, instead of configuring the service
+# by hand. GROQ_API_KEY is marked sync:false so Render prompts you for it
+# rather than storing it in this file (never commit real secrets here).
+services:
+  - type: web
+    name: spacemind
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: LLM_PROVIDER
+        value: groq
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: GROQ_API_KEY
+        sync: false
+      - key: RATE_LIMIT_PER_HOUR
+        value: "30"
+      - key: TAVILY_API_KEY
+        sync: false
