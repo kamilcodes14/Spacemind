@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from llama_index.core import Settings
-from llama_index.core.postprocessor import SentenceTransformerRerank
+from llama_index.core.prompts import PromptTemplate
 from llama_index.core.query_engine import CitationQueryEngine
 from llama_index.llms.groq import Groq
 from llama_index.llms.ollama import Ollama
@@ -67,6 +67,29 @@ FALLBACK_MESSAGE = (
     "I don't have enough information in my indexed papers to answer that "
     "confidently yet. Try rephrasing, asking something more specific, or "
     "check back once more papers on this topic have been ingested."
+)
+
+# --- Strict grounding -------------------------------------------------------
+# Replaces the library's default prompt so answers stick to the papers.
+STRICT_QA_TEMPLATE = PromptTemplate(
+    "Answer the query using ONLY the numbered sources below.\n"
+    "Rules:\n"
+    "- Every factual statement must end with a citation like [1] or [2][3].\n"
+    "- Do NOT add facts, numbers, names or examples that are not in the sources, "
+    "even if you know them from elsewhere.\n"
+    "- If the sources only partly answer the query, answer just that part and say "
+    "what the papers do not cover.\n"
+    "- If the sources do not answer the query at all, reply exactly: "
+    "\"The indexed papers don't cover this.\"\n"
+    "- Do not use tables unless the query asks for one.\n"
+    "Example:\n"
+    "Source 1:\nThe sky is red in the evening and blue in the morning.\n"
+    "Source 2:\nWater is wet when the sky is red.\n"
+    "Query: When is water wet?\n"
+    "Answer: Water is wet when the sky is red [2], which occurs in the evening [1].\n"
+    "Now it's your turn. Below are the numbered sources:\n"
+    "------\n{context_str}\n------\n"
+    "Query: {query_str}\nAnswer: "
 )
 
 # --- Casual fast-path -------------------------------------------------------
@@ -127,6 +150,7 @@ def _answer_casual(question: str, llm) -> Answer:
 
 
 _reranker_cache = None
+_reranker_disabled = False
 
 
 def get_llm():
@@ -151,9 +175,16 @@ def get_llm():
 
 def _get_reranker():
     global _reranker_cache
-    if _reranker_cache is None and RERANK_ENABLED:
-        logger.info("Loading re-ranker model: %s", RERANK_MODEL)
-        _reranker_cache = SentenceTransformerRerank(model=RERANK_MODEL, top_n=TOP_K)
+    global _reranker_disabled
+    if _reranker_cache is None and RERANK_ENABLED and not _reranker_disabled:
+        try:
+            from llama_index.core.postprocessor import SentenceTransformerRerank
+
+            logger.info("Loading re-ranker model: %s", RERANK_MODEL)
+            _reranker_cache = SentenceTransformerRerank(model=RERANK_MODEL, top_n=TOP_K)
+        except ImportError:
+            logger.warning("Re-ranking is on but sentence-transformers isn't installed - skipping it.")
+            _reranker_disabled = True
     return _reranker_cache
 
 
@@ -273,6 +304,7 @@ def build_query_engine(index, top_k: int = TOP_K) -> CitationQueryEngine:
         index,
         similarity_top_k=RETRIEVE_TOP_K if reranker is not None else top_k,
         citation_chunk_size=512,
+        citation_qa_template=STRICT_QA_TEMPLATE,
         node_postprocessors=postprocessors,
     )
     return engine

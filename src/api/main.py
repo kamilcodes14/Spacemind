@@ -27,6 +27,7 @@ from src.config import RATE_LIMIT_PER_HOUR, BASE_DIR
 from src.query.query_engine import ask as ask_assistant
 from src.storage import answers_db
 from src.ingestion import bootstrap
+from src.library import list_papers
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -193,6 +194,16 @@ def get_shared_answer(share_id: str):
     if record is None:
         raise HTTPException(status_code=404, detail="Shared answer not found.")
     return SharedAnswerResponse(**record)
+
+
+@app.get("/library")
+def library():
+    """Every paper in the index (one row per paper) with title + link."""
+    try:
+        return list_papers()
+    except Exception as e:
+        logger.exception("Could not list library")
+        raise HTTPException(status_code=500, detail=f"Could not load library: {e}")
 
 
 @app.get("/learning-paths", response_model=List[LearningPath])

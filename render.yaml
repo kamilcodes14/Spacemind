@@ -19,3 +19,5 @@ services:
         value: "30"
       - key: TAVILY_API_KEY
         sync: false
+      - key: RERANK_ENABLED
+        value: "false"

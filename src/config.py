@@ -58,7 +58,9 @@ RETRIEVE_TOP_K = int(os.getenv("RETRIEVE_TOP_K", str(TOP_K * 3)))
 # --- Re-ranking --------------------------------------------------------------
 # Cross-encoder re-ranking noticeably improves answer relevance for the same
 # retrieved pool, at the cost of a bit of extra CPU per query.
-RERANK_ENABLED = os.getenv("RERANK_ENABLED", "true").lower() == "true"
+# Off by default: the cross-encoder needs PyTorch (~400 MB extra RAM). To turn it on,
+# `pip install sentence-transformers` and set RERANK_ENABLED=true.
+RERANK_ENABLED = os.getenv("RERANK_ENABLED", "false").lower() == "true"
 RERANK_MODEL = os.getenv("RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 # --- Confidence fallback -----------------------------------------------------

@@ -26,17 +26,24 @@ def get_chroma_collection(collection_name: str = CHROMA_COLLECTION_NAME):
     return client.get_or_create_collection(collection_name)
 
 
+def _paper_key(source, file_name):
+    return (source or "", file_name or "")
+
+
 def _existing_doc_ids(collection) -> set:
-    """All doc_id values already present in the collection, so re-ingesting
-    overlapping queries (or a scheduled re-ingest job) doesn't duplicate
-    chunks from a paper that's already indexed."""
+    """Papers already present in the collection, identified by (source, file_name).
+
+    NOTE: we can't use the stored "doc_id" for this - the Chroma integration
+    overwrites it with its own random UUID, so it would never match a new paper
+    and every ingest run would index everything again (duplicate chunks).
+    """
     if collection.count() == 0:
         return set()
     existing = collection.get(include=["metadatas"])
     return {
-        m.get("doc_id")
+        _paper_key(m.get("source"), m.get("file_name"))
         for m in existing.get("metadatas", [])
-        if m and m.get("doc_id")
+        if m and m.get("file_name")
     }
 
 
@@ -44,14 +51,19 @@ def build_index(nodes: List[BaseNode]) -> VectorStoreIndex:
     """
     Embeds `nodes` (via the local bge-small model) and writes them into
     the persisted Chroma collection, returning a queryable index. Nodes
-    from a paper that's already indexed (same doc_id) are skipped, so
+    from a paper that's already indexed (same source + file name) are skipped, so
     ingesting overlapping categories/queries won't create duplicates.
     """
     Settings.embed_model = get_embed_model()
 
     collection = get_chroma_collection()
     already_indexed = _existing_doc_ids(collection)
-    new_nodes = [n for n in nodes if n.metadata.get("doc_id") not in already_indexed]
+    new_nodes = [
+        n
+        for n in nodes
+        if _paper_key(n.metadata.get("source"), n.metadata.get("file_name"))
+        not in already_indexed
+    ]
     skipped = len(nodes) - len(new_nodes)
     if skipped:
         logger.info("Skipped %d chunks from already-indexed papers", skipped)
