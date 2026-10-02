@@ -1211,36 +1211,98 @@
   (() => {
     const canvas = document.getElementById('starfield');
     const ctx = canvas.getContext('2d');
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let w, h, stars = [], shoots = [], boost = 1;
+    let w, h, stars = [], shoots = [], rocks = [], comets = [], boost = 1;
+    let last = 0, nextRock = 3000, nextComet = 20000;
+    const rand = (a, b) => a + Math.random() * (b - a);
 
     function resize() {
       const dpr = Math.min(devicePixelRatio || 1, 2);
       w = innerWidth; h = innerHeight;
       canvas.width = w * dpr; canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = Math.min(280, Math.floor(w * h / 6000));
+      const n = Math.min(300, Math.floor(w * h / 6000));
       stars = Array.from({ length: n }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        z: Math.random(),
-        tw: Math.random() * Math.PI * 2,
+        x: Math.random() * w, y: Math.random() * h, z: Math.random(),
+        tw: Math.random() * 6.28,
         tint: Math.random() < 0.15 ? '#ffd9a0' : (Math.random() < 0.15 ? '#bcd0ff' : '#ffffff')
       }));
     }
 
+    function spawnRock() {
+      const fromLeft = Math.random() < 0.5;
+      const r = rand(10, 28);
+      const vx = (fromLeft ? 1 : -1) * rand(0.9, 1.9);
+      rocks.push({
+        x: fromLeft ? -r * 3 : w + r * 3,
+        y: rand(h * 0.1, h * 0.8),
+        vx, vy: vx * rand(-0.35, 0.35),
+        r, rot: rand(0, 6.28), spin: rand(-0.015, 0.015),
+        pts: Array.from({ length: 11 }, (_, i) => ({ a: i / 11 * 6.2832, d: rand(0.72, 1.15) })),
+        craters: Array.from({ length: 3 }, () => ({ x: rand(-0.4, 0.4), y: rand(-0.4, 0.4), s: rand(0.1, 0.22) }))
+      });
+    }
+
+    function spawnComet() {
+      comets.push({ x: rand(w * 0.5, w), y: -20, vx: -rand(2.5, 4), vy: rand(1.2, 2.2) });
+    }
+
+    function drawRock(k) {
+      ctx.save();
+      ctx.translate(k.x, k.y);
+      ctx.rotate(k.rot);
+      ctx.beginPath();
+      k.pts.forEach((p, i) => {
+        const px = Math.cos(p.a) * k.r * p.d, py = Math.sin(p.a) * k.r * p.d;
+        i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+      });
+      ctx.closePath();
+      const g = ctx.createRadialGradient(-k.r * 0.3, -k.r * 0.3, k.r * 0.1, 0, 0, k.r * 1.2);
+      g.addColorStop(0, '#a89c90');
+      g.addColorStop(0.6, '#5b524b');
+      g.addColorStop(1, '#241f1c');
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      for (const c of k.craters) {
+        ctx.beginPath();
+        ctx.arc(c.x * k.r, c.y * k.r, c.s * k.r, 0, 6.2832);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawComet(c) {
+      const tx = c.x - c.vx * 45, ty = c.y - c.vy * 45;
+      const g = ctx.createLinearGradient(c.x, c.y, tx, ty);
+      g.addColorStop(0, 'rgba(190,215,255,0.9)');
+      g.addColorStop(1, 'rgba(190,215,255,0)');
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(tx, ty); ctx.stroke();
+      const hg = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 9);
+      hg.addColorStop(0, 'rgba(255,255,255,1)');
+      hg.addColorStop(1, 'rgba(130,166,255,0)');
+      ctx.fillStyle = hg;
+      ctx.beginPath(); ctx.arc(c.x, c.y, 9, 0, 6.2832); ctx.fill();
+    }
+
     function frame(t) {
-      const target = el.stage.classList.contains('thinking') ? 5 : 1;
-      boost += (target - boost) * 0.05;
+      const dt = Math.min((t - last) / 16.67 || 1, 3);
+      last = t;
+      boost += ((el.stage.classList.contains('thinking') ? 4 : 1) - boost) * 0.05;
       ctx.clearRect(0, 0, w, h);
+
       for (const s of stars) {
-        if (!reduce) {
-          const speed = (0.08 + s.z * 0.45) * boost;
-          s.x -= speed;
-          s.y += speed * 0.12;
-          if (s.x < -3) { s.x = w + 3; s.y = Math.random() * h; }
-          if (s.y > h + 3) s.y = -3;
-        }
+        const sp = (0.25 + s.z * 1.1) * boost * dt;
+        s.x -= sp; s.y += sp * 0.1;
+        if (s.x < -3) { s.x = w + 3; s.y = Math.random() * h; }
+        if (s.y > h + 3) s.y = -3;
         const tw = 0.5 + 0.5 * Math.sin(t / 700 + s.tw);
         ctx.globalAlpha = (0.25 + 0.75 * tw) * (0.35 + 0.65 * s.z);
         ctx.fillStyle = s.tint;
@@ -1248,20 +1310,28 @@
         ctx.arc(s.x, s.y, 0.5 + s.z * 1.3, 0, 6.2832);
         ctx.fill();
       }
-      if (!reduce && Math.random() < 0.003) {
-        shoots.push({ x: Math.random() * w, y: Math.random() * h * 0.5, vx: 10, vy: 4, life: 1 });
+      ctx.globalAlpha = 1;
+
+      if (t > nextRock) { spawnRock(); nextRock = t + rand(10000, 15000); }
+      if (t > nextComet) { spawnComet(); nextComet = t + rand(35000, 50000); }
+      if (Math.random() < 0.004 * dt) {
+        shoots.push({ x: rand(0, w), y: rand(0, h * 0.5), vx: 11, vy: 4.5, life: 1 });
       }
+
       shoots = shoots.filter((m) => m.life > 0);
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.3; ctx.lineCap = 'round';
       for (const m of shoots) {
-        m.x += m.vx; m.y += m.vy; m.life -= 0.02;
+        m.x += m.vx * dt; m.y += m.vy * dt; m.life -= 0.02 * dt;
         ctx.globalAlpha = Math.max(m.life, 0);
-        ctx.beginPath();
-        ctx.moveTo(m.x, m.y);
-        ctx.lineTo(m.x - m.vx * 5, m.y - m.vy * 5);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.x - m.vx * 5, m.y - m.vy * 5); ctx.stroke();
       }
+
+      comets = comets.filter((c) => c.x > -200 && c.y < h + 200);
+      for (const c of comets) { c.x += c.vx * dt; c.y += c.vy * dt; drawComet(c); }
+
+      rocks = rocks.filter((k) => k.x > -k.r * 4 && k.x < w + k.r * 4 && k.y > -k.r * 4 && k.y < h + k.r * 4);
+      for (const k of rocks) { k.x += k.vx * dt; k.y += k.vy * dt; k.rot += k.spin * dt; drawRock(k); }
+
       ctx.globalAlpha = 1;
       requestAnimationFrame(frame);
     }
