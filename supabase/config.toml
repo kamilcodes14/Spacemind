@@ -1,0 +1,31 @@
+project_id = "spacemind"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/"]
+minimum_password_length = 10
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+
+# The gateway checks user JWTs; handlers also verify the user with Auth.
+[functions.research]
+verify_jwt = true
+[functions.account]
+verify_jwt = true
+# Operator-only import; authenticates a separate PAPER_IMPORT_TOKEN itself.
+[functions.embed-paper]
+verify_jwt = false

@@ -1,0 +1,23 @@
+{
+  "name": "spacemind",
+  "version": "0.4.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/supabase/*.test.mjs",
+    "test:db": "node tests/supabase/database.mjs",
+    "check": "node --check frontend/app.js && node --check frontend/universe.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.117.2"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-pgvector": "0.0.9"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module"
+}

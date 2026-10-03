@@ -137,10 +137,10 @@ def _is_casual(question: str) -> bool:
     q = question.strip().lower().rstrip("!.? ")
     if q in CASUAL_PATTERNS:
         return True
-    # Catches short variants ("hii", "heyyy", "thanks!!") without false-
-    # positiving on short but substantive questions (those tend to have a
-    # question mark or a space-separated real word we haven't already matched).
-    return len(q) <= 5 and q.isalpha()
+    # Astronomy terms such as "Mars", "Sun", and "stars" are research,
+    # even when they are only a few letters long.
+    return q in {"hii", "hiii", "heyy", "heyyy", "thx"}
+
 
 
 def _answer_casual(question: str, llm) -> Answer:
@@ -347,28 +347,26 @@ def ask(
     llm = get_llm()
     Settings.llm = llm
 
-    if _is_casual(question):
+    if use_web is not True and _is_casual(question):
         return _answer_casual(question, llm)
 
-    index = load_index()
-    if index is None:
-        raise RuntimeError(
-            "No documents indexed yet. Run `python scripts/ingest.py` first."
-        )
-
     standalone_question = condense_question(history or [], question, llm)
-    local_confident = _check_confidence(index, standalone_question)
 
-    want_web = use_web is True or (use_web is None and not local_confident)
+    # Explicit Web mode never depends on a local index or silently falls back.
+    if use_web is True:
+        if not (WEB_SEARCH_ENABLED and TAVILY_API_KEY):
+            raise RuntimeError("Web research is not configured.")
+        web_results = search_web(standalone_question)
+        if not web_results:
+            return Answer(text="Web research returned no usable sources. Try another query or switch to Papers only.", citations=[], confident=False)
+        return _answer_from_web(standalone_question, depth, llm, web_results, with_follow_ups)
 
-    if want_web and WEB_SEARCH_ENABLED and TAVILY_API_KEY:
+    index = load_index()
+    local_confident = index is not None and _check_confidence(index, standalone_question)
+    if use_web is None and not local_confident and WEB_SEARCH_ENABLED and TAVILY_API_KEY:
         web_results = search_web(standalone_question)
         if web_results:
-            return _answer_from_web(
-                standalone_question, depth, llm, web_results, with_follow_ups
-            )
-        # Web search came back empty (or failed) — fall through to the
-        # paper path below rather than dead-ending here.
+            return _answer_from_web(standalone_question, depth, llm, web_results, with_follow_ups)
 
     if not local_confident:
         return Answer(text=FALLBACK_MESSAGE, citations=[], confident=False)
