@@ -9,12 +9,12 @@ const paper={source_file:'Mars paper',origin:'arxiv',url:'https://arxiv.org/abs/
 const response=data=>new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}});
 const model=answer=>async()=>response({choices:[{message:{content:JSON.stringify({answer,confident:true,follow_up_questions:['Why?']})}}]});
 test('validates question, chat and mode',()=>{assert.equal(validateQuestion({question:'Mars',chat_id:id}).question,'Mars');for(const value of [{question:'',chat_id:id},{question:'Mars',chat_id:'x'},{question:'Mars',chat_id:id,use_web:'true'}])assert.throws(()=>validateQuestion(value));});
-test('forced web fails explicitly without key and never queries papers',async()=>{await assert.rejects(research({...input,useWeb:true},[],{env:{},lookupPapers:()=>assert.fail('paper fallback')}),/not configured/);});
+test('forced web fails explicitly without key and never queries papers',async()=>{await assert.rejects(research({...input,useWeb:true},[],{env:{},lookupPapers:()=>assert.fail('paper fallback')}),/currently unavailable/);});
 test('papers mode returns sourced short astronomy query',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars has ice [1].')});assert.equal(r.confident,true);assert.equal(r.used_web,false);assert.equal(r.citations.length,1);});
-test('invalid citations lower confidence',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars [99]')});assert.equal(r.confident,false);assert.match(r.warnings[0],/invalid/);});
+test('invalid citations lower confidence',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars [99]')});assert.equal(r.confident,false);assert.match(r.warnings[0],/could not be verified/);});
 test('empty evidence never invokes model',async()=>{const r=await research(input,[],{env:{},lookupPapers:async()=>[],fetcher:()=>assert.fail('no model without evidence')});assert.equal(r.confident,false);});
 test('web uses Tavily evidence and excludes unsafe URLs',async()=>{let calls=[];const r=await research({...input,useWeb:true},[],{env:{TAVILY_API_KEY:'test',GROQ_API_KEY:'test'},lookupPapers:()=>assert.fail(),fetcher:async(url)=>{calls.push(url);return url.includes('tavily')?response({results:[{title:'Mars',url:'https://nasa.gov/mars',content:'Ice'},{url:'javascript:alert(1)',content:'bad'}]}):model('Ice [1]')();}});assert.equal(r.used_web,true);assert.equal(r.citations.length,1);assert.equal(calls.length,2);});
-test('source failures remain visible',async()=>{const r=await research(input,[],{env:{},lookupPapers:async()=>{throw Error('fail')}});assert.match(r.warnings[0],/could not/);});
+test('source failures remain visible',async()=>{const r=await research(input,[],{env:{},lookupPapers:async()=>{throw Error('fail')}});assert.match(r.warnings[0],/unavailable/);});
 test('bounded JSON and unsafe URL checks',async()=>{assert.equal(safeURL('javascript:alert(1)'),null);await assert.rejects(bodyJSON(new Request('https://test',{method:'POST',body:'x'.repeat(30)}),10),/large/);});
 function fixture({owner=true,quota=true,auth=true}={}){let external=0,saved;const client={auth:{getUser:async()=>({data:{user:auth?{id:'owner'}:null}})},from:()=>({select(){return this},eq(){return this},order(){return this},maybeSingle:async()=>({data:owner?{id}:null}),limit:async()=>({data:[]})}),rpc:async(name,args)=>{if(name==='consume_research_quota')return {data:quota};if(name==='match_papers')return {data:[]};saved=args;return {data:1}}};return {handler:makeHandler({createClient:()=>client,env:{ALLOWED_ORIGINS:'https://app.test'},embed:async()=>[],fetcher:()=>external++}),external:()=>external,saved:()=>saved};}
 const request=(headers={authorization:'Bearer test',origin:'https://app.test'})=>new Request('https://test',{method:'POST',headers,body:JSON.stringify({question:'hello',chat_id:id})});
@@ -34,7 +34,7 @@ test('production preflight works with no origin secret, but unrelated origins st
 test('authenticated turn persists with warnings',async()=>{const f=fixture();assert.equal((await f.handler(request())).status,200);assert.deepEqual(f.saved().p_warnings,[]);});
 
 test('casual shorthand answers directly in every mode without model or search',async()=>{
-  for(const question of ['how r you','How are u?','hru','hello!','thanks bro','bye'])for(const useWeb of [null,false,true]){
+  for(const question of ['how r you','How are u?','hru','hello!','thanks bro','ok perfect thanks','okay, great, thank you','bye'])for(const useWeb of [null,false,true]){
     const r=await research({...input,question,useWeb},[{question:'hi',answer:'Hey!'}],{env:{},lookupPapers:()=>assert.fail('no papers'),fetcher:()=>assert.fail('no provider')});
     assert(r.answer.length>5);assert.equal(r.confident,true);assert.equal(r.used_web,false);assert.deepEqual(r.citations,[]);
   }
@@ -66,4 +66,11 @@ test('repeated empty output fails after bounded attempts',async()=>{
 });
 test('non-reasoning model overrides do not receive reasoning-only parameters',async()=>{
   await groq([],{GROQ_API_KEY:'test',GROQ_MODEL:'custom-model'},async(_,opts)=>{const body=JSON.parse(opts.body);assert(!('reasoning_effort' in body));assert(!('include_reasoning' in body));return response({choices:[{message:{content:'Answer'}}]});});
+});
+test('missing configuration exposes no provider or key details',async()=>{
+  await assert.rejects(groq([],{}),e=>{assert.equal(e.status,503);assert(!/key|groq|configured|backend/i.test(e.message));return true;});
+});
+test('source diagnostics stay out of user warnings',async()=>{
+  const result=await research(input,[],{env:{GROQ_API_KEY:'test',SEMANTIC_SCHOLAR_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:async(url)=>{if(url.includes('semanticscholar'))throw Error('private provider failure');return model('Mars has ice [1].')();}});
+  assert.equal(result.citations.length,1);assert.equal(result.warnings.length,1);assert(!/semantic|key|provider failure/i.test(result.warnings.join(' ')));
 });

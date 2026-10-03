@@ -51,3 +51,10 @@ These checks refer to the optional Python backend and the earlier interface demo
 - Removed the 512-token reasoning bottleneck in follow-up rewriting. GPT-OSS requests use low reasoning effort, exclude reasoning from the response, and reserve at least 2,048 completion tokens. Truncated output gets one bounded retry; failed optional query rewriting uses the original question.
 - All 20 research unit tests passed with mocked provider responses, covering shorthand, context-aware chat routing, research follow-ups, mixed greeting/research prompts, token exhaustion, bounded retries, and custom model compatibility. Auto mode displays a neutral Thinking status.
 - Provider-generated conversational quality and live model output still need verification through an authenticated session; mocked tests do not establish live model quality.
+
+## User-facing failure messages (2026-10-04 PKT)
+
+- Removed provider names and key/setup instructions from research errors and warnings. Safe diagnostic event identifiers are written to backend logs without prompts, credentials or raw provider responses.
+- Saved legacy warnings are translated in the frontend into a single reader-facing notice. Evidence uncertainty remains visible; duplicate citation/limited-evidence notices no longer stack.
+- Added exact casual acknowledgement variants such as `ok perfect thanks`, without matching greetings followed by research questions.
+- All 22 research tests, the static build, and legacy-notice translation checks passed. Browser rendering was not retested in this environment.

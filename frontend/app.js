@@ -69,8 +69,8 @@ async function enterWorkspace(user){state.user=user;$('auth').hidden=true;$('wor
   catch(error){toast(error.message);}updateCapabilityNote();
 }
 function updateCapabilityNote(){
-  $('webAvailability').textContent=state.web?'Live web research is available.':'Live web research has not been configured by the server operator. Papers only is available once the index and model are ready.';
-  $('composerNote').textContent=$('researchMode').value==='web'&&!state.web?'Web search is not configured on this server.':'Explore with curiosity. Check the sources.';
+  $('webAvailability').textContent=state.web?'Live web research is available.':'Live web research is currently unavailable.';
+  $('composerNote').textContent=$('researchMode').value==='web'&&!state.web?'Web search is currently unavailable. Please try again later.':'Explore with curiosity. Check the sources.';
 }
 function sidebar(open){$('sidebar').classList.toggle('open',open);$('sidebarShade').hidden=!open;}
 $('openSidebar').onclick=()=>sidebar(true);$('closeSidebar').onclick=()=>sidebar(false);$('sidebarShade').onclick=()=>sidebar(false);
@@ -102,10 +102,20 @@ function renderTurn(question, result=null){
   else fillAnswer(body,result);
   return body;
 }
+function answerNotice(result){
+  const warnings=Array.isArray(result.warnings)?result.warnings.filter(w=>typeof w==='string'):[];
+  const uncertain=result.confident===false||warnings.some(w=>/invalid source|missing.*reference|could not be verified/i.test(w));
+  // Saved conversations may contain old provider-specific diagnostics. Never render
+  // those strings directly; translate them into the limitation that affects the reader.
+  if(uncertain)return 'Some details could not be verified. Please check the sources before relying on this answer.';
+  if(warnings.some(w=>/web.*(unavailable|not configured|no usable)/i.test(w)))return 'Live web search was unavailable. This answer uses the other sources I could access.';
+  if(warnings.length)return 'Some research sources were unavailable. This answer uses the sources I could access.';
+  return '';
+}
 function fillAnswer(body,result){
   body.replaceChildren();
-  (result.warnings||[]).forEach(w=>{const p=document.createElement('p');p.className='notice';p.textContent=w;body.append(p);});
-  if(!result.confident){const n=document.createElement('p');n.className='notice';n.textContent='Limited evidence — check the sources before drawing conclusions.';body.append(n);}
+  const notice=answerNotice(result);
+  if(notice){const p=document.createElement('p');p.className='notice';p.textContent=notice;body.append(p);}
   if(result.used_web){const n=document.createElement('p');n.className='notice';n.textContent='Researched on the live web';body.append(n);}
   const answer=document.createElement('div');answer.className='answer';answer.innerHTML=formattedAnswer(result.answer);body.append(answer);
   if(result.citations?.length){
