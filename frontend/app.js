@@ -23,7 +23,7 @@ function showAuth(){
   state.user=null;state.chat=null;state.chats=[];state.prefs=null;
   $('workspace').hidden=true;$('auth').hidden=false;$('loading').hidden=true;
   $('messages').replaceChildren();$('chatList').replaceChildren();$('question').value='';$('searchChats').value='';
-  $('authPassword').value='';$('authError').textContent='';
+  $('authPassword').value='';$('authError').textContent='';$('authNotice').textContent='';
   document.querySelectorAll('dialog[open]').forEach(d=>d.close());
   window.SpaceUniverse?.configure({scene:'universe',motion:true,speed:.3,brightness:.7,quality:'auto'});
 }
@@ -32,14 +32,28 @@ function authMode(signup){state.signup=signup;$('nameField').hidden=!signup;$('a
   $('authSubtitle').textContent=signup?'Your research starts here.':'A little curiosity goes a long way.';
   $('authSubmit').textContent=signup?'Create account':'Sign in';
   $('loginTab').classList.toggle('selected',!signup);$('signupTab').classList.toggle('selected',signup);
-  $('authPassword').autocomplete=signup?'new-password':'current-password';$('authError').textContent='';
+  $('authPassword').autocomplete=signup?'new-password':'current-password';$('authPassword').minLength=signup?10:1;$('authPassword').placeholder=signup?'At least 10 characters':'Your password';$('authError').textContent='';$('authNotice').textContent='';
 }
 $('loginTab').onclick=()=>authMode(false);$('signupTab').onclick=()=>authMode(true);
 $('showPassword').onclick=()=>{const hidden=$('authPassword').type==='password';$('authPassword').type=hidden?'text':'password';$('showPassword').textContent=hidden?'Hide':'Show';$('showPassword').setAttribute('aria-label',hidden?'Hide password':'Show password');};
-$('authForm').onsubmit=async event=>{event.preventDefault();$('authSubmit').disabled=true;$('authError').textContent='';
-  try{const user=await post(state.signup?'/auth/signup':'/auth/login',{name:$('authName').value.trim(),email:$('authEmail').value.trim(),password:$('authPassword').value});$('authPassword').value='';if(user.requires_confirmation){authMode(false);$('authError').textContent='Check your email to confirm your account, then sign in.';}else await enterWorkspace(user);}
-  catch(error){$('authError').textContent=error.message;}finally{$('authSubmit').disabled=false;}
+function authBusy(busy){for(const id of ['authSubmit','googleSignIn','appleSignIn','loginTab','signupTab','forgotPassword','resendConfirmation'])$(id).disabled=busy;}
+$('authForm').onsubmit=async event=>{event.preventDefault();authBusy(true);$('authError').textContent='';$('authNotice').textContent='';
+  try{const user=await post(state.signup?'/auth/signup':'/auth/login',{name:$('authName').value.trim(),email:$('authEmail').value.trim(),password:$('authPassword').value});$('authPassword').value='';if(user.requires_confirmation){authMode(false);$('authNotice').textContent='Check your email to confirm your account, then sign in. Check spam too, and open the link in this browser.';}else await enterWorkspace(user);}
+  catch(error){$('authError').textContent=error.message;}finally{authBusy(false);}
 };
+const hostedAuth=window.SpaceMindBackend?.provider==='supabase';
+$('socialAuth').hidden=!hostedAuth;$('resendConfirmation').hidden=!hostedAuth;
+for(const provider of ['google','apple'])$(provider+'SignIn').onclick=async()=>{
+  authBusy(true);$('authError').textContent='';$('authNotice').textContent='Opening '+(provider==='google'?'Google':'Apple')+' sign-in…';
+  try{await post('/auth/oauth',{provider});}catch(error){$('authNotice').textContent='';$('authError').textContent=error.message;}finally{authBusy(false);}
+};
+window.addEventListener('pageshow',()=>{authBusy(false);if($('authNotice').textContent.startsWith('Opening '))$('authNotice').textContent='';});
+$('resendConfirmation').onclick=async()=>{
+  if(!$('authEmail').reportValidity())return;
+  authBusy(true);$('authError').textContent='';$('authNotice').textContent='';
+  try{await post('/auth/resend',{email:$('authEmail').value.trim()});$('authNotice').textContent='If confirmation is needed, a fresh link is on its way. Check your inbox and spam folder, and open it in this browser.';}catch(error){$('authError').textContent=error.message;}finally{authBusy(false);}
+};
+authMode(false);
 function applyPreferences(prefs){
   state.prefs={...prefs};window.SpaceUniverse?.configure(prefs);
   document.documentElement.style.setProperty('--font',({small:'13px',medium:'15px',large:'17px'})[prefs.font_size]);
@@ -178,7 +192,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')sidebar(false);});
 $('forgotPassword').hidden=!window.SpaceMindBackend;
 $('forgotPassword').onclick=async()=>{
  const email=$('authEmail').value.trim();if(!email){$('authError').textContent='Enter your email address first.';return;}
- $('forgotPassword').disabled=true;try{await post('/auth/reset',{email});$('authError').textContent='If that account exists, a password-reset email is on its way.';}catch(e){$('authError').textContent=e.message;}finally{$('forgotPassword').disabled=false;}
+ if(!$('authEmail').reportValidity())return;
+ authBusy(true);$('authError').textContent='';$('authNotice').textContent='';try{await post('/auth/reset',{email});$('authNotice').textContent='If that account exists, a password-reset email is on its way. Open it in this browser.';}catch(e){$('authError').textContent=e.message;}finally{authBusy(false);}
 };
 function showRecovery(){if(window.SpaceMindRecoveryPending&&!$('recoveryDialog').open)$('recoveryDialog').showModal();}
 window.addEventListener('spacemind-recovery',showRecovery);
@@ -187,4 +202,4 @@ $('recoveryForm').onsubmit=async e=>{e.preventDefault();const value=$('recoveryP
  if(value!==$('recoveryConfirm').value){$('recoveryError').textContent='Passwords do not match.';return;}
  $('recoverySave').disabled=true;try{await post('/auth/recovery',{new_password:value});window.SpaceMindRecoveryPending=false;$('recoveryDialog').close();$('recoveryForm').reset();toast('Your password has been updated.');await enterWorkspace(await api('/auth/me'));}catch(err){$('recoveryError').textContent=err.message;}finally{$('recoverySave').disabled=false;}
 };
-(async()=>{try{await enterWorkspace(await api('/auth/me'));}catch(error){showAuth();if(error.status!==401)$('authError').textContent=error.message;}showRecovery();})();
+(async()=>{try{await enterWorkspace(await api('/auth/me'));}catch(error){showAuth();if(window.SpaceMindAuthError){$('authError').textContent=window.SpaceMindAuthError;window.SpaceMindAuthError=null;}else if(error.status!==401)$('authError').textContent=error.message;}showRecovery();})();

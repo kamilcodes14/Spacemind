@@ -16,13 +16,19 @@
     <div class="eyebrow">YOUR WINDOW INTO THE UNIVERSE</div>
     <h1 id="authTitle">Welcome back.</h1><p id="authSubtitle" class="muted">A little curiosity goes a long way.</p>
     <div class="segmented auth-tabs"><button id="loginTab" class="selected" type="button">Sign in</button><button id="signupTab" type="button">Create account</button></div>
+    <div id="socialAuth" class="social-auth" hidden>
+      <button id="googleSignIn" class="social-button" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2.2H12v4.2h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.4 2.9-7.5Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.7-2.3l-3.3-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.8-5.6-4.2H3v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3a10 10 0 0 0 0 9l3.4-2.6Z"/><path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.6 9.6 0 0 0 12 2a10 10 0 0 0-9 5.5l3.4 2.6C7.2 7.7 9.4 5.9 12 5.9Z"/></svg><span>Continue with Google</span></button>
+      <button id="appleSignIn" class="social-button" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12.5c0-2 1.6-3 1.7-3.1-1-1.5-2.6-1.7-3.2-1.7-1.4-.2-2.7.8-3.4.8-.7 0-1.8-.8-2.9-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.8 1.1 9 .8 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7s1.8.7 3 .7c1.2 0 2-1.1 2.7-2.2.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.3-.9-2.3-3.7ZM14.7 6.2c.6-.8 1.1-1.8 1-2.9-1 .1-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.8 1 .1 2.1-.5 2.8-1.4Z"/></svg><span>Continue with Apple</span></button>
+      <div class="auth-divider"><span>or continue with email</span></div>
+    </div>
     <form id="authForm">
       <label id="nameField" hidden>Your name<input id="authName" autocomplete="name" maxlength="80"></label>
       <label>Email address<input id="authEmail" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com"></label>
       <label>Password<div class="password-wrap"><input id="authPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="At least 10 characters"><button id="showPassword" class="text-button" type="button" aria-label="Show password">Show</button></div></label>
-      <p id="authError" class="error" role="alert"></p><button id="authSubmit" class="primary" type="submit">Sign in</button>
+      <p id="authNotice" class="auth-notice" role="status"></p><p id="authError" class="error" role="alert"></p><button id="authSubmit" class="primary" type="submit">Sign in</button>
     </form>
     <button id="forgotPassword" class="text-button" type="button" hidden>Forgot password?</button>
+    <button id="resendConfirmation" class="text-button" type="button" hidden>Resend confirmation email</button>
     <p class="auth-note">Your conversations. Your own corner of the cosmos.</p>
   </div>
   <div class="auth-caption"><span class="tiny-dot"></span> SPACE TO THINK BIGGER</div>

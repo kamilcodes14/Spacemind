@@ -9,6 +9,21 @@ In Supabase Authentication, enable email/password signup. Set Site URL to your e
 
 `supabase/config.toml` configures the local stack; it does not automatically update hosted Auth settings. Anonymous sign-ins should remain disabled. Apply sensible signup rate limits/CAPTCHA before opening unrestricted public registrations; the research quota is per account, not an application-wide spending cap.
 
+## Google and Apple sign-in
+
+The hosted login screen includes both providers and checks Supabase's public Auth settings before redirecting. Disabled providers show a helpful message; email remains available. Provider credentials belong in Supabase Authentication / Sign In / Providers, never in Vercel or GitHub. Research API keys are unrelated to OAuth credentials.
+
+1. Set Authentication / URL Configuration **Site URL** to `https://spacemind-frontend.vercel.app` and add `https://spacemind-frontend.vercel.app/` to **Redirect URLs**. Add exact additional frontend URLs only if needed.
+2. **Google:** in Google Auth Platform, create a Web application OAuth client. Set authorized JavaScript origin to `https://spacemind-frontend.vercel.app` and authorized redirect URI to `https://aqblctjucyxqjmylojgc.supabase.co/auth/v1/callback`. Configure the consent screen with basic openid, email and profile scopes; add your test users while the app is in Testing. Copy the client ID and client secret into Supabase's Google provider and enable it. No additional frontend environment variable is needed.
+3. **Apple:** use your Apple Developer account to configure a Sign in with Apple App ID, an associated Services ID and signing key. Set the web domain to `aqblctjucyxqjmylojgc.supabase.co` and return URL to `https://aqblctjucyxqjmylojgc.supabase.co/auth/v1/callback`. Generate the Apple OAuth client secret using your Team ID, Key ID and private `.p8` signing key; enter the Services ID first in Supabase Apple Client IDs and set the generated secret. Enable the provider. Rotate the OAuth secret before its six-month expiry. Keep signing keys private.
+4. After the frontend update deploys, test each enabled provider in the same browser from sign-in through redirect back into the workspace. Cancel a provider prompt once to check the recoverable error message. Sign out and sign back in to check history persistence. Provider signup creates an account automatically.
+
+The client uses the Supabase SDK's PKCE URL detection and code exchange; it never manually trusts URL tokens or provider profile fields for access. Redirect failures are shown safely and removed from the URL. Profiles and chats retain their existing RLS rules. Apple may not supply a name; users can edit their display name in Settings. Social-only users can use Forgot password with their account email to establish a password before password-protected account changes/deletion.
+
+Email signup still requires confirmation. A resend button and neutral success notices explain delivery and the same-browser requirement. If email does not arrive, check spam, Auth logs and SMTP delivery settings; do not disable email confirmation to work around delivery errors.
+
+Official setup: [Google](https://supabase.com/docs/guides/auth/social-login/auth-google), [Apple](https://supabase.com/docs/guides/auth/social-login/auth-apple), [redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls).
+
 ## 2. Add backend secrets
 
 In Project Settings / Edge Functions / Secrets, add:

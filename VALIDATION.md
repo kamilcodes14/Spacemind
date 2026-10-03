@@ -19,3 +19,11 @@
 - The accompanying demo is an interface walkthrough using a sample account and sample response. No external account was created and no research answer is presented as a live model result.
 
 These checks refer to the optional Python backend and the earlier interface demo, not a live Supabase end-to-end test.
+
+## Social sign-in update (2026-10-03)
+
+- Static build and JavaScript syntax checks passed.
+- Actual bundled Supabase SDK tested in Chromium with mocked provider/Auth responses: Google and Apple PKCE challenge generation, code exchange, callback URL cleanup, persisted sessions after reload, disabled-provider feedback, cancelled callback, missing-verifier callback, confirmation signup, resend, password login, research, history, settings and logout passed.
+- Desktop (1280 px) and mobile (390 px) screenshots reviewed; both provider buttons are visible, mobile has no horizontal overflow, and no page JavaScript errors occurred.
+- Read-only check of live public Auth settings confirmed Google and Apple are disabled; email confirmations are enabled. Live provider login and email delivery are not verified. Enable the OAuth providers as described in docs/SUPABASE_SETUP.md before live acceptance testing.
+- No database permissions, RLS policies, provider secrets, or hosted Auth settings were changed by this update.
