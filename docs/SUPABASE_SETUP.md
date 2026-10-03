@@ -34,7 +34,7 @@ In Project Settings / Edge Functions / Secrets, add:
 | `GROQ_MODEL` | Optional; default `openai/gpt-oss-120b` |
 | `TAVILY_API_KEY` | Live web research |
 | `SEMANTIC_SCHOLAR_API_KEY` | Optional additional paper abstracts |
-| `ALLOWED_ORIGINS` | Exact frontend origins, comma separated, without paths; e.g. `https://your-app.vercel.app,http://localhost:3000` |
+| `ALLOWED_ORIGINS` | Additional exact frontend origins, comma separated, without paths; e.g. `https://your-app.vercel.app,http://localhost:3000`. The production origin `https://spacemind-frontend.vercel.app` is included in the shared CORS configuration. |
 | `PAPER_IMPORT_TOKEN` | Random operator-only token, at least 32 characters, for corpus imports |
 
 Create an import token locally with `python -c "import secrets; print(secrets.token_urlsafe(48))"` and keep it in your local environment and Supabase secrets. Never commit it. Supabase provides its URL, anon key and service-role key inside hosted functions automatically. Do not put service-role, Groq, Tavily, Semantic Scholar or import credentials in frontend variables.

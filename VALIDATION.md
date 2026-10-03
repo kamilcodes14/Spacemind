@@ -36,3 +36,10 @@ These checks refer to the optional Python backend and the earlier interface demo
 - Static build and syntax checks passed. `tests/supabase/oauth-callback.cjs` executes the bundled SDK in a simulated browser with mocked Auth responses and checks one exchange, persisted session, logout, missing verifier, cancellation, blocked storage, rejected/incomplete responses, and password recovery.
 - Run this regression with `SUPABASE_URL=https://example.supabase.co SUPABASE_PUBLISHABLE_KEY=sb_publishable_test npm run build`, then `node tests/supabase/oauth-callback.cjs`. Rebuild with deployment settings before deployment.
 - The local Chromium process could not launch in this execution environment (SIGSEGV); this update has not been visually retested or verified through the user's live Safari/Google account. Server logs show completed provider callbacks and one successful token response; the exact cause of the user's earlier generic error remains unconfirmed.
+
+## Research browser connection repair (2026-10-04 PKT)
+
+- Live function logs identified OPTIONS 403 responses before any AI request. The shared CORS allowlist now includes the exact production frontend origin without depending on an additional secret; configured origins are preserved.
+- All 13 research unit tests passed, including a regression for production preflight without origin configuration and continued denial of unrelated origins and unauthenticated requests.
+- Deployed the research function as version 4 with JWT verification enabled. Live HTTP checks: production preflight 204 with the exact allowed origin; unrelated-origin preflight 403; missing-auth POST 401.
+- No provider keys, RLS policies, or authentication checks were removed. A complete answer through the user's authenticated session still needs live verification.

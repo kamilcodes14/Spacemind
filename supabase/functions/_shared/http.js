@@ -1,7 +1,9 @@
 export class HttpError extends Error {constructor(status,message){super(message);this.status=status;}}
 export function cors(req,allowed){
   const origin=req.headers.get('origin');
-  const allow=allowed.split(',').map(s=>s.trim().replace(/\/$/,'')).filter(Boolean);
+  // This repository's deployed frontend must work without a separate origin secret.
+  // ALLOWED_ORIGINS can add development or custom domains; never allow all origins.
+  const allow=['https://spacemind-frontend.vercel.app',...allowed.split(',').map(s=>s.trim().replace(/\/$/,'')).filter(Boolean)];
   if(origin&&!allow.includes(origin))throw new HttpError(403,'This website is not allowed to call the research backend.');
   return {'Access-Control-Allow-Origin':origin||allow[0]||'null','Access-Control-Allow-Headers':'authorization,x-client-info,apikey,content-type','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Vary':'Origin','Cache-Control':'no-store'};
 }

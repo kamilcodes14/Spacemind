@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {research,validateQuestion} from '../../supabase/functions/_shared/research.js';
-import {bodyJSON,safeURL} from '../../supabase/functions/_shared/http.js';
+import {bodyJSON,cors,safeURL} from '../../supabase/functions/_shared/http.js';
 import {makeHandler} from '../../supabase/functions/research/handler.js';
 const id='33333333-3333-4333-8333-333333333333';
 const input={question:'Mars',chatId:id,depth:'technical',useWeb:false};
@@ -21,4 +21,14 @@ const request=(headers={authorization:'Bearer test',origin:'https://app.test'})=
 test('unauthenticated requests denied before providers',async()=>{const f=fixture();assert.equal((await f.handler(request({origin:'https://app.test'}))).status,401);assert.equal(f.external(),0);});
 test('foreign chats and exhausted quota denied',async()=>{assert.equal((await fixture({owner:false}).handler(request())).status,404);assert.equal((await fixture({quota:false}).handler(request())).status,429);});
 test('untrusted origin denied',async()=>{assert.equal((await fixture().handler(request({origin:'https://evil.test'}))).status,403);});
+test('production preflight works with no origin secret, but unrelated origins stay blocked',async()=>{
+  const origin='https://spacemind-frontend.vercel.app';
+  const handler=makeHandler({env:{},createClient:()=>assert.fail('preflight must not access Auth'),embed:()=>assert.fail('preflight must not invoke AI')});
+  const response=await handler(new Request('https://test',{method:'OPTIONS',headers:{origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,apikey,content-type,x-client-info'}}));
+  assert.equal(response.status,204);assert.equal(response.headers.get('Access-Control-Allow-Origin'),origin);
+  assert.match(response.headers.get('Access-Control-Allow-Headers'),/authorization/);
+  assert.throws(()=>cors(new Request('https://test',{headers:{origin:'https://spacemind-frontend.vercel.app.evil.test'}}),''));
+  const unauthenticated=await handler(new Request('https://test',{headers:{origin}}));
+  assert.equal(unauthenticated.status,401);assert.equal(unauthenticated.headers.get('Access-Control-Allow-Origin'),origin);
+});
 test('authenticated turn persists with warnings',async()=>{const f=fixture();assert.equal((await f.handler(request())).status,200);assert.deepEqual(f.saved().p_warnings,[]);});
