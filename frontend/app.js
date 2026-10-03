@@ -98,7 +98,7 @@ function renderTurn(question, result=null){
   turn.innerHTML='<div class="user-message"></div><div class="assistant-heading"><span aria-hidden="true">✦</span><span>SpaceMind</span></div><div class="answer-body"></div>';
   turn.querySelector('.user-message').textContent=question;$('messages').append(turn);
   const body=turn.querySelector('.answer-body');
-  if(!result){body.innerHTML='<p class="pending" role="status">'+($('researchMode').value==='web'?'Searching the web…':'Following the evidence…')+'</p>';}
+  if(!result){body.innerHTML='<p class="pending" role="status">'+($('researchMode').value==='web'?'Searching the web…':$('researchMode').value==='papers'?'Following the evidence…':'Thinking…')+'</p>';}
   else fillAnswer(body,result);
   return body;
 }

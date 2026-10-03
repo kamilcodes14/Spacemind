@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {research,validateQuestion} from '../../supabase/functions/_shared/research.js';
+import {research,validateQuestion,groq} from '../../supabase/functions/_shared/research.js';
 import {bodyJSON,cors,safeURL} from '../../supabase/functions/_shared/http.js';
 import {makeHandler} from '../../supabase/functions/research/handler.js';
 const id='33333333-3333-4333-8333-333333333333';
@@ -32,3 +32,38 @@ test('production preflight works with no origin secret, but unrelated origins st
   assert.equal(unauthenticated.status,401);assert.equal(unauthenticated.headers.get('Access-Control-Allow-Origin'),origin);
 });
 test('authenticated turn persists with warnings',async()=>{const f=fixture();assert.equal((await f.handler(request())).status,200);assert.deepEqual(f.saved().p_warnings,[]);});
+
+test('casual shorthand answers directly in every mode without model or search',async()=>{
+  for(const question of ['how r you','How are u?','hru','hello!','thanks bro','bye'])for(const useWeb of [null,false,true]){
+    const r=await research({...input,question,useWeb},[{question:'hi',answer:'Hey!'}],{env:{},lookupPapers:()=>assert.fail('no papers'),fetcher:()=>assert.fail('no provider')});
+    assert(r.answer.length>5);assert.equal(r.confident,true);assert.equal(r.used_web,false);assert.deepEqual(r.citations,[]);
+  }
+});
+test('auto mode handles contextual ordinary conversation without evidence search',async()=>{
+  const history=[{question:'My name is Kamil',answer:'Nice to meet you, Kamil!'}];
+  const r=await research({...input,question:'what is my name?',useWeb:null},history,{env:{GROQ_API_KEY:'test'},lookupPapers:()=>assert.fail('no papers'),fetcher:async(url,opts)=>{
+    assert(url.includes('groq'));const body=JSON.parse(opts.body);assert.equal(JSON.parse(body.messages[1].content).history[0].question,history[0].question);
+    return response({choices:[{message:{content:JSON.stringify({mode:'chat',answer:'You told me your name is Kamil.'})},finish_reason:'stop'}]});
+  }});assert.match(r.answer,/Kamil/);assert.deepEqual(r.warnings,[]);assert.deepEqual(r.citations,[]);
+});
+test('auto mode sends astronomy follow-ups through evidence retrieval',async()=>{
+  let calls=0,query;const r=await research({...input,question:'why does it have ice?',useWeb:null},[{question:'Tell me about Mars',answer:'Mars has polar ice.'}],{env:{GROQ_API_KEY:'test'},lookupPapers:async q=>{query=q;return [paper]},fetcher:async()=>{
+    if(++calls===1)return response({choices:[{message:{content:JSON.stringify({mode:'research',query:'Why does Mars have polar ice?'})}}]});
+    return model('Mars has ice [1].')();
+  }});assert.match(query,/Mars/);assert.equal(calls,2);assert.equal(r.citations.length,1);assert.equal(r.confident,true);
+});
+test('greetings with research requests are not swallowed by casual matching',async()=>{
+  const r=await research({...input,question:'Hi, explain black holes',useWeb:false},[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Evidence [1].')});assert.equal(r.citations.length,1);
+});
+test('reasoning budget exhaustion retries once and never exposes reasoning',async()=>{
+  const budgets=[];const text=await groq([{role:'user',content:'test'}],{GROQ_API_KEY:'test'},async(_,opts)=>{
+    const body=JSON.parse(opts.body);budgets.push(body.max_completion_tokens);assert.equal(body.reasoning_effort,'low');assert.equal(body.include_reasoning,false);
+    return response({choices:[budgets.length===1?{finish_reason:'length',message:{content:'',reasoning:'PRIVATE REASONING'}}:{finish_reason:'stop',message:{content:'Final answer'}}]});
+  },false,512);assert.equal(text,'Final answer');assert.deepEqual(budgets,[2048,4096]);
+});
+test('repeated empty output fails after bounded attempts',async()=>{
+  let calls=0;await assert.rejects(groq([],{GROQ_API_KEY:'test'},async()=>{calls++;return response({choices:[{finish_reason:'length',message:{content:'',reasoning:'PRIVATE'}}]})}),/could not finish/);assert.equal(calls,2);
+});
+test('non-reasoning model overrides do not receive reasoning-only parameters',async()=>{
+  await groq([],{GROQ_API_KEY:'test',GROQ_MODEL:'custom-model'},async(_,opts)=>{const body=JSON.parse(opts.body);assert(!('reasoning_effort' in body));assert(!('include_reasoning' in body));return response({choices:[{message:{content:'Answer'}}]});});
+});

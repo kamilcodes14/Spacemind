@@ -43,3 +43,11 @@ These checks refer to the optional Python backend and the earlier interface demo
 - All 13 research unit tests passed, including a regression for production preflight without origin configuration and continued denial of unrelated origins and unauthenticated requests.
 - Deployed the research function as version 4 with JWT verification enabled. Live HTTP checks: production preflight 204 with the exact allowed origin; unrelated-origin preflight 403; missing-auth POST 401.
 - No provider keys, RLS policies, or authentication checks were removed. A complete answer through the user's authenticated session still needs live verification.
+
+## Natural conversation update (2026-10-04 PKT)
+
+- Common standalone greetings, informal check-ins (including `how r you`), thanks and goodbyes receive direct replies without search or model calls in any mode.
+- Auto mode now routes broader casual conversation and everyday help to a natural answer using recent chat context. Astronomy facts and research follow-ups continue through source retrieval and citation checks. Explicit web/papers research modes remain research-oriented beyond basic pleasantries.
+- Removed the 512-token reasoning bottleneck in follow-up rewriting. GPT-OSS requests use low reasoning effort, exclude reasoning from the response, and reserve at least 2,048 completion tokens. Truncated output gets one bounded retry; failed optional query rewriting uses the original question.
+- All 20 research unit tests passed with mocked provider responses, covering shorthand, context-aware chat routing, research follow-ups, mixed greeting/research prompts, token exhaustion, bounded retries, and custom model compatibility. Auto mode displays a neutral Thinking status.
+- Provider-generated conversational quality and live model output still need verification through an authenticated session; mocked tests do not establish live model quality.
