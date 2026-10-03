@@ -45,7 +45,7 @@ const hostedAuth=window.SpaceMindBackend?.provider==='supabase';
 $('socialAuth').hidden=!hostedAuth;$('resendConfirmation').hidden=!hostedAuth;
 for(const provider of ['google','apple'])$(provider+'SignIn').onclick=async()=>{
   authBusy(true);$('authError').textContent='';$('authNotice').textContent='Opening '+(provider==='google'?'Google':'Apple')+' sign-in…';
-  try{await post('/auth/oauth',{provider});}catch(error){$('authNotice').textContent='';$('authError').textContent=error.message;}finally{authBusy(false);}
+  try{await post('/auth/oauth',{provider});}catch(error){$('authNotice').textContent='';$('authError').textContent=error.message;authBusy(false);}
 };
 window.addEventListener('pageshow',()=>{authBusy(false);if($('authNotice').textContent.startsWith('Opening '))$('authNotice').textContent='';});
 $('resendConfirmation').onclick=async()=>{

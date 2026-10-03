@@ -27,3 +27,12 @@ These checks refer to the optional Python backend and the earlier interface demo
 - Desktop (1280 px) and mobile (390 px) screenshots reviewed; both provider buttons are visible, mobile has no horizontal overflow, and no page JavaScript errors occurred.
 - Read-only check of live public Auth settings confirmed Google and Apple are disabled; email confirmations are enabled. Live provider login and email delivery are not verified. Enable the OAuth providers as described in docs/SUPABASE_SETUP.md before live acceptance testing.
 - No database permissions, RLS policies, provider secrets, or hosted Auth settings were changed by this update.
+
+## OAuth callback repair (2026-10-03)
+
+- Replaced implicit SDK callback detection with one explicit, awaited PKCE code exchange before loading the user profile. PKCE verification remains enabled. Successful and failed callback parameters are removed from the address bar.
+- Kept provider buttons disabled while navigating to prevent repeated taps from overwriting the pending verifier; returning with browser Back restores the buttons.
+- Added a browser-storage preflight and distinct safe error identifiers for callback failures; no auth tokens or provider error descriptions are displayed.
+- Static build and syntax checks passed. `tests/supabase/oauth-callback.cjs` executes the bundled SDK in a simulated browser with mocked Auth responses and checks one exchange, persisted session, logout, missing verifier, cancellation, blocked storage, rejected/incomplete responses, and password recovery.
+- Run this regression with `SUPABASE_URL=https://example.supabase.co SUPABASE_PUBLISHABLE_KEY=sb_publishable_test npm run build`, then `node tests/supabase/oauth-callback.cjs`. Rebuild with deployment settings before deployment.
+- The local Chromium process could not launch in this execution environment (SIGSEGV); this update has not been visually retested or verified through the user's live Safari/Google account. Server logs show completed provider callbacks and one successful token response; the exact cause of the user's earlier generic error remains unconfirmed.

@@ -1,17 +1,47 @@
 import {createClient} from '@supabase/supabase-js';
-const client=createClient(__SUPABASE_URL__,__SUPABASE_KEY__,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+// One owner for the callback: do not race automatic detection and a manual exchange.
+const client=createClient(__SUPABASE_URL__,__SUPABASE_KEY__,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
 const callbackURL=new URL(location.href);
-const callbackParams=new URLSearchParams(location.hash.slice(1));
-const hasCallbackError=['error','error_code','error_description'].some(k=>callbackURL.searchParams.has(k)||callbackParams.has(k));
-const ready=client.auth.initialize().then(({error})=>{
-  const failed=error||hasCallbackError||(callbackURL.searchParams.has('code')&&new URL(location.href).searchParams.has('code'));
-  if(failed){
-    window.SpaceMindAuthError='That sign-in link expired, was cancelled, or could not be verified. Try Google or Apple again, or request a fresh email link and open it in this browser.';
-    const clean=new URL(location.href);
-    for(const key of ['code','sb_flow_id','error','error_code','error_description'])clean.searchParams.delete(key);
-    clean.hash='';history.replaceState(history.state,'',clean.href);
+const callbackParams=new URLSearchParams(callbackURL.hash.slice(1));
+const callbackValue=key=>callbackURL.searchParams.get(key)||callbackParams.get(key);
+function callbackMessage(error){
+  const code=error?.code||error?.details?.code||error?.name||'unknown';
+  const messages={
+    access_denied:'Sign-in was cancelled. Choose your sign-in provider to start again.',
+    pkce_code_verifier_not_found:'This browser lost the pending sign-in. Open SpaceMind directly in Safari and start sign-in there, keeping the same tab.',
+    AuthPKCECodeVerifierMissingError:'This browser lost the pending sign-in. Open SpaceMind directly in Safari and start sign-in there, keeping the same tab.',
+    flow_state_not_found:'This sign-in has already been used or expired. Start a new sign-in from SpaceMind.',
+    flow_state_expired:'This sign-in expired. Start a new sign-in from SpaceMind.',
+    bad_code_verifier:'Another sign-in replaced this attempt. Close other SpaceMind login tabs and start one new sign-in.',
+    AuthRetryableFetchError:'The login service could not be reached. Check your connection and start sign-in again.',
+    AuthInvalidTokenResponseError:'The login service returned an incomplete session. Please share this error code so we can investigate.'
+  };
+  // Show only a bounded identifier, never provider descriptions, URLs or tokens.
+  const safeCode=/^[a-zA-Z][a-zA-Z0-9_]{0,79}$/.test(code)?code:'unknown';
+  return (messages[code]||'SpaceMind could not finish signing you in. Please share the error code below.')+' [AUTH: '+safeCode+']';
+}
+const ready=(async()=>{
+  const isCallback=Boolean(callbackValue('code')||callbackValue('error')||callbackValue('error_code')||callbackValue('error_description'));
+  try{
+    const {error:initialError}=await client.auth.initialize();
+    if(initialError)throw initialError;
+    if(callbackValue('error')||callbackValue('error_code')||callbackValue('error_description'))throw {code:callbackValue('error_code')||callbackValue('error')||'provider_error'};
+    const code=callbackValue('code');
+    if(code){
+      const flowId=callbackValue('sb_flow_id');
+      const {data,error}=await client.auth.exchangeCodeForSession(code,flowId?{flowId}:undefined);
+      if(error)throw error;
+      if(!data?.session)throw {code:'session_missing'};
+    }
+  }catch(error){window.SpaceMindAuthError=callbackMessage(error);}
+  finally{
+    if(isCallback){
+      const clean=new URL(location.href);
+      for(const key of ['code','sb_flow_id','error','error_code','error_description'])clean.searchParams.delete(key);
+      clean.hash='';history.replaceState(history.state,'',clean.href);
+    }
   }
-});
+})();
 const defaults={depth:'technical',mode:'auto',scene:'universe',motion:true,speed:.5,brightness:.65,quality:'auto',font_size:'medium'};
 function fail(message,status=400){const error=new Error(message);error.status=status;throw error;}
 function checked({data,error}){if(error){const status=error.name==='AuthSessionMissingError'?401:error.status||(['PGRST301','PGRST302'].includes(error.code)?401:400);const messages={email_not_confirmed:'Please confirm your email first. Check your inbox and spam folder, or resend the confirmation below.',invalid_credentials:'Email or password is incorrect. If you registered with Google or Apple, use that sign-in button.',over_email_send_rate_limit:'Please wait before requesting another email. Check your inbox and spam folder.'};fail(messages[error.code]||error.message,status);}return data;}
@@ -33,6 +63,8 @@ async function request(path,options={}){
     try{const response=await fetch(__SUPABASE_URL__+'/auth/v1/settings',{headers:{apikey:__SUPABASE_KEY__},signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error();settings=await response.json();}
     catch{fail('Unable to check sign-in availability. Please check your connection and try again.');}
     if(!settings.external?.[body.provider])fail(name+' sign-in is not available yet. Please use email for now.');
+    try{const key='spacemind-auth-storage-check';localStorage.setItem(key,'1');if(localStorage.getItem(key)!=='1')throw new Error();localStorage.removeItem(key);}
+    catch{fail('Your browser is blocking sign-in storage. Allow website data for SpaceMind, then try again. [AUTH: storage_unavailable]');}
     checked(await client.auth.signInWithOAuth({provider:body.provider,options:{redirectTo:location.origin+'/',...(body.provider==='google'?{queryParams:{prompt:'select_account'}}:{})}}));
     return {redirecting:true};
   }
