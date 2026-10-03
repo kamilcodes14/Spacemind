@@ -7,3 +7,15 @@ data/raw/
 data/processed/
 *.egg-info/
 .DS_Store
+
+# Private account and conversation data
+data/workspace.db*
+spacemind-conversations*.json
+.pytest_cache/
+node_modules/
+dist/
+.env.*
+!.env.example
+!supabase/functions/.env.example
+supabase/.temp/
+supabase/.branches/

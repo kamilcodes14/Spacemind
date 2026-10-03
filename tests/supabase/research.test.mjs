@@ -1,0 +1,24 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {research,validateQuestion} from '../../supabase/functions/_shared/research.js';
+import {bodyJSON,safeURL} from '../../supabase/functions/_shared/http.js';
+import {makeHandler} from '../../supabase/functions/research/handler.js';
+const id='33333333-3333-4333-8333-333333333333';
+const input={question:'Mars',chatId:id,depth:'technical',useWeb:false};
+const paper={source_file:'Mars paper',origin:'arxiv',url:'https://arxiv.org/abs/1234',snippet:'Mars has ice'};
+const response=data=>new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}});
+const model=answer=>async()=>response({choices:[{message:{content:JSON.stringify({answer,confident:true,follow_up_questions:['Why?']})}}]});
+test('validates question, chat and mode',()=>{assert.equal(validateQuestion({question:'Mars',chat_id:id}).question,'Mars');for(const value of [{question:'',chat_id:id},{question:'Mars',chat_id:'x'},{question:'Mars',chat_id:id,use_web:'true'}])assert.throws(()=>validateQuestion(value));});
+test('forced web fails explicitly without key and never queries papers',async()=>{await assert.rejects(research({...input,useWeb:true},[],{env:{},lookupPapers:()=>assert.fail('paper fallback')}),/not configured/);});
+test('papers mode returns sourced short astronomy query',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars has ice [1].')});assert.equal(r.confident,true);assert.equal(r.used_web,false);assert.equal(r.citations.length,1);});
+test('invalid citations lower confidence',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars [99]')});assert.equal(r.confident,false);assert.match(r.warnings[0],/invalid/);});
+test('empty evidence never invokes model',async()=>{const r=await research(input,[],{env:{},lookupPapers:async()=>[],fetcher:()=>assert.fail('no model without evidence')});assert.equal(r.confident,false);});
+test('web uses Tavily evidence and excludes unsafe URLs',async()=>{let calls=[];const r=await research({...input,useWeb:true},[],{env:{TAVILY_API_KEY:'test',GROQ_API_KEY:'test'},lookupPapers:()=>assert.fail(),fetcher:async(url)=>{calls.push(url);return url.includes('tavily')?response({results:[{title:'Mars',url:'https://nasa.gov/mars',content:'Ice'},{url:'javascript:alert(1)',content:'bad'}]}):model('Ice [1]')();}});assert.equal(r.used_web,true);assert.equal(r.citations.length,1);assert.equal(calls.length,2);});
+test('source failures remain visible',async()=>{const r=await research(input,[],{env:{},lookupPapers:async()=>{throw Error('fail')}});assert.match(r.warnings[0],/could not/);});
+test('bounded JSON and unsafe URL checks',async()=>{assert.equal(safeURL('javascript:alert(1)'),null);await assert.rejects(bodyJSON(new Request('https://test',{method:'POST',body:'x'.repeat(30)}),10),/large/);});
+function fixture({owner=true,quota=true,auth=true}={}){let external=0,saved;const client={auth:{getUser:async()=>({data:{user:auth?{id:'owner'}:null}})},from:()=>({select(){return this},eq(){return this},order(){return this},maybeSingle:async()=>({data:owner?{id}:null}),limit:async()=>({data:[]})}),rpc:async(name,args)=>{if(name==='consume_research_quota')return {data:quota};if(name==='match_papers')return {data:[]};saved=args;return {data:1}}};return {handler:makeHandler({createClient:()=>client,env:{ALLOWED_ORIGINS:'https://app.test'},embed:async()=>[],fetcher:()=>external++}),external:()=>external,saved:()=>saved};}
+const request=(headers={authorization:'Bearer test',origin:'https://app.test'})=>new Request('https://test',{method:'POST',headers,body:JSON.stringify({question:'hello',chat_id:id})});
+test('unauthenticated requests denied before providers',async()=>{const f=fixture();assert.equal((await f.handler(request({origin:'https://app.test'}))).status,401);assert.equal(f.external(),0);});
+test('foreign chats and exhausted quota denied',async()=>{assert.equal((await fixture({owner:false}).handler(request())).status,404);assert.equal((await fixture({quota:false}).handler(request())).status,429);});
+test('untrusted origin denied',async()=>{assert.equal((await fixture().handler(request({origin:'https://evil.test'}))).status,403);});
+test('authenticated turn persists with warnings',async()=>{const f=fixture();assert.equal((await f.handler(request())).status,200);assert.deepEqual(f.saved().p_warnings,[]);});

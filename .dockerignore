@@ -11,3 +11,9 @@ venv/
 # the index — keep the image lean. The built index itself (data/chroma_db)
 # is intentionally NOT excluded here; it needs to ship with the image.
 data/raw/
+
+# Never bake account credentials or conversations into an image
+data/workspace.db*
+spacemind-conversations*.json
+.pytest_cache/
+tests/
