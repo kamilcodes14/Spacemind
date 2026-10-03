@@ -4,7 +4,7 @@
   const canvas=document.getElementById('universe'), ctx=canvas.getContext('2d');
   if(!ctx)return;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  let prefs={scene:'universe',motion:true,speed:.3,brightness:.65,quality:'auto'};
+  let prefs={scene:'universe',motion:true,speed:.5,brightness:.8,quality:'auto'};
   let width=innerWidth,height=innerHeight,clock=0,last=0,raf=null,frame=0;
   let seed=73;
   const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
@@ -37,26 +37,38 @@
     ctx.clearRect(0,0,width,height);ctx.fillStyle='#080b12';ctx.fillRect(0,0,width,height);
     const t=clock, scene=prefs.scene,b=prefs.brightness;
     ctx.save();ctx.globalAlpha=b;
-    drawImage(nebula,width*.76,height*.38,Math.max(width,height)*1.2,scene==='nebula'?1:.38,Math.sin(t*.004)*.06);
+    drawImage(nebula,width*(.76+.025*Math.sin(t*.08)),height*(.38+.02*Math.cos(t*.06)),Math.max(width,height)*1.2,scene==='nebula'?1:.38,Math.sin(t*.06)*.12);
     const count=prefs.quality==='low'||(prefs.quality==='auto'&&width<700)?180:500;
-    for(let i=0;i<count;i++){const s=stars[i],x=(s.x*width+t*(.12+s.r*.1))%width,y=s.y*height+Math.sin(t*.012+s.p)*2;ctx.globalAlpha=b*s.a*(.85+.15*Math.sin(t*.3+s.p));ctx.fillStyle=i%4?'#cbd3e3':'#e7c695';ctx.beginPath();ctx.arc(x,y,s.r,0,Math.PI*2);ctx.fill();}
+    for(let i=0;i<count;i++){const s=stars[i],x=(s.x*width+t*(3+s.r*7))%width,y=s.y*height+Math.sin(t*.12+s.p)*6;ctx.globalAlpha=b*s.a*(.75+.25*Math.sin(t*1.2+s.p));ctx.fillStyle=i%4?'#cbd3e3':'#e7c695';ctx.beginPath();ctx.arc(x,y,s.r,0,Math.PI*2);ctx.fill();}
     ctx.globalAlpha=b;
     if(scene!=='solar'){
-      drawImage(galaxy,width*.88,height*.19,Math.min(width*.62,660),b*(scene==='galaxy'?.85:.58),-.34+t*.0004);
-      if(scene==='galaxy'||scene==='universe')drawImage(galaxy,width*.3,height*.7,240,b*.25,.8-t*.0003);
+      drawImage(galaxy,width*.88,height*.19,Math.min(width*.62,660),b*(scene==='galaxy'?.85:.58),-.34+t*.018);
+      if(scene==='galaxy'||scene==='universe')drawImage(galaxy,width*.3,height*.7,240,b*.25,.8-t*.024);
     }
     if(scene==='universe'||scene==='solar'){
-      const drift=Math.sin(t*.015);
-      drawImage(planets[0],width*.91+drift*8,height*.7,Math.min(width*.3,360),b*.85,.08);
-      drawImage(planets[1],width*.43,height*.12+drift*5,86,b*.55,t*.0007);
-      drawImage(planets[2],width*.15,height*.6-drift*9,100,b*.6);
-      drawImage(planets[3],width*.88,height*.46,37,b*.7);
-      if(scene==='solar'){drawImage(planets[4],width*.61,height*.28,110,b*.6);drawImage(planets[2],width*.7,height*.77,65,b*.5);}
-      if(scene==='universe')drawImage(hole,width*.15,height*.19,180,b*.45);
+      const drift=Math.sin(t*.22);
+      const moonAngle=t*.4;
+      drawImage(planets[0],width*.91+drift*20,height*.7+Math.cos(t*.17)*12,Math.min(width*.3,360),b*.95,.08+Math.sin(t*.15)*.09);
+      drawImage(planets[1],width*.43,height*.12+drift*14,96,b*.75,t*.07);
+      drawImage(planets[2],width*.15,height*.6-drift*20,110,b*.8,t*.04);
+      drawImage(planets[3],width*.91+Math.cos(moonAngle)*Math.min(width*.14,170),height*.7+Math.sin(moonAngle)*65,32,b*.8);
+      if(scene==='solar'){drawImage(planets[4],width*.61,height*.28+Math.sin(t*.18+1)*18,110,b*.75,-t*.04);drawImage(planets[2],width*.7,height*.77+Math.cos(t*.2)*12,65,b*.7,t*.06);}
+      if(scene==='universe')drawImage(hole,width*.15,height*.19,180,b*.65,Math.sin(t*.12)*.1);
     }
-    if(scene==='nebula'){drawImage(nebula,width*.25,height*.65,height,b*.9,.9);drawImage(planets[3],width*.89,height*.77,100,b*.6);}
-    // An occasional distant comet, rendered only during active motion.
-    const phase=t%65;if(phase<5&&t>5&&prefs.motion&&!reduced.matches){const x=width*(.7+phase*.08),y=height*(.08+phase*.025);const grad=ctx.createLinearGradient(x-70,y-20,x,y);grad.addColorStop(0,'#cad6ed00');grad.addColorStop(1,'#cad6ed80');ctx.strokeStyle=grad;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-70,y-20);ctx.lineTo(x,y);ctx.stroke();}
+    if(scene==='nebula'){drawImage(nebula,width*.25,height*.65,height,b,.9-t*.012);drawImage(planets[3],width*.89,height*.77,100,b*.6);}
+    // Staggered comet passes start within seconds and repeat continuously.
+    // Rendering uses the scene clock, so pausing freezes every moving object.
+    for(let i=0;i<2;i++){
+      const phase=(t+i*8)%18;
+      if(phase<4){const progress=phase/4;
+        const x=width*(.52+progress*.65),y=height*(.04+i*.2+progress*.18);
+        const grad=ctx.createLinearGradient(x-100,y-32,x,y);
+        grad.addColorStop(0,'#cad6ed00');grad.addColorStop(1,'#dae6ffbb');
+        ctx.globalAlpha=b*Math.sin(progress*Math.PI);ctx.strokeStyle=grad;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(x-100,y-32);ctx.lineTo(x,y);ctx.stroke();
+        ctx.fillStyle='#edf4ff';ctx.beginPath();ctx.arc(x,y,1.7,0,Math.PI*2);ctx.fill();
+      }
+    }
     ctx.restore();
   }
   function tick(now){raf=null;if(document.hidden||!prefs.motion||reduced.matches){last=0;draw();return;}if(!last)last=now;
