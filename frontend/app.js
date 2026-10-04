@@ -25,7 +25,7 @@ function showAuth(){
   $('messages').replaceChildren();$('chatList').replaceChildren();$('question').value='';$('searchChats').value='';
   $('authPassword').value='';$('authError').textContent='';$('authNotice').textContent='';
   document.querySelectorAll('dialog[open]').forEach(d=>d.close());
-  window.SpaceUniverse?.configure({scene:'universe',motion:true,speed:.3,brightness:.7,quality:'auto'});
+  window.SpaceUniverse?.configure({scene:'universe',motion:true,speed:.5,brightness:.7,quality:'auto'});
 }
 function authMode(signup){state.signup=signup;$('nameField').hidden=!signup;$('authName').required=signup;
   $('authTitle').textContent=signup?'Make room for curiosity.':'Welcome back.';

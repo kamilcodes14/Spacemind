@@ -17,16 +17,44 @@ import * as THREE from 'three';
     let renderer;
     try { renderer = new THREE.WebGLRenderer({canvas, antialias: !mobile, alpha:false, powerPreference:'low-power'}); }
     catch {
-      canvas.classList.add('space-fallback');
-      const sync = () => {
-        canvas.style.opacity = String(prefs.brightness);
-        canvas.style.animationDuration = `${80 / Math.max(.1, prefs.speed)}s`;
-        canvas.style.animationPlayState = document.hidden || reduced.matches || !prefs.motion || !prefs.speed ? 'paused' : 'running';
-      };
-      window.SpaceUniverse = {configure(next) { prefs = {...prefs,...next}; sync(); }};
-      document.addEventListener('visibilitychange', sync);
-      reduced.addEventListener('change', sync); sync(); return;
+      // Perspective flight also works on devices without WebGL.
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { canvas.classList.add('space-fallback'); return; }
+      const stars = Array.from({length:260}, () => ({x:(Math.random()-.5)*1800,y:(Math.random()-.5)*1800,z:30+Math.random()*1000}));
+      let width=innerWidth, height=innerHeight, previous=0;
+      function draw(dt=0) {
+        ctx.fillStyle='#010105'; ctx.fillRect(0,0,width,height);
+        const focal=Math.max(width,height)*.7;
+        for(const star of stars) {
+          star.z-=dt*180*prefs.speed*2;
+          if(star.z<20) star.z+=980;
+          const x=width/2+star.x*focal/star.z, y=height/2+star.y*focal/star.z;
+          if(x<0||x>width||y<0||y>height) continue;
+          const r=Math.min(2.8,650/star.z);
+          ctx.globalAlpha=prefs.brightness*Math.min(1,1.3-star.z/1200);
+          ctx.fillStyle='#cbdcff';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+        }
+        ctx.globalAlpha=1;
+      }
+      function tick(now) {
+        raf=null;
+        if(document.hidden||reduced.matches||!prefs.motion||!prefs.speed)return;
+        raf=requestAnimationFrame(tick);
+        if(!previous){previous=now;return;}
+        if(now-previous<1000/30)return;
+        const dt=Math.min((now-previous)/1000,.075);previous=now;draw(dt);
+      }
+      function sync() {
+        if(raf!==null)cancelAnimationFrame(raf);raf=null;previous=0;
+        draw();
+        if(!document.hidden&&!reduced.matches&&prefs.motion&&prefs.speed)raf=requestAnimationFrame(tick);
+      }
+      function resize(){width=innerWidth;height=innerHeight;canvas.width=width;canvas.height=height;sync();}
+      window.SpaceUniverse={configure(next){prefs={...prefs,...next};sync();}};
+      addEventListener('resize',resize);document.addEventListener('visibilitychange',sync);
+      reduced.addEventListener('change',sync);resize();return;
     }
+
     renderer.setClearColor(0x010105);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
