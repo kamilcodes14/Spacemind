@@ -175,6 +175,7 @@ $('saveSettings').onclick=async()=>{if(!$('settingName').value.trim()){$('settin
   catch(e){$('settingsStatus').textContent=e.message;}finally{$('saveSettings').disabled=false;}
 };
 $('motionToggle').onclick=async()=>{if(!state.user)return;const prefs={...state.user.settings,motion:!state.user.settings.motion};
+  if(prefs.motion && !(prefs.speed>0))prefs.speed=.5;
   try{state.user=await api('/auth/me',{method:'PATCH',body:JSON.stringify({name:state.user.name,settings:prefs})});applyPreferences(prefs);}catch(e){toast(e.message);}
 };
 $('changePassword').onclick=async()=>{if($('newPassword').value.length<10){$('settingsStatus').textContent='Use at least 10 characters for your new password.';return;}$('changePassword').disabled=true;

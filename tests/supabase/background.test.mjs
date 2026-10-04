@@ -22,7 +22,7 @@ test('original 3D scene initializes and motion obeys pause, visibility and reduc
  s.scope.SpaceUniverse.configure({motion:true});assert.equal(s.callbacks.size,1);
  s.document.hidden=true;s.events.visibilitychange();assert.equal(s.callbacks.size,0);
  s.document.hidden=false;s.events.visibilitychange();assert.equal(s.callbacks.size,1);
- s.media.matches=true;s.events.reduced();assert.equal(s.callbacks.size,0);
+ s.media.matches=true;s.events.reduced();assert.equal(s.callbacks.size,1); // Explicit resume takes priority.
  s.media.matches=false;s.events.reduced();assert.equal(s.callbacks.size,1);
  s.events.webglcontextlost({preventDefault(){}});assert.equal(s.callbacks.size,0);
  s.events.webglcontextrestored();assert.equal(s.callbacks.size,1);
@@ -35,4 +35,12 @@ test('WebGL failure preserves settings and pauses the fallback',()=>{
  s.scope.SpaceUniverse.configure({motion:false});assert.equal(s.callbacks.size,0);
  s.scope.SpaceUniverse.configure({motion:true});assert.equal(s.callbacks.size,1);
  s.document.hidden=true;s.events.visibilitychange();assert.equal(s.callbacks.size,0);
+});
+
+test('reduced motion pauses by default but explicit play works in both renderers',()=>{
+ for(const fail of [false,true]){
+  const s=setup(fail);s.media.matches=true;s.events.reduced();assert.equal(s.callbacks.size,0);
+  s.scope.SpaceUniverse.configure({motion:true,speed:.5});assert.equal(s.callbacks.size,1);
+  s.scope.SpaceUniverse.configure({motion:false});assert.equal(s.callbacks.size,0);
+ }
 });

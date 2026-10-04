@@ -2,6 +2,9 @@ import * as THREE from 'three';
 // Original SpaceMind flight scene, with bounded rendering and lifecycle controls.
   (() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    let motionExplicit = false;
+    const motionBlocked = () => reduced.matches && !motionExplicit;
+    const configureMotion = (next) => { if (typeof next.motion === 'boolean') motionExplicit = true; };
     let prefs = {scene:'universe',motion:true,speed:.5,brightness:.7,quality:'auto'};
     let raf = null, last = 0, elapsed = 0, contextLost = false;
     const mobile = innerWidth < 700;
@@ -38,7 +41,7 @@ import * as THREE from 'three';
       }
       function tick(now) {
         raf=null;
-        if(document.hidden||reduced.matches||!prefs.motion||!prefs.speed)return;
+        if(document.hidden||motionBlocked()||!prefs.motion||!prefs.speed)return;
         raf=requestAnimationFrame(tick);
         if(!previous){previous=now;return;}
         if(now-previous<1000/30)return;
@@ -47,10 +50,10 @@ import * as THREE from 'three';
       function sync() {
         if(raf!==null)cancelAnimationFrame(raf);raf=null;previous=0;
         draw();
-        if(!document.hidden&&!reduced.matches&&prefs.motion&&prefs.speed)raf=requestAnimationFrame(tick);
+        if(!document.hidden&&!motionBlocked()&&prefs.motion&&prefs.speed)raf=requestAnimationFrame(tick);
       }
       function resize(){width=innerWidth;height=innerHeight;canvas.width=width;canvas.height=height;sync();}
-      window.SpaceUniverse={configure(next){prefs={...prefs,...next};sync();}};
+      window.SpaceUniverse={configure(next){configureMotion(next);prefs={...prefs,...next};sync();}};
       addEventListener('resize',resize);document.addEventListener('visibilitychange',sync);
       reduced.addEventListener('change',sync);resize();return;
     }
@@ -483,7 +486,7 @@ import * as THREE from 'three';
     // --- MAIN CONTINUOUS MOTION ANIMATION LOOP ---
     function animate(now) {
       raf = null;
-      if (document.hidden || !prefs.motion || reduced.matches || contextLost) { last = 0; return; }
+      if (document.hidden || !prefs.motion || motionBlocked() || contextLost) { last = 0; return; }
       raf = requestAnimationFrame(animate);
       if (!last) { last = now; return; }
       const interval = 1000 / (light() ? 30 : 45);
@@ -565,7 +568,7 @@ import * as THREE from 'three';
       raf = null; last = 0;
       if (document.hidden || contextLost) return;
       render();
-      if (prefs.motion && !reduced.matches && prefs.speed > 0) raf = requestAnimationFrame(animate);
+      if (prefs.motion && !motionBlocked() && prefs.speed > 0) raf = requestAnimationFrame(animate);
     }
     function resize() {
       const w = innerWidth, h = innerHeight;
@@ -585,7 +588,7 @@ import * as THREE from 'three';
       renderer.toneMappingExposure = .35 + prefs.brightness * 1.2;
       restart();
     }
-    window.SpaceUniverse = {configure(next) { prefs = {...prefs,...next}; resize(); }};
+    window.SpaceUniverse = {configure(next) { configureMotion(next); prefs = {...prefs,...next}; resize(); }};
     addEventListener('resize', resize);
     document.addEventListener('visibilitychange', restart);
     reduced.addEventListener('change', restart);
