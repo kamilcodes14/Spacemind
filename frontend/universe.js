@@ -16,7 +16,17 @@ import * as THREE from 'three';
  
     let renderer;
     try { renderer = new THREE.WebGLRenderer({canvas, antialias: !mobile, alpha:false, powerPreference:'low-power'}); }
-    catch { canvas.style.background = '#010105'; window.SpaceUniverse = {configure(){}}; return; }
+    catch {
+      canvas.classList.add('space-fallback');
+      const sync = () => {
+        canvas.style.opacity = String(prefs.brightness);
+        canvas.style.animationDuration = `${80 / Math.max(.1, prefs.speed)}s`;
+        canvas.style.animationPlayState = document.hidden || reduced.matches || !prefs.motion || !prefs.speed ? 'paused' : 'running';
+      };
+      window.SpaceUniverse = {configure(next) { prefs = {...prefs,...next}; sync(); }};
+      document.addEventListener('visibilitychange', sync);
+      reduced.addEventListener('change', sync); sync(); return;
+    }
     renderer.setClearColor(0x010105);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
