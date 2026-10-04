@@ -9,12 +9,13 @@
     "check": "node --check frontend/app.js && node --check frontend/universe.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.117.2"
+    "@supabase/supabase-js": "2.117.2",
+    "three": "0.128.0"
   },
   "devDependencies": {
-    "esbuild": "0.28.2",
     "@electric-sql/pglite": "0.5.8",
-    "@electric-sql/pglite-pgvector": "0.0.9"
+    "@electric-sql/pglite-pgvector": "0.0.9",
+    "esbuild": "0.28.2"
   },
   "engines": {
     "node": ">=22"

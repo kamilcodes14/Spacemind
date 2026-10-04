@@ -1,82 +1,557 @@
-/* Self-contained illustrated universe. Cached sprites keep animation inexpensive.
-   No CDN, textures, location access, or third-party requests are required. */
-(() => {
-  const canvas=document.getElementById('universe'), ctx=canvas.getContext('2d');
-  if(!ctx)return;
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  let prefs={scene:'universe',motion:true,speed:.5,brightness:.8,quality:'auto'};
-  let width=innerWidth,height=innerHeight,clock=0,last=0,raf=null,frame=0;
-  let seed=73;
-  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
-  const stars=Array.from({length:500},()=>({x:random(),y:random(),r:.3+random()*1.1,a:.15+random()*.65,p:random()*6.28}));
-  function sprite(size,paint){const c=document.createElement('canvas');c.width=c.height=size;paint(c.getContext('2d'),size);return c;}
-  const galaxy=sprite(700,(g,s)=>{
-    g.translate(s/2,s/2);g.scale(1,.48);g.rotate(-.28);
-    let glow=g.createRadialGradient(0,0,0,0,0,280);glow.addColorStop(0,'#eee0c570');glow.addColorStop(.15,'#9c9ec540');glow.addColorStop(.55,'#51628c14');glow.addColorStop(1,'#00000000');g.fillStyle=glow;g.fillRect(-s/2,-s,s,s*2);
-    for(let i=0;i<5500;i++){const r=Math.pow(random(),.7)*300,a=r*.025+(i%3)*Math.PI*2/3+(random()-.5)*(.35+r*.004);const x=Math.cos(a)*r,y=Math.sin(a)*r;
-      g.fillStyle=`rgba(${150+Math.floor(random()*100)},${160+Math.floor(random()*80)},230,${.08+random()*.4})`;g.beginPath();g.arc(x,y,random()*1.3+.2,0,Math.PI*2);g.fill();}
-    glow=g.createRadialGradient(0,0,0,0,0,40);glow.addColorStop(0,'#fff3d2cc');glow.addColorStop(.2,'#eee0cb66');glow.addColorStop(1,'#ddd5ff00');g.fillStyle=glow;g.fillRect(-50,-50,100,100);
-  });
-  const nebula=sprite(700,(g,s)=>{
-    for(let i=0;i<26;i++){const x=random()*s,y=random()*s,r=70+random()*170;const glow=g.createRadialGradient(x,y,0,x,y,r);const color=i%2?'83,102,165':'112,65,117';glow.addColorStop(0,`rgba(${color},.055)`);glow.addColorStop(.5,`rgba(${color},.025)`);glow.addColorStop(1,`rgba(${color},0)`);g.fillStyle=glow;g.fillRect(0,0,s,s);}
-  });
-  function planet(colors,ring=false,rock=false){return sprite(400,(g,s)=>{
-    const cx=200,cy=200,r=ring?86:140;
-    if(ring){g.save();g.translate(cx,cy);g.rotate(-.3);g.strokeStyle='#b7a18465';g.lineWidth=21;g.beginPath();g.ellipse(0,0,175,43,0,Math.PI,Math.PI*2);g.stroke();g.restore();}
-    g.save();g.beginPath();g.arc(cx,cy,r,0,Math.PI*2);g.clip();const fill=g.createLinearGradient(cx-r,cy-r,cx+r,cy+r);fill.addColorStop(0,colors[0]);fill.addColorStop(1,colors[1]);g.fillStyle=fill;g.fillRect(cx-r,cy-r,r*2,r*2);
-    if(rock){for(let i=0;i<95;i++){const x=cx-r+random()*r*2,y=cy-r+random()*r*2,cr=1+random()*12;g.fillStyle='#00000018';g.beginPath();g.ellipse(x,y,cr,cr*.8,0,0,Math.PI*2);g.fill();}}
-    else{for(let i=0;i<38;i++){const y=cy-r+i*r*2/38;g.fillStyle=i%3===0?'#00000020':'#fff4d914';g.beginPath();g.moveTo(cx-r,y);g.bezierCurveTo(cx-r/2,y+12,cx+r/2,y-8,cx+r,y+3);g.lineTo(cx+r,y+8);g.bezierCurveTo(cx+r/2,y,cx-r/2,y+18,cx-r,y+6);g.fill();}}
-    const shade=g.createRadialGradient(cx-r*.45,cy-r*.45,0,cx+r*.3,cy+r*.2,r*1.35);shade.addColorStop(0,'#ffffff05');shade.addColorStop(.45,'#00000010');shade.addColorStop(.85,'#02050beb');shade.addColorStop(1,'#02050b');g.fillStyle=shade;g.fillRect(cx-r,cy-r,r*2,r*2);g.restore();
-    g.strokeStyle=colors[0]+'45';g.lineWidth=1;g.beginPath();g.arc(cx,cy,r,0,Math.PI*2);g.stroke();
-    if(ring){g.save();g.translate(cx,cy);g.rotate(-.3);g.strokeStyle='#b7a18470';g.lineWidth=22;g.beginPath();g.ellipse(0,0,175,43,0,0,Math.PI);g.stroke();g.strokeStyle='#090d1670';g.lineWidth=3;g.beginPath();g.ellipse(0,0,177,43,0,0,Math.PI);g.stroke();g.restore();}
-  });}
-  const planets=[planet(['#bca076','#655b51'],true),planet(['#688797','#1a354b']),planet(['#ac7560','#51352d'],false,true),planet(['#9e9ca0','#414451'],false,true),planet(['#889f91','#233e46'],false,true)];
-  const hole=sprite(300,(g,s)=>{g.translate(150,150);g.rotate(-.22);g.scale(1,.4);const glow=g.createRadialGradient(0,0,25,0,0,130);glow.addColorStop(0,'#00000000');glow.addColorStop(.16,'#ddae6655');glow.addColorStop(.28,'#d9a665aa');glow.addColorStop(.5,'#c28a3f33');glow.addColorStop(1,'#00000000');g.fillStyle=glow;g.fillRect(-150,-150,300,300);g.setTransform(1,0,0,1,0,0);g.fillStyle='#03060b';g.beginPath();g.arc(150,150,24,0,Math.PI*2);g.fill();g.strokeStyle='#e1b77580';g.lineWidth=2;g.stroke();});
-  function drawImage(img,x,y,size,alpha=1,rotation=0){ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(rotation);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();}
-  function draw(){
-    ctx.clearRect(0,0,width,height);ctx.fillStyle='#080b12';ctx.fillRect(0,0,width,height);
-    const t=clock, scene=prefs.scene,b=prefs.brightness;
-    ctx.save();ctx.globalAlpha=b;
-    drawImage(nebula,width*(.76+.025*Math.sin(t*.08)),height*(.38+.02*Math.cos(t*.06)),Math.max(width,height)*1.2,scene==='nebula'?1:.38,Math.sin(t*.06)*.12);
-    const count=prefs.quality==='low'||(prefs.quality==='auto'&&width<700)?180:500;
-    for(let i=0;i<count;i++){const s=stars[i],x=(s.x*width+t*(3+s.r*7))%width,y=s.y*height+Math.sin(t*.12+s.p)*6;ctx.globalAlpha=b*s.a*(.75+.25*Math.sin(t*1.2+s.p));ctx.fillStyle=i%4?'#cbd3e3':'#e7c695';ctx.beginPath();ctx.arc(x,y,s.r,0,Math.PI*2);ctx.fill();}
-    ctx.globalAlpha=b;
-    if(scene!=='solar'){
-      drawImage(galaxy,width*.88,height*.19,Math.min(width*.62,660),b*(scene==='galaxy'?.85:.58),-.34+t*.018);
-      if(scene==='galaxy'||scene==='universe')drawImage(galaxy,width*.3,height*.7,240,b*.25,.8-t*.024);
-    }
-    if(scene==='universe'||scene==='solar'){
-      const drift=Math.sin(t*.22);
-      const moonAngle=t*.4;
-      drawImage(planets[0],width*.91+drift*20,height*.7+Math.cos(t*.17)*12,Math.min(width*.3,360),b*.95,.08+Math.sin(t*.15)*.09);
-      drawImage(planets[1],width*.43,height*.12+drift*14,96,b*.75,t*.07);
-      drawImage(planets[2],width*.15,height*.6-drift*20,110,b*.8,t*.04);
-      drawImage(planets[3],width*.91+Math.cos(moonAngle)*Math.min(width*.14,170),height*.7+Math.sin(moonAngle)*65,32,b*.8);
-      if(scene==='solar'){drawImage(planets[4],width*.61,height*.28+Math.sin(t*.18+1)*18,110,b*.75,-t*.04);drawImage(planets[2],width*.7,height*.77+Math.cos(t*.2)*12,65,b*.7,t*.06);}
-      if(scene==='universe')drawImage(hole,width*.15,height*.19,180,b*.65,Math.sin(t*.12)*.1);
-    }
-    if(scene==='nebula'){drawImage(nebula,width*.25,height*.65,height,b,.9-t*.012);drawImage(planets[3],width*.89,height*.77,100,b*.6);}
-    // Staggered comet passes start within seconds and repeat continuously.
-    // Rendering uses the scene clock, so pausing freezes every moving object.
-    for(let i=0;i<2;i++){
-      const phase=(t+i*8)%18;
-      if(phase<4){const progress=phase/4;
-        const x=width*(.52+progress*.65),y=height*(.04+i*.2+progress*.18);
-        const grad=ctx.createLinearGradient(x-100,y-32,x,y);
-        grad.addColorStop(0,'#cad6ed00');grad.addColorStop(1,'#dae6ffbb');
-        ctx.globalAlpha=b*Math.sin(progress*Math.PI);ctx.strokeStyle=grad;ctx.lineWidth=1.5;
-        ctx.beginPath();ctx.moveTo(x-100,y-32);ctx.lineTo(x,y);ctx.stroke();
-        ctx.fillStyle='#edf4ff';ctx.beginPath();ctx.arc(x,y,1.7,0,Math.PI*2);ctx.fill();
+import * as THREE from 'three';
+// Original SpaceMind flight scene, with bounded rendering and lifecycle controls.
+  (() => {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    let prefs = {scene:'universe',motion:true,speed:.5,brightness:.7,quality:'auto'};
+    let raf = null, last = 0, elapsed = 0, contextLost = false;
+    const mobile = innerWidth < 700;
+    const light = () => prefs.quality === 'low' || (prefs.quality === 'auto' && innerWidth < 700);
+    // --- THREE.JS SCENE SETUP ---
+    const canvas = document.getElementById('universe');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x010105, 0.0035);
+ 
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 0);
+ 
+    let renderer;
+    try { renderer = new THREE.WebGLRenderer({canvas, antialias: !mobile, alpha:false, powerPreference:'low-power'}); }
+    catch { canvas.style.background = '#010105'; window.SpaceUniverse = {configure(){}}; return; }
+    renderer.setClearColor(0x010105);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+ 
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x222233, 0.7);
+    scene.add(ambientLight);
+ 
+    const sunLight = new THREE.DirectionalLight(0xfff5ea, 2.5);
+    sunLight.position.set(50, 40, -30);
+    scene.add(sunLight);
+ 
+    const fillLight = new THREE.DirectionalLight(0x0088ff, 0.8);
+    fillLight.position.set(-40, -20, 20);
+    scene.add(fillLight);
+ 
+    // --- PROCEDURAL CANVAS TEXTURE GENERATORS ---
+    
+    // 1. Organic Rock Texture (Asteroid Surface)
+    function generateRockTexture() {
+      const cv = document.createElement('canvas');
+      cv.width = 512; cv.height = 512;
+      const ctx = cv.getContext('2d');
+ 
+      ctx.fillStyle = '#38383e';
+      ctx.fillRect(0, 0, 512, 512);
+ 
+      // Noise
+      const imgData = ctx.getImageData(0, 0, 512, 512);
+      const d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const n = (Math.random() - 0.5) * 50;
+        d[i] = Math.min(255, Math.max(0, d[i] + n));
+        d[i+1] = Math.min(255, Math.max(0, d[i+1] + n));
+        d[i+2] = Math.min(255, Math.max(0, d[i+2] + n));
       }
+      ctx.putImageData(imgData, 0, 0);
+ 
+      // Craters
+      for (let i = 0; i < 40; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const r = 4 + Math.random() * 25;
+        const grad = ctx.createRadialGradient(x, y, r * 0.1, x, y, r);
+        grad.addColorStop(0, '#151518');
+        grad.addColorStop(0.7, '#484852');
+        grad.addColorStop(1, '#38383e');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+ 
+      const tex = new THREE.CanvasTexture(cv);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
     }
-    ctx.restore();
-  }
-  function tick(now){raf=null;if(document.hidden||!prefs.motion||reduced.matches){last=0;draw();return;}if(!last)last=now;
-    const elapsed=Math.min((now-last)/1000,.1);last=now;clock+=elapsed*(.2+prefs.speed*1.8);frame+=elapsed;
-    if(frame>=1/30){frame=0;draw();}raf=requestAnimationFrame(tick);
-  }
-  function restart(){if(raf!==null)cancelAnimationFrame(raf);raf=null;last=0;draw();if(!document.hidden&&prefs.motion&&!reduced.matches)raf=requestAnimationFrame(tick);}
-  function resize(){width=innerWidth;height=innerHeight;const dpr=prefs.quality==='low'?1:Math.min(devicePixelRatio||1,prefs.quality==='high'?2:1.5);canvas.width=width*dpr;canvas.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);restart();}
-  window.SpaceUniverse={configure(next){prefs={...prefs,...next};resize();}};
-  addEventListener('resize',resize);document.addEventListener('visibilitychange',restart);reduced.addEventListener('change',restart);resize();
-})();
+ 
+    // 2. Gas Giant Planet Surface Texture
+    function generateGasGiantTexture() {
+      const cv = document.createElement('canvas');
+      cv.width = 1024; cv.height = 512;
+      const ctx = cv.getContext('2d');
+ 
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0.0, '#0c1a2b');
+      grad.addColorStop(0.2, '#1e385c');
+      grad.addColorStop(0.4, '#3b5e8c');
+      grad.addColorStop(0.6, '#244168');
+      grad.addColorStop(0.8, '#4a6d9c');
+      grad.addColorStop(1.0, '#122238');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 512);
+ 
+      // Cloud Band Ribbons
+      for (let y = 0; y < 512; y += 2) {
+        const wave = Math.sin(y * 0.03) * 20;
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.08})`;
+        ctx.fillRect(0, y + wave, 1024, 2);
+      }
+ 
+      // Great Vortex Oval
+      ctx.fillStyle = 'rgba(120, 190, 255, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(350, 260, 90, 45, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+ 
+      return new THREE.CanvasTexture(cv);
+    }
+ 
+    const rockTex = generateRockTexture();
+    const planetTex = generateGasGiantTexture();
+ 
+    // --- REALISTIC SMOOTH ASTEROID CREATION ---
+    function createSmoothAsteroid(radius = 1.5) {
+      // High detail icosahedron to avoid sharp crystal faces
+      const geometry = new THREE.IcosahedronGeometry(radius, mobile ? 1 : 2);
+      const posAttr = geometry.attributes.position;
+ 
+      // Multi-octave trigonometric noise for smooth craters & organic deform
+      for (let i = 0; i < posAttr.count; i++) {
+        const x = posAttr.getX(i);
+        const y = posAttr.getY(i);
+        const z = posAttr.getZ(i);
+ 
+        const n1 = Math.sin(x * 1.2) * Math.cos(y * 1.2) * Math.sin(z * 1.2) * 0.3;
+        const n2 = (Math.sin(x * 3.5) + Math.cos(y * 3.5) + Math.sin(z * 3.5)) * 0.08;
+        const factor = 1 + n1 + n2;
+ 
+        posAttr.setXYZ(i, x * factor, y * factor, z * factor);
+      }
+ 
+      geometry.computeVertexNormals();
+ 
+      const material = new THREE.MeshStandardMaterial({
+        map: rockTex,
+        bumpMap: rockTex,
+        bumpScale: 0.25,
+        roughness: 0.9,
+        metalness: 0.1,
+        flatShading: false // Smooth organic look, no sharp crystals!
+      });
+ 
+      return new THREE.Mesh(geometry, material);
+    }
+ 
+    // Object pool for endless asteroid streaming
+    const ASTEROID_COUNT = mobile ? 12 : 24;
+    const asteroids = [];
+ 
+    for (let i = 0; i < ASTEROID_COUNT; i++) {
+      const scale = 1.0 + Math.random() * 2.5;
+      const mesh = createSmoothAsteroid(scale);
+      
+      // Spawn spread in front of camera (-Z)
+      mesh.position.set(
+        (Math.random() - 0.5) * 80,
+        (Math.random() - 0.5) * 50,
+        -50 - Math.random() * 300
+      );
+ 
+      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+      
+      const rotSpeed = [
+        (Math.random() - 0.5) * 0.015,
+        (Math.random() - 0.5) * 0.015,
+        (Math.random() - 0.5) * 0.015
+      ];
+ 
+      scene.add(mesh);
+      asteroids.push({ mesh, rotSpeed, radius: scale });
+    }
+ 
+    // --- 3D METALLIC UFO SPACECRAFT ---
+    function buildUFO() {
+      const ufoGroup = new THREE.Group();
+ 
+      // Shiny metallic saucer body
+      const bodyGeo = new THREE.CylinderGeometry(3.5, 1.2, 0.8, 32);
+      const metalMat = new THREE.MeshStandardMaterial({
+        color: 0x99aacc,
+        metalness: 0.95,
+        roughness: 0.15
+      });
+      const bodyMesh = new THREE.Mesh(bodyGeo, metalMat);
+      ufoGroup.add(bodyMesh);
+ 
+      // Glass Cockpit Dome
+      const domeGeo = new THREE.SphereGeometry(1.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      const domeMat = new THREE.MeshPhysicalMaterial({
+        color: 0x00f0ff,
+        transmission: 0.8,
+        opacity: 0.9,
+        transparent: true,
+        roughness: 0.1
+      });
+      const domeMesh = new THREE.Mesh(domeGeo, domeMat);
+      domeMesh.position.y = 0.35;
+      ufoGroup.add(domeMesh);
+ 
+      // Glowing Neon Energy Ring
+      const ringGeo = new THREE.TorusGeometry(3.6, 0.12, 16, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = Math.PI / 2;
+      ufoGroup.add(ringMesh);
+ 
+      // Bottom Thruster Glow Point
+      const lightGeo = new THREE.CylinderGeometry(0.8, 1.2, 0.2, 16);
+      const lightMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+      const lightMesh = new THREE.Mesh(lightGeo, lightMat);
+      lightMesh.position.y = -0.45;
+      ufoGroup.add(lightMesh);
+ 
+      ufoGroup.scale.set(0.7, 0.7, 0.7);
+      ufoGroup.position.set(200, 200, 200); // Initial off-screen hiding position
+      scene.add(ufoGroup);
+ 
+      return {
+        group: ufoGroup,
+        active: false,
+        time: 0,
+        startX: 0, startY: 0, startZ: -180,
+        targetX: 0, targetY: 0,
+        speed: 0.8
+      };
+    }
+ 
+    const ufoData = buildUFO();
+ 
+    // Trigger UFO Encounters Periodically
+    function triggerUFOEncounter() {
+      if (ufoData.active) return;
+      ufoData.active = true;
+      ufoData.time = 0;
+      ufoData.startX = (Math.random() - 0.5) * 60;
+      ufoData.startY = (Math.random() - 0.5) * 30;
+      ufoData.startZ = -220;
+ 
+      ufoData.group.position.set(ufoData.startX, ufoData.startY, ufoData.startZ);
+    }
+ 
+    // --- BACKGROUND DEEP SPACE OBJECTS ---
+    const planetGroup = new THREE.Group();
+    planetGroup.position.set(45, -15, -280);
+    scene.add(planetGroup);
+ 
+    // Planet
+    const planetGeo = new THREE.SphereGeometry(16, 40, 24);
+    const planetMat = new THREE.MeshStandardMaterial({ map: planetTex, roughness: 0.8 });
+    const planetMesh = new THREE.Mesh(planetGeo, planetMat);
+    planetGroup.add(planetMesh);
+ 
+    // Planet Rings
+    const ringGeo = new THREE.RingGeometry(22, 34, 64);
+    ringGeo.rotateX(Math.PI / 2.2);
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: 0x88aabb,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.6
+    });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    planetGroup.add(ringMesh);
+ 
+    // --- CONTINUOUS STARFIELD & DUST ---
+    const STAR_COUNT = 3000;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(STAR_COUNT * 3);
+    const starCol = new Float32Array(STAR_COUNT * 3);
+ 
+    for (let i = 0; i < STAR_COUNT; i++) {
+      starPos[i * 3]     = (Math.random() - 0.5) * 350;
+      starPos[i * 3 + 1] = (Math.random() - 0.5) * 350;
+      starPos[i * 3 + 2] = -Math.random() * 400;
+ 
+      const shade = 0.7 + Math.random() * 0.3;
+      starCol[i * 3]     = shade;
+      starCol[i * 3 + 1] = shade + 0.1;
+      starCol[i * 3 + 2] = 1.0;
+    }
+ 
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+ 
+    const starMat = new THREE.PointsMaterial({
+      size: 0.45,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9
+    });
+ 
+    const starParticles = new THREE.Points(starGeo, starMat);
+    scene.add(starParticles);
+ 
+    // --- BLACK HOLE PLACEMENT (deep background, far behind the asteroid/star field) ---
+    // BH_SCALE sets how big it looks; BH_X / BH_Y move it on screen.
+    const BH_DIST = 650, BH_SCALE = 26, BH_X = -190, BH_Y = 70;
+    const blackHoleWorld = new THREE.Group();
+    blackHoleWorld.position.set(BH_X, BH_Y, -BH_DIST);
+    blackHoleWorld.scale.setScalar(BH_SCALE);
+    blackHoleWorld.rotation.x = THREE.MathUtils.degToRad(9); // tilt so the disk is seen from slightly above
+    scene.add(blackHoleWorld);
+
+ 
+    // --- Relativistic Realistic Black Hole ---
+    // This uses multiple objects and a complex shader pass to simulate lensing
+ 
+    const blackHoleGroup = new THREE.Group();
+    blackHoleGroup.position.set(0, 0, 0); // Position at center for this example
+    blackHoleWorld.add(blackHoleGroup);
+ 
+    // 1. The Core (Event Horizon) - Perfect dark sphere
+    const coreGeo = new THREE.SphereGeometry(3.0, 40, 24);
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    blackHoleGroup.add(coreMesh);
+ 
+    // 2. Lensed halo: glowing arc around the horizon (faces the camera, sits behind the core)
+    const haloMat = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0 } },
+      vertexShader: `
+        varying vec2 vP;
+        void main() {
+          vP = position.xy;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vP;
+        uniform float time;
+        void main() {
+          float r = length(vP);
+          float d = max(r - 3.0, 0.0);
+          float glow = exp(-d * 1.6) * 1.4;
+          // brighter above and below, like light bent over the top and bottom of the disk
+          float topBottom = 0.45 + 0.55 * abs(vP.y) / max(r, 0.001);
+          float pulse = 0.95 + 0.05 * sin(time * 0.8);
+          vec3 col = mix(vec3(1.0, 0.45, 0.1), vec3(1.0, 0.85, 0.5), exp(-d * 3.0));
+          gl_FragColor = vec4(col * glow * topBottom * pulse, glow * topBottom);
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false
+    });
+    const haloMesh = new THREE.Mesh(new THREE.RingGeometry(2.0, 9, 128, 1), haloMat);
+    haloMesh.position.z = -3.5;
+    blackHoleGroup.add(haloMesh);
+ 
+    // 3. Accretion disk: flat ring seen at a shallow angle
+    function createDiskTexture() {
+      const cv = document.createElement('canvas');
+      cv.width = 1024; cv.height = 256;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, 1024, 256);
+      for (let i = 0; i < 2500; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 256;
+        const len = 20 + Math.random() * 120;
+        const alpha = Math.random() * 0.35 + 0.1;
+        const c = [`rgba(255,120,30,${alpha})`, `rgba(255,190,100,${alpha})`, `rgba(255,235,200,${alpha})`];
+        ctx.fillStyle = c[Math.floor(Math.random() * 3)];
+        ctx.fillRect(x, y, len, 1 + Math.random() * 2);
+      }
+      const t = new THREE.CanvasTexture(cv);
+      t.wrapS = THREE.RepeatWrapping;
+      t.wrapT = THREE.RepeatWrapping;
+      return t;
+    }
+    const diskTex = createDiskTexture();
+ 
+    const diskMat = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0 }, diskTexture: { value: diskTex } },
+      vertexShader: `
+        varying vec2 vUv;
+        varying float vDoppler;
+        void main() {
+          vUv = uv;
+          vec4 wp = modelMatrix * vec4(position, 1.0);
+          // approaching side (left) is brighter, receding side (right) is dimmer
+          vDoppler = 1.0 + 0.9 * clamp(-wp.x / 10.0, -1.0, 1.0);
+          gl_Position = projectionMatrix * viewMatrix * wp;
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        uniform sampler2D diskTexture;
+        varying vec2 vUv;
+        varying float vDoppler;
+        void main() {
+          // inner gas orbits faster than outer gas
+          float speed = 0.06 / (0.25 + vUv.y);
+          vec4 tex = texture2D(diskTexture, vec2(vUv.x * 3.0 + time * speed, vUv.y));
+          float heat = 1.0 - vUv.y;
+          vec3 col = mix(vec3(1.0, 0.4, 0.08), vec3(1.0, 0.9, 0.65), heat * heat);
+          float intensity = (0.35 + tex.r * 1.6) * vDoppler * (0.4 + heat * 1.4);
+          float edge = smoothstep(0.0, 0.08, vUv.y) * (1.0 - smoothstep(0.7, 1.0, vUv.y));
+          gl_FragColor = vec4(col * intensity, edge);
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+ 
+    const DISK_IN = 3.6, DISK_OUT = 11;
+    const diskGeo = new THREE.RingGeometry(DISK_IN, DISK_OUT, 160, 12);
+    const dp = diskGeo.attributes.position, du = diskGeo.attributes.uv;
+    for (let i = 0; i < dp.count; i++) {
+      const x = dp.getX(i), y = dp.getY(i);
+      du.setXY(i, Math.atan2(y, x) / (Math.PI * 2) + 0.5, (Math.hypot(x, y) - DISK_IN) / (DISK_OUT - DISK_IN));
+    }
+    diskGeo.rotateX(-Math.PI / 2);
+    const diskMesh = new THREE.Mesh(diskGeo, diskMat);
+    blackHoleGroup.rotation.z = THREE.MathUtils.degToRad(-12);
+    blackHoleGroup.position.x = 2;
+    blackHoleGroup.add(diskMesh);
+ 
+    // 4. Foreground Planetesimal Object (Tiny dark sphere on the left disk edge)
+    const bhPlanetGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    const bhPlanetMat = new THREE.MeshStandardMaterial({
+        color: 0x050505, 
+        roughness: 0.9, 
+        metalness: 0.1
+    });
+    const bhPlanetMesh = new THREE.Mesh(bhPlanetGeo, bhPlanetMat);
+    // Position on the front-left edge of the disk
+    bhPlanetMesh.position.set(-6, 0.1, 4); 
+    blackHoleGroup.add(bhPlanetMesh);
+ 
+    
+    // Parallax mouse / touch control
+    let mouseX = 0, mouseY = 0;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+ 
+    // Flight speed (1.0 = cruise). Change to 0.35 for drift or 3.2 for warp.
+
+ 
+    // --- MAIN CONTINUOUS MOTION ANIMATION LOOP ---
+    function animate(now) {
+      raf = null;
+      if (document.hidden || !prefs.motion || reduced.matches || contextLost) { last = 0; return; }
+      raf = requestAnimationFrame(animate);
+      if (!last) { last = now; return; }
+      const interval = 1000 / (light() ? 30 : 45);
+      if (now - last < interval) return;
+      const dt = Math.min((now - last) / 1000, .075); last = now;
+      const step = dt * 60 * prefs.speed * 2;
+      elapsed += dt * prefs.speed * 2;
+ 
+      const currentZSpeed = 1.2 * step;
+ 
+      // 1. Camera Mouse Parallax
+      camera.position.x += (mouseX * 5 - camera.position.x) * (1 - Math.pow(.95, step));
+      camera.position.y += (-mouseY * 4 - camera.position.y) * (1 - Math.pow(.95, step));
+      camera.lookAt(0, 0, -50);
+ 
+      // 2. Endless Asteroid Streaming Engine
+      asteroids.forEach(a => {
+        a.mesh.position.z += currentZSpeed;
+        a.mesh.rotation.x += a.rotSpeed[0] * step;
+        a.mesh.rotation.y += a.rotSpeed[1] * step;
+ 
+        // Recycle asteroid once it flies past camera (+Z)
+        if (a.mesh.position.z > 20) {
+          a.mesh.position.z = -250 - Math.random() * 100;
+          a.mesh.position.x = (Math.random() - 0.5) * 90;
+          a.mesh.position.y = (Math.random() - 0.5) * 60;
+        }
+      });
+ 
+      // 3. Continuous Starfield Motion
+      const positions = starParticles.geometry.attributes.position.array;
+      for (let i = 0; i < STAR_COUNT; i++) {
+        positions[i * 3 + 2] += currentZSpeed * 2.2;
+        if (positions[i * 3 + 2] > 20) {
+          positions[i * 3 + 2] = -350;
+        }
+      }
+      starParticles.geometry.attributes.position.needsUpdate = true;
+ 
+      // 4. Background Planet Drift
+      planetGroup.position.z += currentZSpeed * 0.08;
+      planetMesh.rotation.y += 0.0008 * step;
+      if (planetGroup.position.z > 50) {
+        planetGroup.position.z = -320;
+      }
+ 
+      // 5. UFO Encounter AI Logic
+      if (ufoData.active) {
+        ufoData.time += 0.015 * step;
+        
+        // Curved swooping path across view
+        ufoData.group.position.z += currentZSpeed * 1.4;
+        ufoData.group.position.x = ufoData.startX + Math.sin(ufoData.time * 2) * 35;
+        ufoData.group.position.y = ufoData.startY + Math.cos(ufoData.time * 1.5) * 15;
+        ufoData.group.rotation.y += 0.03 * step;
+ 
+        if (ufoData.group.position.z > 30) {
+          ufoData.active = false;
+          ufoData.group.position.set(200, 200, 200); // Hide
+        }
+      } else {
+        // Random chance to spawn UFO encounter
+        if (Math.random() < 1 - Math.pow(.999, step)) {
+          triggerUFOEncounter();
+        }
+      }
+ 
+      // Black hole shader animation
+      const bhTime = elapsed;
+      diskMat.uniforms.time.value = bhTime;
+      haloMat.uniforms.time.value = bhTime;
+ 
+      renderer.render(scene, camera);
+    }
+ 
+    function render() { if (!contextLost) renderer.render(scene, camera); }
+    function restart() {
+      if (raf !== null) cancelAnimationFrame(raf);
+      raf = null; last = 0;
+      if (document.hidden || contextLost) return;
+      render();
+      if (prefs.motion && !reduced.matches && prefs.speed > 0) raf = requestAnimationFrame(animate);
+    }
+    function resize() {
+      const w = innerWidth, h = innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, light() ? 1 : prefs.quality === 'high' ? 2 : 1.5));
+      renderer.setSize(w, h);
+      // Keep the original composition visible on narrow phone screens.
+      blackHoleWorld.position.x = w < 700 ? -95 : -190;
+      blackHoleWorld.scale.setScalar(w < 700 ? 18 : 26);
+      planetGroup.position.x = w < 700 ? 30 : 45;
+      starGeo.setDrawRange(0, light() ? 1200 : STAR_COUNT);
+      asteroids.forEach((a,i) => { a.mesh.visible = prefs.scene !== 'galaxy' && prefs.scene !== 'nebula' && (!light() || i < 12); });
+      planetGroup.visible = prefs.scene === 'universe' || prefs.scene === 'solar';
+      blackHoleWorld.visible = prefs.scene !== 'solar' && prefs.scene !== 'nebula';
+      ufoData.group.visible = prefs.scene === 'universe';
+      renderer.toneMappingExposure = .35 + prefs.brightness * 1.2;
+      restart();
+    }
+    window.SpaceUniverse = {configure(next) { prefs = {...prefs,...next}; resize(); }};
+    addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', restart);
+    reduced.addEventListener('change', restart);
+    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); contextLost = true; if (raf !== null) cancelAnimationFrame(raf); raf = null; });
+    canvas.addEventListener('webglcontextrestored', () => { contextLost = false; resize(); });
+    resize();
+  })();

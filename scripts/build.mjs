@@ -10,7 +10,8 @@ if(!key.startsWith('sb_publishable_')){
   if(role!=='anon') throw new Error('Only a publishable or legacy anon key belongs in the frontend. Never use a service-role/secret key.');
 }
 await rm('dist',{recursive:true,force:true});await mkdir('dist/assets',{recursive:true});
-for(const name of ['app.js','universe.js','styles.css','logo.png','logo.mp4'])await copyFile('frontend/'+name,'dist/assets/'+name);
+for(const name of ['app.js','styles.css','logo.png','logo.mp4'])await copyFile('frontend/'+name,'dist/assets/'+name);
+await build({entryPoints:['frontend/universe.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,outfile:'dist/assets/universe.js'});
 await copyFile('data/learning_paths.json','dist/assets/learning_paths.json');
 await build({entryPoints:['frontend/supabase-backend.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,outfile:'dist/assets/backend.js',define:{__SUPABASE_URL__:JSON.stringify(url),__SUPABASE_KEY__:JSON.stringify(key)}});
 let html=await readFile('frontend/index.html','utf8');
