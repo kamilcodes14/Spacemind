@@ -36,16 +36,16 @@ function authMode(signup){state.signup=signup;$('nameField').hidden=!signup;$('a
 }
 $('loginTab').onclick=()=>authMode(false);$('signupTab').onclick=()=>authMode(true);
 $('showPassword').onclick=()=>{const hidden=$('authPassword').type==='password';$('authPassword').type=hidden?'text':'password';$('showPassword').textContent=hidden?'Hide':'Show';$('showPassword').setAttribute('aria-label',hidden?'Hide password':'Show password');};
-function authBusy(busy){for(const id of ['authSubmit','googleSignIn','appleSignIn','loginTab','signupTab','forgotPassword','resendConfirmation'])$(id).disabled=busy;}
+function authBusy(busy){for(const id of ['authSubmit','googleSignIn','loginTab','signupTab','forgotPassword','resendConfirmation'])$(id).disabled=busy;}
 $('authForm').onsubmit=async event=>{event.preventDefault();authBusy(true);$('authError').textContent='';$('authNotice').textContent='';
   try{const user=await post(state.signup?'/auth/signup':'/auth/login',{name:$('authName').value.trim(),email:$('authEmail').value.trim(),password:$('authPassword').value});$('authPassword').value='';if(user.requires_confirmation){authMode(false);$('authNotice').textContent='Check your email to confirm your account, then sign in. Check spam too, and open the link in this browser.';}else await enterWorkspace(user);}
   catch(error){$('authError').textContent=error.message;}finally{authBusy(false);}
 };
 const hostedAuth=window.SpaceMindBackend?.provider==='supabase';
 $('socialAuth').hidden=!hostedAuth;$('resendConfirmation').hidden=!hostedAuth;
-for(const provider of ['google','apple'])$(provider+'SignIn').onclick=async()=>{
-  authBusy(true);$('authError').textContent='';$('authNotice').textContent='Opening '+(provider==='google'?'Google':'Apple')+' sign-in…';
-  try{await post('/auth/oauth',{provider});}catch(error){$('authNotice').textContent='';$('authError').textContent=error.message;authBusy(false);}
+$('googleSignIn').onclick=async()=>{
+  authBusy(true);$('authError').textContent='';$('authNotice').textContent='Opening Google sign-in…';
+  try{await post('/auth/oauth',{provider:'google'});}catch(error){$('authNotice').textContent='';$('authError').textContent=error.message;authBusy(false);}
 };
 window.addEventListener('pageshow',()=>{authBusy(false);if($('authNotice').textContent.startsWith('Opening '))$('authNotice').textContent='';});
 $('resendConfirmation').onclick=async()=>{

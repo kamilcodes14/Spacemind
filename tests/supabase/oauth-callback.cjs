@@ -19,7 +19,7 @@ function page(url){
 }
 async function oauth(p){await p.SpaceMindBackend.request('/auth/oauth',{method:'POST',body:JSON.stringify({provider:'google'})});assert(p.location.assigned);const u=new URL(p.location.assigned);assert.equal(u.searchParams.get('code_challenge_method'),'s256');assert.equal(u.searchParams.get('redirect_to'),'https://test.example/');}
 (async()=>{
- let p=page('https://test.example/');await oauth(p);p=page('https://test.example/?code=valid-code');assert.equal((await p.SpaceMindBackend.request('/auth/me')).name,'Test');assert.equal(exchanges,1);assert.equal(p.location.href,'https://test.example/');assert(!p.SpaceMindAuthError);
+ let p=page('https://test.example/');await assert.rejects(p.SpaceMindBackend.request('/auth/oauth',{method:'POST',body:JSON.stringify({provider:'apple'})}),/Unsupported sign-in provider/);assert(!p.location.assigned);await oauth(p);p=page('https://test.example/?code=valid-code');assert.equal((await p.SpaceMindBackend.request('/auth/me')).name,'Test');assert.equal(exchanges,1);assert.equal(p.location.href,'https://test.example/');assert(!p.SpaceMindAuthError);
  p=page('https://test.example/');await p.SpaceMindBackend.request('/auth/me');assert.equal(exchanges,1);await p.SpaceMindBackend.request('/auth/logout');
  p=page('https://test.example/?code=missing-verifier');await p.SpaceMindBackend.request('/auth/me').catch(()=>{});assert.match(p.SpaceMindAuthError,/pending sign-in/);assert.equal(exchanges,1);
  p=page('https://test.example/?error=access_denied&error_description=SECRET');await p.SpaceMindBackend.request('/auth/me').catch(()=>{});assert.match(p.SpaceMindAuthError,/cancelled/);assert(!p.SpaceMindAuthError.includes('SECRET'));

@@ -44,7 +44,7 @@ const ready=(async()=>{
 })();
 const defaults={depth:'technical',mode:'auto',scene:'universe',motion:true,speed:.5,brightness:.65,quality:'auto',font_size:'medium'};
 function fail(message,status=400){const error=new Error(message);error.status=status;throw error;}
-function checked({data,error}){if(error){const status=error.name==='AuthSessionMissingError'?401:error.status||(['PGRST301','PGRST302'].includes(error.code)?401:400);const messages={email_not_confirmed:'Please confirm your email first. Check your inbox and spam folder, or resend the confirmation below.',invalid_credentials:'Email or password is incorrect. If you registered with Google or Apple, use that sign-in button.',over_email_send_rate_limit:'Please wait before requesting another email. Check your inbox and spam folder.'};fail(messages[error.code]||error.message,status);}return data;}
+function checked({data,error}){if(error){const status=error.name==='AuthSessionMissingError'?401:error.status||(['PGRST301','PGRST302'].includes(error.code)?401:400);const messages={email_not_confirmed:'Please confirm your email first. Check your inbox and spam folder, or resend the confirmation below.',invalid_credentials:'Email or password is incorrect. If you registered with Google, use Continue with Google.',over_email_send_rate_limit:'Please wait before requesting another email. Check your inbox and spam folder.'};fail(messages[error.code]||error.message,status);}return data;}
 async function user(){const data=checked(await client.auth.getUser());if(!data?.user)fail('Please sign in to continue.',401);return data.user;}
 async function profile(){const u=await user();const {data,error}=await client.from('profiles').select('name,settings').eq('id',u.id).single();if(error)fail('Your profile could not be loaded. Please refresh and try again.');return {id:u.id,email:u.email,name:data.name,settings:{...defaults,...data.settings}};}
 async function allRows(table,configure=q=>q){let rows=[];for(let offset=0;;offset+=500){const batch=checked(await configure(client.from(table).select('*')).range(offset,offset+499));rows.push(...batch);if(batch.length<500)return rows;}}
@@ -57,15 +57,15 @@ async function request(path,options={}){
   await ready;
   const method=options.method||'GET',body=options.body?JSON.parse(options.body):{};
   if(path==='/auth/oauth'){
-    if(!['google','apple'].includes(body.provider))fail('Unsupported sign-in provider.');
-    const name=body.provider==='google'?'Google':'Apple';
+    if(body.provider!=='google')fail('Unsupported sign-in provider.');
+    const name='Google';
     let settings;
     try{const response=await fetch(__SUPABASE_URL__+'/auth/v1/settings',{headers:{apikey:__SUPABASE_KEY__},signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error();settings=await response.json();}
     catch{fail('Unable to check sign-in availability. Please check your connection and try again.');}
     if(!settings.external?.[body.provider])fail(name+' sign-in is not available yet. Please use email for now.');
     try{const key='spacemind-auth-storage-check';localStorage.setItem(key,'1');if(localStorage.getItem(key)!=='1')throw new Error();localStorage.removeItem(key);}
     catch{fail('Your browser is blocking sign-in storage. Allow website data for SpaceMind, then try again. [AUTH: storage_unavailable]');}
-    checked(await client.auth.signInWithOAuth({provider:body.provider,options:{redirectTo:location.origin+'/',...(body.provider==='google'?{queryParams:{prompt:'select_account'}}:{})}}));
+    checked(await client.auth.signInWithOAuth({provider:body.provider,options:{redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}}}));
     return {redirecting:true};
   }
   if(path==='/auth/resend'){checked(await client.auth.resend({type:'signup',email:body.email,options:{emailRedirectTo:location.origin+'/'}}));return {ok:true};}
