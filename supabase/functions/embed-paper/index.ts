@@ -14,10 +14,15 @@ Deno.serve(async req=>{
   // Retrying an import does not regenerate an existing identical embedding.
   const existing=await admin.from('paper_chunks').select('id,content').eq('id',body.id).maybeSingle();
   if(existing.error)throw new HttpError(503,'Apply the paper-library migration before importing.');
-  if(existing.data?.content===body.content)return json({id:body.id,skipped:true});
+  const metadata={authors:Array.isArray(body.authors)?body.authors.filter((a:unknown)=>typeof a==='string').slice(0,100):[],year:Number.isInteger(body.year)&&body.year>=1600&&body.year<=2200?body.year:null,arxiv_id:typeof body.arxiv_id==='string'?body.arxiv_id.slice(0,100):null,categories:Array.isArray(body.categories)?body.categories.filter((c:unknown)=>typeof c==='string').slice(0,20):[]};
+  if(existing.data?.content===body.content){
+    const updated=await admin.from('paper_chunks').update({title:body.title,...metadata}).eq('id',body.id);
+    if(updated.error)throw new HttpError(503,'Paper metadata could not be saved.');
+    return json({id:body.id,skipped:true});
+  }
   model??=new Supabase.ai.Session('gte-small');
   const embedding=await model.run(body.content,{mean_pool:true,normalize:true});
-  const saved=await admin.from('paper_chunks').upsert({id:body.id,doc_id:body.doc_id,title:body.title,origin:body.origin,url:safeURL(body.url),content:body.content,embedding,embedding_model:'gte-small'});
+  const saved=await admin.from('paper_chunks').upsert({id:body.id,doc_id:body.doc_id,title:body.title,origin:body.origin,url:safeURL(body.url),content:body.content,embedding,embedding_model:'gte-small',...metadata});
   if(saved.error)throw new HttpError(503,'Paper chunk could not be saved.');
   return json({id:body.id,skipped:false});
  }catch(error){return json({detail:error instanceof HttpError?error.message:'Paper import failed.'},error instanceof HttpError?error.status:503);}

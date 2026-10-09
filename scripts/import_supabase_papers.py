@@ -46,6 +46,7 @@ def rows(database):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database',type=Path,default=Path(__file__).resolve().parents[1]/'data/chroma_db/chroma.sqlite3')
+    parser.add_argument('--jsonl',type=Path,help='Import collected JSONL, including bibliographic metadata.')
     parser.add_argument('--dry-run',action='store_true')
     parser.add_argument('--limit',type=int,default=0,help='Import only this many chunks; zero means all.')
     args=parser.parse_args()
@@ -54,7 +55,8 @@ def main():
     if not args.dry_run and (not base.startswith('https://') or len(token)<32):
         parser.error('Set HTTPS SUPABASE_URL and a random PAPER_IMPORT_TOKEN of at least 32 characters.')
     seen=set();count=0
-    for item in rows(args.database):
+    source=(json.loads(line) for line in args.jsonl.open() if line.strip()) if args.jsonl else rows(args.database)
+    for item in source:
         if item['id'] in seen:continue
         seen.add(item['id'])
         if not args.dry_run:

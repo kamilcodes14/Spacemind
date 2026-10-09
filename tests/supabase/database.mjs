@@ -33,10 +33,20 @@ await db.query("insert into paper_chunks(id,doc_id,title,origin,content) values(
 await db.exec('set role authenticated');
 assert.equal((await db.query("select * from match_papers(null,'Mars',5)")).rows.length,1);
 assert.equal((await db.query('select * from paper_library')).rows.length,1);
+assert.equal((await db.query("select * from match_papers_hybrid(null,'Mars',24)")).rows[0].title,'Mars');
+await db.exec('reset role');
+const q=Array(384).fill(0);q[0]=1;
+const weak=Array(384).fill(0);weak[0]=0.1;weak[1]=0.995;
+await db.query("insert into paper_chunks(id,doc_id,title,origin,content,embedding) values('low','weak','Quasar','arxiv','Quasar jets and plasma',$1::extensions.vector)",[JSON.stringify(weak)]);
+await db.exec('set role authenticated');
+assert((await db.query("select * from match_papers_hybrid($1::extensions.vector,'unmatchedterm',24)",[JSON.stringify(q)])).rows.some(r=>r.id==='low'),'RRF must retain semantic candidates below the old 0.65 cutoff');
+assert.equal((await db.query("select * from match_papers_hybrid(null,'unmatchedterm',24)")).rows.length,0);
+
 await assert.rejects(db.query('delete from paper_chunks'));
 await db.exec('set role anon');
 await assert.rejects(db.query('select * from profiles'));
 await assert.rejects(db.query('select * from paper_library'));
+await assert.rejects(db.query("select * from match_papers_hybrid(null,'Mars',24)"));
 await assert.rejects(db.query('select consume_research_quota()'));
 await db.exec('reset role');
 await db.query('delete from auth.users where id=$1',[a]);

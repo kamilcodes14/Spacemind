@@ -109,6 +109,7 @@ function answerNotice(result){
   // those strings directly; translate them into the limitation that affects the reader.
   if(uncertain)return 'Some details could not be verified. Please check the sources before relying on this answer.';
   if(warnings.some(w=>/web.*(unavailable|not configured|no usable)/i.test(w)))return 'Live web search was unavailable. This answer uses the other sources I could access.';
+  if(warnings.some(w=>w.startsWith('Evidence ranking')))return 'Evidence ranking was unavailable; results use the original search order.';
   if(warnings.length)return 'Some research sources were unavailable. This answer uses the sources I could access.';
   return '';
 }
@@ -125,8 +126,18 @@ function fillAnswer(body,result,{live=false}={}){
     const sources=document.createElement('details');sources.className='sources';const summary=document.createElement('summary');summary.textContent=citations.length+' sources';sources.append(summary);
     citations.forEach((c,i)=>{const card=document.createElement('div');card.className='source';const url=safeURL(c.url);
       const title=document.createElement(url?'a':'span');title.textContent=`[${i+1}] ${c.source_file || c.origin || 'Source'}`;
-      if(url){title.href=url;title.target='_blank';title.rel='noopener noreferrer';}const snippet=document.createElement('p');snippet.textContent=c.snippet;card.append(title,snippet);sources.append(card);
+      if(url){title.href=url;title.target='_blank';title.rel='noopener noreferrer';}
+      const meta=document.createElement('p');meta.className='source-meta';meta.textContent=[Array.isArray(c.authors)&&c.authors.length?c.authors.join(', '):null,c.year,c.arxiv_id?'arXiv:'+c.arxiv_id:null,c.origin?.includes('abstract')?'Abstract only':null].filter(Boolean).join(' · ');
+      const snippet=document.createElement('p');snippet.textContent=c.snippet;
+      card.append(title,meta);
+      for(const quote of c.supporting_quotes||[]){const block=document.createElement('blockquote');const highlight=document.createElement('mark');highlight.textContent=quote;block.append(highlight);card.append(block);}
+      const excerpt=document.createElement('details');const label=document.createElement('summary');label.textContent='Retrieved excerpt';excerpt.append(label,snippet);card.append(excerpt);sources.append(card);
     });body.append(sources);
+  }
+  const checks=result.claim_checks||[...new Map(citations.flatMap(c=>c.claim_checks||[]).map(c=>[c.id,c])).values()];
+  if(checks.length){const details=document.createElement('details');details.className='claim-checks';const summary=document.createElement('summary');const flagged=checks.filter(c=>c.status!=='supported').length;summary.textContent=flagged?`${flagged} cited claim${flagged===1?'':'s'} need checking`:'Cited claims checked against retrieved excerpts';details.append(summary);
+    const note=document.createElement('p');note.className='notice';note.textContent='Automated evidence checks can make mistakes. Read the original papers for context.';details.append(note);
+    for(const check of checks){const row=document.createElement('div');row.className='claim-check '+check.status;const label=document.createElement('strong');label.textContent=({supported:'Supported by excerpt',partial:'Partially supported',unsupported:'Unsupported',unverified:'Not verified'})[check.status]||'Not verified';const claim=document.createElement('p');claim.textContent=check.text;const reason=document.createElement('p');reason.textContent=check.reason;row.append(label,claim,reason);details.append(row);}body.append(details);
   }
   if(result.follow_up_questions?.length){const follow=document.createElement('div');follow.className='followups';result.follow_up_questions.forEach(q=>{const b=document.createElement('button');b.textContent=q;b.onclick=()=>{if(!state.busy){$('question').value=q;$('question').focus();}};follow.append(b);});body.append(follow);}
   const actions=document.createElement('div');actions.className='answer-actions';const copy=document.createElement('button');copy.className='text-button';copy.textContent='Copy answer';copy.onclick=async()=>{try{await navigator.clipboard.writeText(result.answer);toast('Answer copied.');}catch{toast('Clipboard is unavailable. You can select and copy the answer.');}};actions.append(copy);body.append(actions);
@@ -141,7 +152,13 @@ $('chatForm').onsubmit=async event=>{
   try{
     if(!state.chat){state.chat=await post('/chats');state.chats.unshift(state.chat);renderChats();}
     $('empty').hidden=true;$('question').value='';$('question').style.height='auto';body=renderTurn(question);scrollBottom();
-    const result=await post('/ask',{question,chat_id:state.chat.id,depth:$('answerDepth').value,use_web:({auto:null,web:true,papers:false})[$('researchMode').value]});
+    let draft='';
+    const status=document.createElement('p');status.className='notice';status.setAttribute('role','status');
+    const draftAnswer=document.createElement('div');draftAnswer.className='answer';
+    const result=await api('/ask',{method:'POST',body:JSON.stringify({question,chat_id:state.chat.id,depth:$('answerDepth').value,use_web:({auto:null,web:true,papers:false})[$('researchMode').value]}),onEvent:(event,data)=>{
+      if(event==='status'){if(!status.isConnected)body.replaceChildren(status,draftAnswer);status.textContent=data.message;}
+      if(event==='delta'){draft+=data.text;draftAnswer.textContent=draft;scrollBottom();}
+    }});
     fillAnswer(body,result,{live:true});await refreshChats();state.chat=state.chats.find(c=>c.id===state.chat.id)||state.chat;$('chatTitle').textContent=state.chat.title;
   }catch(error){if(body){body.replaceChildren();const p=document.createElement('p');p.className='error';p.textContent=error.message;body.append(p);const retry=document.createElement('button');retry.className='secondary';retry.textContent='Try again';retry.onclick=()=>{$('question').value=question;$('question').focus();body.closest('.turn').remove();$('chatForm').requestSubmit();};body.append(retry);}else toast(error.message);$('question').value=question;}
   finally{state.busy=false;$('send').disabled=false;$('question').disabled=false;$('newChat').disabled=false;scrollBottom();if(state.user)$('question').focus();}

@@ -7,16 +7,23 @@ const id='33333333-3333-4333-8333-333333333333';
 const input={question:'Mars',chatId:id,depth:'technical',useWeb:false};
 const paper={source_file:'Mars paper',origin:'arxiv',url:'https://arxiv.org/abs/1234',snippet:'Mars has ice'};
 const response=data=>new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}});
-const model=answer=>async()=>response({choices:[{message:{content:JSON.stringify({answer,confident:true,follow_up_questions:['Why?']})}}]});
+const model=answer=>async(_url,options)=>{
+ const body=options?JSON.parse(options.body):null;
+ if(body?.messages?.[0]?.content.startsWith('Verify each')){
+   const {claims}=JSON.parse(body.messages[1].content);
+   return response({choices:[{message:{content:JSON.stringify({claims:claims.map(c=>({id:c.id,status:'supported',evidence:c.snippets.map(s=>({citation:s.citation,quote:s.text}))}))})}}]});
+ }
+ return response({choices:[{message:{content:JSON.stringify({answer,confident:true,follow_up_questions:['Why?']})}}]});
+};
 test('validates question, chat and mode',()=>{assert.equal(validateQuestion({question:'Mars',chat_id:id}).question,'Mars');for(const value of [{question:'',chat_id:id},{question:'Mars',chat_id:'x'},{question:'Mars',chat_id:id,use_web:'true'}])assert.throws(()=>validateQuestion(value));});
 test('forced web fails explicitly without key and never queries papers',async()=>{await assert.rejects(research({...input,useWeb:true},[],{env:{},lookupPapers:()=>assert.fail('paper fallback')}),/currently unavailable/);});
 test('papers mode returns sourced short astronomy query',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars has ice [1].')});assert.equal(r.confident,true);assert.equal(r.used_web,false);assert.equal(r.citations.length,1);});
 test('invalid citations lower confidence',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars [99]')});assert.equal(r.confident,false);assert.match(r.warnings[0],/could not be verified/);});
 test('empty evidence never invokes model',async()=>{const r=await research(input,[],{env:{},lookupPapers:async()=>[],fetcher:()=>assert.fail('no model without evidence')});assert.equal(r.confident,false);});
-test('web uses Tavily evidence and excludes unsafe URLs',async()=>{let calls=[];const r=await research({...input,useWeb:true},[],{env:{TAVILY_API_KEY:'test',GROQ_API_KEY:'test'},lookupPapers:()=>assert.fail(),fetcher:async(url)=>{calls.push(url);return url.includes('tavily')?response({results:[{title:'Mars',url:'https://nasa.gov/mars',content:'Ice'},{url:'javascript:alert(1)',content:'bad'}]}):model('Ice [1]')();}});assert.equal(r.used_web,true);assert.equal(r.citations.length,1);assert.equal(calls.length,2);});
+test('web uses Tavily evidence and excludes unsafe URLs',async()=>{let calls=[];const r=await research({...input,useWeb:true},[],{env:{TAVILY_API_KEY:'test',GROQ_API_KEY:'test'},lookupPapers:()=>assert.fail(),fetcher:async(url,opts)=>{calls.push(url);return url.includes('tavily')?response({results:[{title:'Mars',url:'https://nasa.gov/mars',content:'Mars has polar ice'},{url:'javascript:alert(1)',content:'bad'}]}):model('Ice [1]')(url,opts);}});assert.equal(r.used_web,true);assert.equal(r.citations.length,1);assert.equal(calls.length,3);});
 test('source failures remain visible',async()=>{const r=await research(input,[],{env:{},lookupPapers:async()=>{throw Error('fail')}});assert.match(r.warnings[0],/unavailable/);});
 test('bounded JSON and unsafe URL checks',async()=>{assert.equal(safeURL('javascript:alert(1)'),null);await assert.rejects(bodyJSON(new Request('https://test',{method:'POST',body:'x'.repeat(30)}),10),/large/);});
-function fixture({owner=true,quota=true,auth=true}={}){let external=0,saved;const client={auth:{getUser:async()=>({data:{user:auth?{id:'owner'}:null}})},from:()=>({select(){return this},eq(){return this},order(){return this},maybeSingle:async()=>({data:owner?{id}:null}),limit:async()=>({data:[]})}),rpc:async(name,args)=>{if(name==='consume_research_quota')return {data:quota};if(name==='match_papers')return {data:[]};saved=args;return {data:1}}};return {handler:makeHandler({createClient:()=>client,env:{ALLOWED_ORIGINS:'https://app.test'},embed:async()=>[],fetcher:()=>external++}),external:()=>external,saved:()=>saved};}
+function fixture({owner=true,quota=true,auth=true}={}){let external=0,saved;const client={auth:{getUser:async()=>({data:{user:auth?{id:'owner'}:null}})},from:()=>({select(){return this},eq(){return this},order(){return this},maybeSingle:async()=>({data:owner?{id}:null}),limit:async()=>({data:[]})}),rpc:async(name,args)=>{if(name==='consume_research_quota')return {data:quota};if(name==='match_papers_hybrid')return {data:[]};saved=args;return {data:1}}};return {handler:makeHandler({createClient:()=>client,env:{ALLOWED_ORIGINS:'https://app.test'},embed:async()=>[],fetcher:()=>external++}),external:()=>external,saved:()=>saved};}
 const request=(headers={authorization:'Bearer test',origin:'https://app.test'})=>new Request('https://test',{method:'POST',headers,body:JSON.stringify({question:'hello',chat_id:id})});
 test('unauthenticated requests denied before providers',async()=>{const f=fixture();assert.equal((await f.handler(request({origin:'https://app.test'}))).status,401);assert.equal(f.external(),0);});
 test('foreign chats and exhausted quota denied',async()=>{assert.equal((await fixture({owner:false}).handler(request())).status,404);assert.equal((await fixture({quota:false}).handler(request())).status,429);});
@@ -47,10 +54,10 @@ test('auto mode handles contextual ordinary conversation without evidence search
   }});assert.match(r.answer,/Kamil/);assert.deepEqual(r.warnings,[]);assert.deepEqual(r.citations,[]);
 });
 test('auto mode sends astronomy follow-ups through evidence retrieval',async()=>{
-  let calls=0,query;const r=await research({...input,question:'why does it have ice?',useWeb:null},[{question:'Tell me about Mars',answer:'Mars has polar ice.'}],{env:{GROQ_API_KEY:'test'},lookupPapers:async q=>{query=q;return [paper]},fetcher:async()=>{
+  let calls=0,query;const r=await research({...input,question:'why does it have ice?',useWeb:null},[{question:'Tell me about Mars',answer:'Mars has polar ice.'}],{env:{GROQ_API_KEY:'test'},lookupPapers:async q=>{query=q;return [paper]},fetcher:async(url,opts)=>{
     if(++calls===1)return response({choices:[{message:{content:JSON.stringify({mode:'research',query:'Why does Mars have polar ice?'})}}]});
-    return model('Mars has ice [1].')();
-  }});assert.match(query,/Mars/);assert.equal(calls,2);assert.equal(r.citations.length,1);assert.equal(r.confident,true);
+    return model('Mars has ice [1].')(url,opts);
+  }});assert.match(query,/Mars/);assert.equal(calls,3);assert.equal(r.citations.length,1);assert.equal(r.confident,true);
 });
 test('greetings with research requests are not swallowed by casual matching',async()=>{
   const r=await research({...input,question:'Hi, explain black holes',useWeb:false},[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Evidence [1].')});assert.equal(r.citations.length,1);
@@ -71,6 +78,11 @@ test('missing configuration exposes no provider or key details',async()=>{
   await assert.rejects(groq([],{}),e=>{assert.equal(e.status,503);assert(!/key|groq|configured|backend/i.test(e.message));return true;});
 });
 test('source diagnostics stay out of user warnings',async()=>{
-  const result=await research(input,[],{env:{GROQ_API_KEY:'test',SEMANTIC_SCHOLAR_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:async(url)=>{if(url.includes('semanticscholar'))throw Error('private provider failure');return model('Mars has ice [1].')();}});
+  const result=await research(input,[],{env:{GROQ_API_KEY:'test',SEMANTIC_SCHOLAR_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:async(url,opts)=>{if(url.includes('semanticscholar'))throw Error('private provider failure');return model('Mars has ice [1].')(url,opts);}});
   assert.equal(result.citations.length,1);assert.equal(result.warnings.length,1);assert(!/semantic|key|provider failure/i.test(result.warnings.join(' ')));
+});
+
+test('authenticated SSE delivers done only after successful persistence',async()=>{
+ const f=fixture();const req=new Request('https://test',{method:'POST',headers:{authorization:'Bearer test',origin:'https://app.test',accept:'text/event-stream'},body:JSON.stringify({question:'hello',chat_id:id,stream:true})});
+ const response=await f.handler(req);assert.match(response.headers.get('content-type'),/text\/event-stream/);const text=await response.text();assert.match(text,/event: status/);assert.match(text,/event: done/);assert.equal(f.saved().p_question,'hello');
 });

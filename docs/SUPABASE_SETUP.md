@@ -87,3 +87,33 @@ Research and account functions require a user JWT and independently validate the
 Supabase Free projects can pause after one week of inactivity. Edge Functions can have cold starts and execution limits. This removes dependency on Render's sleeping Python process; it is not a guarantee of permanently warm or unlimited hosting. No paid upgrade or keepalive automation is included.
 
 After configuring secrets, test sign-up/confirmation, sign-in, two users' isolated chat histories, a cited Web answer, paper import/search, settings, password reset and deletion. Automated tests use synthetic provider responses and do not verify the validity of your private provider keys.
+
+## Tier 1 evidence pipeline
+
+Apply the `trustworthy_retrieval` migration before deploying the updated `research`
+and `embed-paper` functions. Research preserves JWT and conversation ownership
+checks. No new public write privileges are introduced.
+
+Optional Edge Function secrets: `COHERE_API_KEY` and `COHERE_RERANK_MODEL`
+(default `rerank-v3.5`). Without Cohere, the existing Groq model performs a separate
+relevance-ranking pass. Claim checking is another bounded Groq call. Both can
+increase latency and provider usage; failed checks are visible and lower confidence.
+
+Collect the hosted corpus (standard-library Python, no Chroma build required):
+
+```bash
+python scripts/collect_hosted_corpus.py --per-source 15
+python scripts/import_supabase_papers.py --jsonl data/processed/hosted-corpus.jsonl --dry-run
+python scripts/import_supabase_papers.py --jsonl data/processed/hosted-corpus.jsonl
+```
+
+The importer uses the existing operator-only `PAPER_IMPORT_TOKEN`; keep it out of
+the browser and Git. Fresh additions are labelled abstracts. Existing PDF chunks
+remain full-text excerpts. Metadata is fetched from archive APIs, not inferred.
+The collection manifest reports incomplete source fetches and exits unsuccessfully
+if any required source fails. Repeated imports keep stable IDs and refresh metadata.
+
+Streaming clients send `Accept: text/event-stream` and `stream: true` with the
+normal authenticated request. Events are `status`, `sources`, `delta`, `done`, and
+`error`. Only `done` means the answer passed through verification and was saved;
+check its `confident`, warnings and claim statuses. JSON clients remain supported.

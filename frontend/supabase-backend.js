@@ -1,3 +1,4 @@
+import {readResearchStream} from './research-stream.js';
 import {createClient} from '@supabase/supabase-js';
 // One owner for the callback: do not race automatic detection and a manual exchange.
 const client=createClient(__SUPABASE_URL__,__SUPABASE_KEY__,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
@@ -101,7 +102,13 @@ async function request(path,options={}){
     if(method==='DELETE'){checked(await client.from('chats').delete().eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
   }
   if(path==='/space-data')return invoke('space-data',body);
-  if(path==='/ask')return invoke('research',body);
+  if(path==='/ask'){
+    if(!options.onEvent)return invoke('research',body);
+    const session=checked(await client.auth.getSession())?.session;
+    if(!session)fail('Please sign in to continue.',401);
+    const response=await fetch(__SUPABASE_URL__+'/functions/v1/research',{method:'POST',headers:{'Content-Type':'application/json',Accept:'text/event-stream',apikey:__SUPABASE_KEY__,Authorization:'Bearer '+session.access_token},body:JSON.stringify({...body,stream:true})});
+    return readResearchStream(response,options.onEvent);
+  }
   if(path==='/capabilities')return invoke('research',undefined,'GET');
   if(path==='/library')return allRows('paper_library',q=>q.order('doc_id'));
   if(path==='/learning-paths'){const r=await fetch('/assets/learning_paths.json');if(!r.ok)fail('Learning paths are unavailable.');return r.json();}
