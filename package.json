@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/supabase/*.test.mjs",
+    "test": "node --test tests/supabase/*.test.mjs tests/science/*.test.mjs",
     "test:db": "node tests/supabase/database.mjs",
-    "check": "node --check frontend/app.js && node --check frontend/universe.js"
+    "check": "node --check frontend/app.js && node --check frontend/universe.js && node --check frontend/science/lab.js && node --check supabase/functions/space-data/providers.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",
@@ -15,7 +15,8 @@
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
     "@electric-sql/pglite-pgvector": "0.0.9",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "pyodide": "314.0.7"
   },
   "engines": {
     "node": ">=22"

@@ -29,3 +29,6 @@ verify_jwt = true
 # Operator-only import; authenticates a separate PAPER_IMPORT_TOKEN itself.
 [functions.embed-paper]
 verify_jwt = false
+
+[functions.space-data]
+verify_jwt = true

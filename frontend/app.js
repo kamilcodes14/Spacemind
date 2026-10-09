@@ -112,15 +112,18 @@ function answerNotice(result){
   if(warnings.length)return 'Some research sources were unavailable. This answer uses the sources I could access.';
   return '';
 }
-function fillAnswer(body,result){
+function fillAnswer(body,result,{live=false}={}){
   body.replaceChildren();
   const notice=answerNotice(result);
   if(notice){const p=document.createElement('p');p.className='notice';p.textContent=notice;body.append(p);}
   if(result.used_web){const n=document.createElement('p');n.className='notice';n.textContent='Researched on the live web';body.append(n);}
   const answer=document.createElement('div');answer.className='answer';answer.innerHTML=formattedAnswer(result.answer);body.append(answer);
-  if(result.citations?.length){
-    const sources=document.createElement('details');sources.className='sources';const summary=document.createElement('summary');summary.textContent=result.citations.length+' sources';sources.append(summary);
-    result.citations.forEach((c,i)=>{const card=document.createElement('div');card.className='source';const url=safeURL(c.url);
+  const toolSources=(result.citations||[]).filter(c=>c.origin==='spacemind-tool-v1');
+  for(const c of toolSources){try{window.SpaceMindScience?.mountTool(body,JSON.parse(c.snippet),{live});}catch{const n=document.createElement('p');n.textContent='This tool could not be opened. Try Mission lab.';body.append(n);}}
+  const citations=(result.citations||[]).filter(c=>c.origin!=='spacemind-tool-v1');
+  if(citations.length){
+    const sources=document.createElement('details');sources.className='sources';const summary=document.createElement('summary');summary.textContent=citations.length+' sources';sources.append(summary);
+    citations.forEach((c,i)=>{const card=document.createElement('div');card.className='source';const url=safeURL(c.url);
       const title=document.createElement(url?'a':'span');title.textContent=`[${i+1}] ${c.source_file || c.origin || 'Source'}`;
       if(url){title.href=url;title.target='_blank';title.rel='noopener noreferrer';}const snippet=document.createElement('p');snippet.textContent=c.snippet;card.append(title,snippet);sources.append(card);
     });body.append(sources);
@@ -139,7 +142,7 @@ $('chatForm').onsubmit=async event=>{
     if(!state.chat){state.chat=await post('/chats');state.chats.unshift(state.chat);renderChats();}
     $('empty').hidden=true;$('question').value='';$('question').style.height='auto';body=renderTurn(question);scrollBottom();
     const result=await post('/ask',{question,chat_id:state.chat.id,depth:$('answerDepth').value,use_web:({auto:null,web:true,papers:false})[$('researchMode').value]});
-    fillAnswer(body,result);await refreshChats();state.chat=state.chats.find(c=>c.id===state.chat.id)||state.chat;$('chatTitle').textContent=state.chat.title;
+    fillAnswer(body,result,{live:true});await refreshChats();state.chat=state.chats.find(c=>c.id===state.chat.id)||state.chat;$('chatTitle').textContent=state.chat.title;
   }catch(error){if(body){body.replaceChildren();const p=document.createElement('p');p.className='error';p.textContent=error.message;body.append(p);const retry=document.createElement('button');retry.className='secondary';retry.textContent='Try again';retry.onclick=()=>{$('question').value=question;$('question').focus();body.closest('.turn').remove();$('chatForm').requestSubmit();};body.append(retry);}else toast(error.message);$('question').value=question;}
   finally{state.busy=false;$('send').disabled=false;$('question').disabled=false;$('newChat').disabled=false;scrollBottom();if(state.user)$('question').focus();}
 };
@@ -214,3 +217,5 @@ $('recoveryForm').onsubmit=async e=>{e.preventDefault();const value=$('recoveryP
  $('recoverySave').disabled=true;try{await post('/auth/recovery',{new_password:value});window.SpaceMindRecoveryPending=false;$('recoveryDialog').close();$('recoveryForm').reset();toast('Your password has been updated.');await enterWorkspace(await api('/auth/me'));}catch(err){$('recoveryError').textContent=err.message;}finally{$('recoverySave').disabled=false;}
 };
 (async()=>{try{await enterWorkspace(await api('/auth/me'));}catch(error){showAuth();if(window.SpaceMindAuthError){$('authError').textContent=window.SpaceMindAuthError;window.SpaceMindAuthError=null;}else if(error.status!==401)$('authError').textContent=error.message;}showRecovery();})();
+
+$('scienceBtn').onclick=()=>window.SpaceMindScience?.open();

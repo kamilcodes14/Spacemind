@@ -12,6 +12,10 @@ if(!key.startsWith('sb_publishable_')){
 await rm('dist',{recursive:true,force:true});await mkdir('dist/assets',{recursive:true});
 for(const name of ['app.js','styles.css','logo.png','logo.mp4'])await copyFile('frontend/'+name,'dist/assets/'+name);
 await build({entryPoints:['frontend/universe.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,outfile:'dist/assets/universe.js'});
+const frameBuild=await build({entryPoints:['frontend/science/python-frame.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,write:false,plugins:[{name:'worker-text',setup(b){b.onResolve({filter:/\?text$/},args=>({path:new URL('../frontend/science/'+args.path.replace('./','').replace('?text',''),import.meta.url).pathname,namespace:'worker-text'}));b.onLoad({filter:/.*/,namespace:'worker-text'},async args=>({contents:await readFile(args.path,'utf8'),loader:'text'}));}}]});
+const frameHTML=`<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src blob:; connect-src https://cdn.jsdelivr.net https://pypi.org https://files.pythonhosted.org; img-src data:; style-src 'none'; form-action 'none'; base-uri 'none'"><script>${frameBuild.outputFiles[0].text.replaceAll('</script','<\\/script')}</script>`;
+await build({entryPoints:['frontend/science/lab.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,outfile:'dist/assets/science.js',define:{__PYTHON_FRAME__:JSON.stringify(frameHTML)}});
+await copyFile('frontend/science/styles.css','dist/assets/science.css');
 await copyFile('data/learning_paths.json','dist/assets/learning_paths.json');
 await build({entryPoints:['frontend/supabase-backend.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,outfile:'dist/assets/backend.js',define:{__SUPABASE_URL__:JSON.stringify(url),__SUPABASE_KEY__:JSON.stringify(key)}});
 let html=await readFile('frontend/index.html','utf8');
