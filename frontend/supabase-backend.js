@@ -100,6 +100,7 @@ async function request(path,options={}){
     if(method==='PATCH'){checked(await client.from('chats').update({title:body.title,pinned:body.pinned}).eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
     if(method==='DELETE'){checked(await client.from('chats').delete().eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
   }
+  if(path==='/space-data')return invoke('space-data',body);
   if(path==='/ask')return invoke('research',body);
   if(path==='/capabilities')return invoke('research',undefined,'GET');
   if(path==='/library')return allRows('paper_library',q=>q.order('doc_id'));

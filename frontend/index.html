@@ -5,6 +5,7 @@
 <meta name="theme-color" content="#080b12"><meta name="description" content="Your private workspace for space research.">
 <title>SpaceMind — Research beyond the horizon</title>
 <link rel="icon" href="/assets/logo.png"><link rel="stylesheet" href="/assets/styles.css">
+<link rel="stylesheet" href="/assets/science.css"><script src="/assets/science.js" defer></script>
 <script src="/assets/universe.js" defer></script><script src="/assets/app.js" defer></script>
 </head>
 <body>
@@ -44,7 +45,7 @@
     </div>
   </aside>
   <main class="main">
-    <header class="topbar"><div class="top-left"><button id="openSidebar" class="icon mobile-only" aria-label="Open sidebar">☰</button><span id="chatTitle">New chat</span></div><div class="top-actions"><span class="private-label"><span class="tiny-dot"></span> Private workspace</span><button id="motionToggle" class="icon" aria-label="Pause background animation" title="Pause background animation">Ⅱ</button></div></header>
+    <header class="topbar"><div class="top-left"><button id="openSidebar" class="icon mobile-only" aria-label="Open sidebar">☰</button><span id="chatTitle">New chat</span></div><div class="top-actions"><button id="scienceBtn" class="secondary science-launch" type="button">Mission lab</button><span class="private-label"><span class="tiny-dot"></span> Private workspace</span><button id="motionToggle" class="icon" aria-label="Pause background animation" title="Pause background animation">Ⅱ</button></div></header>
     <div id="chatScroll" class="chat-scroll"><div id="empty" class="empty-state"><h1>What are you researching?</h1><p class="muted">There’s a universe to understand.</p></div><div id="messages" class="messages" aria-live="polite" aria-relevant="additions"></div></div>
     <div class="composer-area"><form id="chatForm" class="composer"><textarea id="question" rows="1" maxlength="12000" placeholder="Ask SpaceMind anything about space…" aria-label="Your research question" required></textarea><div class="composer-bottom"><div class="composer-controls"><label><span class="sr-only">Research mode</span><select id="researchMode"><option value="auto">✧ Auto research</option><option value="web">◎ Web research</option><option value="papers">▤ Papers only</option></select></label><label><span class="sr-only">Answer style</span><select id="answerDepth"><option value="technical">Technical</option><option value="simple">Simple</option></select></label></div><button id="send" class="send" aria-label="Send question" type="submit">↑</button></div></form><p id="composerNote" class="composer-note">Explore with curiosity. Check the sources.</p></div>
   </main>
