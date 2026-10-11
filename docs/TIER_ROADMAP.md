@@ -13,9 +13,11 @@ Source: user-provided SpaceMind review and roadmap, 9 October 2026.
 
 Validation: run `npm test`, `npm run test:db`, `npm run check`, and a configured `npm run build`. A live signed-in research request must still verify the complete UI → API → database → provider → UI flow before marking this tier complete.
 
-## Tier 2 — real research assistant (pending)
+## Tier 2 — real research assistant (in progress)
 
-PDF upload; paper comparison, literature reviews, open problems and citation exports; citation graph; saved collections and notes; personalized digest; additional astronomy archives.
+- First increment: BibTeX and plain-text APA reference drafts can be downloaded from the Sources section of both new and saved answers. Repeated chunks are deduplicated; Mission Lab tool records are excluded. Exports retain available metadata and do not invent journal, volume or page information. APA drafts require review of author family names, publication details and italics.
+- Remaining: PDF upload; paper comparison, literature reviews and open problems; citation graph; saved collections and notes; personalized digest; additional astronomy archives.
+- Tier 1 release gate remains open: complete corpus import and a signed-in end-to-end research request. Read-only production check on 11 October 2026 UTC found 2,552 embedded chunks (2,350 arXiv full-text chunks, 136 arXiv abstract chunks, 50 NTRS full-text chunks and 16 NTRS abstract chunks). Requested astro-ph.SR/CO/EP/HE and NASA NTRS categories are present. This is a point-in-time count, not proof of import completion.
 
 ## Tier 3 — Mission Lab upgrades (pending)
 

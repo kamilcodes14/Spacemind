@@ -58,3 +58,10 @@ These checks refer to the optional Python backend and the earlier interface demo
 - Saved legacy warnings are translated in the frontend into a single reader-facing notice. Evidence uncertainty remains visible; duplicate citation/limited-evidence notices no longer stack.
 - Added exact casual acknowledgement variants such as `ok perfect thanks`, without matching greetings followed by research questions.
 - All 22 research tests, the static build, and legacy-notice translation checks passed. Browser rendering was not retested in this environment.
+
+## Tier 2 citation exports — 11 October 2026 UTC
+
+- Added BibTeX and plain-text APA draft downloads to the Sources section for new and saved research answers. Duplicate retrieval chunks are collapsed, tool records are excluded, unsafe source URLs are omitted, and missing publication fields are not invented.
+- All 57 Node tests passed, including six citation-export cases covering escaping, deduplication, missing metadata, APA ordering/long author lists and the download lifecycle. Syntax checks and the static production build passed with explicit placeholder Supabase configuration; that build is for verification only and is not deployed.
+- No database migration, provider call or authentication change is required for this increment. Browser rendering and live downloads have not been verified in this environment. APA output is labelled as a draft because family-name parsing, missing publication details and final typography need review.
+- Tier 1 is still awaiting complete corpus-import confirmation and a live signed-in end-to-end research test; these unit tests do not close that release gate.

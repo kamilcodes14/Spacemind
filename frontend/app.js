@@ -132,7 +132,18 @@ function fillAnswer(body,result,{live=false}={}){
       card.append(title,meta);
       for(const quote of c.supporting_quotes||[]){const block=document.createElement('blockquote');const highlight=document.createElement('mark');highlight.textContent=quote;block.append(highlight);card.append(block);}
       const excerpt=document.createElement('details');const label=document.createElement('summary');label.textContent='Retrieved excerpt';excerpt.append(label,snippet);card.append(excerpt);sources.append(card);
-    });body.append(sources);
+    });
+    if(window.SpaceMindCitations?.papers(citations).length){
+      const exports=document.createElement('div');exports.className='answer-actions';
+      for(const [format,label] of [['bibtex','Export BibTeX'],['apa','Export APA draft']]){
+        const button=document.createElement('button');button.type='button';button.className='text-button';button.textContent=label;
+        button.onclick=()=>{try{window.SpaceMindCitations.download(citations,format);toast('References exported. Check publication details before submitting.');}catch(error){toast(error.message);}};
+        exports.append(button);
+      }
+      const note=document.createElement('p');note.className='source-meta';note.textContent='Exports use available source metadata. Review missing publication details and author names before submitting.';
+      sources.append(exports,note);
+    }
+    body.append(sources);
   }
   const checks=result.claim_checks||[...new Map(citations.flatMap(c=>c.claim_checks||[]).map(c=>[c.id,c])).values()];
   if(checks.length){const details=document.createElement('details');details.className='claim-checks';const summary=document.createElement('summary');const flagged=checks.filter(c=>c.status!=='supported').length;summary.textContent=flagged?`${flagged} cited claim${flagged===1?'':'s'} need checking`:'Cited claims checked against retrieved excerpts';details.append(summary);
