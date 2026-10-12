@@ -65,3 +65,14 @@ These checks refer to the optional Python backend and the earlier interface demo
 - All 57 Node tests passed, including six citation-export cases covering escaping, deduplication, missing metadata, APA ordering/long author lists and the download lifecycle. Syntax checks and the static production build passed with explicit placeholder Supabase configuration; that build is for verification only and is not deployed.
 - No database migration, provider call or authentication change is required for this increment. Browser rendering and live downloads have not been verified in this environment. APA output is labelled as a draft because family-name parsing, missing publication details and final typography need review.
 - Tier 1 is still awaiting complete corpus-import confirmation and a live signed-in end-to-end research test; these unit tests do not close that release gate.
+
+## Tiers 2–4 checkpoint — 12 October 2026
+
+- 70 Node tests pass; local database tests pass private paper/collection/note ownership, restrictive feedback policy, forged ownership rejection and internal table/function denial. Syntax checks and build pass; build uses explicit placeholder configuration, not deployable production credentials.
+- 50 offline fixtures validated, including 20 independent numeric regressions. This is not a live model score.
+- Five new recipes executed with actual local NumPy/SciPy/Astropy/Matplotlib; injected three-day transit recovered within 0.03 day. PDF parser extracted the known text/table values from a two-page synthetic fixture. These do not establish browser-worker acceptance.
+- Six production migration content hashes equal local files; version filenames reconciled to live history. Four deployed research/discovery/science/digest functions are ACTIVE. Digest job authenticated through Vault returned HTTP 200, 100 abstracts, zero matching alerts; both cron jobs active.
+- Real sign-in blocked by Google OAuth 502 connection refusal. Fresh target tab remained signed out. No real-session RLS success claimed.
+- Full original corpus import incomplete: local dry-run 3,932 unique chunks, live original-corpus rows 2,400 plus 152 additional embedded abstracts before digest run. Operator import token unavailable.
+- Frontend release/env verification blocked by Vercel scope access 403. Recipes/exports browser acceptance and hard-refresh release check remain pending.
+- Deployed-stack live eval runner prepared, not executed. Timestamped reports retain scores, citations, errors and latency for later comparisons; respects normal auth, RLS and quotas. No baseline was captured before this backend deployment; do not invent one.

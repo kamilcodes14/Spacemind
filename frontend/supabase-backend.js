@@ -45,7 +45,7 @@ const ready=(async()=>{
 })();
 const defaults={depth:'technical',mode:'auto',scene:'universe',motion:true,speed:.5,brightness:.65,quality:'auto',font_size:'medium'};
 function fail(message,status=400){const error=new Error(message);error.status=status;throw error;}
-function checked({data,error}){if(error){const status=error.name==='AuthSessionMissingError'?401:error.status||(['PGRST301','PGRST302'].includes(error.code)?401:400);const messages={email_not_confirmed:'Please confirm your email first. Check your inbox and spam folder, or resend the confirmation below.',invalid_credentials:'Email or password is incorrect. If you registered with Google, use Continue with Google.',over_email_send_rate_limit:'Please wait before requesting another email. Check your inbox and spam folder.'};fail(messages[error.code]||error.message,status);}return data;}
+function checked({data,error}){if(error){const status=error.name==='AuthSessionMissingError'?401:error.status||(['PGRST301','PGRST302'].includes(error.code)?401:400);const messages={'23505':'This item is already saved.','23503':'A related item is no longer available. Please refresh.','23514':'This content exceeds the allowed size or has invalid fields. Please check it and try again.','42501':'You do not have access to this item.',email_not_confirmed:'Please confirm your email first. Check your inbox and spam folder, or resend the confirmation below.',invalid_credentials:'Email or password is incorrect. If you registered with Google, use Continue with Google.',over_email_send_rate_limit:'Please wait before requesting another email. Check your inbox and spam folder.'};fail(messages[error.code]||error.message,status);}return data;}
 async function user(){const data=checked(await client.auth.getUser());if(!data?.user)fail('Please sign in to continue.',401);return data.user;}
 async function profile(){const u=await user();const {data,error}=await client.from('profiles').select('name,settings').eq('id',u.id).single();if(error)fail('Your profile could not be loaded. Please refresh and try again.');return {id:u.id,email:u.email,name:data.name,settings:{...defaults,...data.settings}};}
 async function allRows(table,configure=q=>q){let rows=[];for(let offset=0;;offset+=500){const batch=checked(await configure(client.from(table).select('*')).range(offset,offset+499));rows.push(...batch);if(batch.length<500)return rows;}}
@@ -101,6 +101,34 @@ async function request(path,options={}){
     if(method==='PATCH'){checked(await client.from('chats').update({title:body.title,pinned:body.pinned}).eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
     if(method==='DELETE'){checked(await client.from('chats').delete().eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
   }
+  if(path==='/papers'){
+    if(method==='GET')return checked(await client.from('saved_papers').select('id,title,metadata,collection_id,notes,created_at').eq('user_id',u.id).order('created_at',{ascending:false}).limit(500));
+    if(method==='POST')return checked(await client.from('saved_papers').insert({user_id:u.id,title:body.title,metadata:body.metadata||{},pages:body.pages||[],collection_id:body.collection_id||null}).select('id,title').single());
+  }
+  if(path.startsWith('/papers/')){
+    const id=path.slice(8);
+    if(method==='GET')return checked(await client.from('saved_papers').select('*').eq('id',id).eq('user_id',u.id).single());
+    if(method==='PATCH')return checked(await client.from('saved_papers').update({...(typeof body.notes==='string'?{notes:body.notes}:{}),...('collection_id' in body?{collection_id:body.collection_id||null}:{})}).eq('id',id).eq('user_id',u.id).select('id').single());
+    if(method==='DELETE'){checked(await client.from('saved_papers').delete().eq('id',id).eq('user_id',u.id));return {ok:true};}
+  }
+  if(path==='/collections'){
+    if(method==='GET')return checked(await client.from('paper_collections').select('*').eq('user_id',u.id).order('name'));
+    if(method==='POST')return checked(await client.from('paper_collections').insert({user_id:u.id,name:body.name}).select().single());
+  }
+  if(path.startsWith('/notes/')){
+    const chat_id=path.slice(7);
+    if(method==='GET')return checked(await client.from('chat_notes').select('note').eq('chat_id',chat_id).eq('user_id',u.id).maybeSingle())||{note:''};
+    return checked(await client.from('chat_notes').upsert({chat_id,user_id:u.id,note:body.note}).select().single());
+  }
+  if(path==='/topics'){
+    if(method==='GET')return checked(await client.from('research_topics').select('*').eq('user_id',u.id).order('created_at'));
+    if(method==='POST')return checked(await client.from('research_topics').insert({user_id:u.id,topic:body.topic}).select().single());
+  }
+  if(path.startsWith('/topics/')&&method==='DELETE'){checked(await client.from('research_topics').delete().eq('id',path.slice(8)).eq('user_id',u.id));return {ok:true};}
+  if(path==='/alerts')return checked(await client.from('paper_alerts').select('*').eq('user_id',u.id).order('created_at',{ascending:false}).limit(100));
+  if(path.startsWith('/alerts/')&&method==='PATCH'){checked(await client.from('paper_alerts').update({seen:true}).eq('id',path.slice(8)).eq('user_id',u.id));return {ok:true};}
+  if(path==='/feedback')return checked(await client.from('answer_feedback').upsert({message_id:body.message_id,user_id:u.id,rating:body.rating}).select('rating').single());
+  if(path==='/discovery')return invoke('paper-discovery',body);
   if(path==='/space-data')return invoke('space-data',body);
   if(path==='/ask'){
     if(!options.onEvent)return invoke('research',body);
@@ -114,7 +142,8 @@ async function request(path,options={}){
   if(path==='/learning-paths'){const r=await fetch('/assets/learning_paths.json');if(!r.ok)fail('Learning paths are unavailable.');return r.json();}
   if(path==='/export'){
     const [p,chats,messages]=await Promise.all([profile(),allRows('chats',q=>q.eq('user_id',u.id).order('id')),allRows('messages',q=>q.order('id'))]);
-    return {profile:p,chats:chats.map(c=>({...c,messages:messages.filter(m=>m.chat_id===c.id)}))};
+    const [papers,collections,notes,topics]=await Promise.all(['saved_papers','paper_collections','chat_notes','research_topics'].map(t=>allRows(t,q=>q.eq('user_id',u.id))));
+    return {profile:p,papers,collections,notes,topics,chats:chats.map(c=>({...c,messages:messages.filter(m=>m.chat_id===c.id)}))};
   }
   fail('Unknown request.',404);
 }

@@ -20,7 +20,7 @@ async function api(path, options={}) {
 }
 const post=(path,body={})=>api(path,{method:'POST',body:JSON.stringify(body)});
 function showAuth(){
-  state.user=null;state.chat=null;state.chats=[];state.prefs=null;
+  window.SpaceMindPapers?.reset();state.execution=null;state.user=null;state.chat=null;state.chats=[];state.prefs=null;
   $('workspace').hidden=true;$('auth').hidden=false;$('loading').hidden=true;
   $('messages').replaceChildren();$('chatList').replaceChildren();$('question').value='';$('searchChats').value='';
   $('authPassword').value='';$('authError').textContent='';$('authNotice').textContent='';
@@ -74,7 +74,7 @@ function updateCapabilityNote(){
 }
 function sidebar(open){$('sidebar').classList.toggle('open',open);$('sidebarShade').hidden=!open;}
 $('openSidebar').onclick=()=>sidebar(true);$('closeSidebar').onclick=()=>sidebar(false);$('sidebarShade').onclick=()=>sidebar(false);
-function resetChat(){state.chat=null;$('messages').replaceChildren();$('empty').hidden=false;$('chatTitle').textContent='New chat';$('question').value='';$('question').style.height='auto';renderChats();sidebar(false);}
+function resetChat(){state.execution=null;state.chat=null;$('messages').replaceChildren();$('empty').hidden=false;$('chatTitle').textContent='New chat';$('question').value='';$('question').style.height='auto';renderChats();sidebar(false);}
 $('newChat').onclick=()=>{if(state.busy)return toast('Please wait for the current answer.');resetChat();$('question').focus();};
 async function refreshChats(){state.chats=await api('/chats');renderChats();}
 function renderChats(){
@@ -130,6 +130,7 @@ function fillAnswer(body,result,{live=false}={}){
       const meta=document.createElement('p');meta.className='source-meta';meta.textContent=[Array.isArray(c.authors)&&c.authors.length?c.authors.join(', '):null,c.year,c.arxiv_id?'arXiv:'+c.arxiv_id:null,c.origin?.includes('abstract')?'Abstract only':null].filter(Boolean).join(' · ');
       const snippet=document.createElement('p');snippet.textContent=c.snippet;
       card.append(title,meta);
+      if(window.SpaceMindPapers){for(const [label,action]of [['Save paper',()=>window.SpaceMindPapers.saveSource(c)],['Citations / related',()=>window.SpaceMindPapers.graph(c)]]){const b=document.createElement('button');b.className='text-button';b.textContent=label;b.onclick=()=>action().catch(e=>toast(e.message));card.append(b);}}
       for(const quote of c.supporting_quotes||[]){const block=document.createElement('blockquote');const highlight=document.createElement('mark');highlight.textContent=quote;block.append(highlight);card.append(block);}
       const excerpt=document.createElement('details');const label=document.createElement('summary');label.textContent='Retrieved excerpt';excerpt.append(label,snippet);card.append(excerpt);sources.append(card);
     });
@@ -151,7 +152,10 @@ function fillAnswer(body,result,{live=false}={}){
     for(const check of checks){const row=document.createElement('div');row.className='claim-check '+check.status;const label=document.createElement('strong');label.textContent=({supported:'Supported by excerpt',partial:'Partially supported',unsupported:'Unsupported',unverified:'Not verified'})[check.status]||'Not verified';const claim=document.createElement('p');claim.textContent=check.text;const reason=document.createElement('p');reason.textContent=check.reason;row.append(label,claim,reason);details.append(row);}body.append(details);
   }
   if(result.follow_up_questions?.length){const follow=document.createElement('div');follow.className='followups';result.follow_up_questions.forEach(q=>{const b=document.createElement('button');b.textContent=q;b.onclick=()=>{if(!state.busy){$('question').value=q;$('question').focus();}};follow.append(b);});body.append(follow);}
-  const actions=document.createElement('div');actions.className='answer-actions';const copy=document.createElement('button');copy.className='text-button';copy.textContent='Copy answer';copy.onclick=async()=>{try{await navigator.clipboard.writeText(result.answer);toast('Answer copied.');}catch{toast('Clipboard is unavailable. You can select and copy the answer.');}};actions.append(copy);body.append(actions);
+  const actions=document.createElement('div');actions.className='answer-actions';const copy=document.createElement('button');copy.className='text-button';copy.textContent='Copy answer';copy.onclick=async()=>{try{await navigator.clipboard.writeText(result.answer);toast('Answer copied.');}catch{toast('Clipboard is unavailable. You can select and copy the answer.');}};actions.append(copy);
+  const messageId=result.message_id||result.id;
+  if(messageId&&hostedAuth){for(const [label,rating]of [['Helpful',1],['Not helpful',-1]]){const b=document.createElement('button');b.className='text-button';b.textContent=label;b.onclick=async()=>{try{await post('/feedback',{message_id:messageId,rating});toast('Feedback saved.');}catch(e){toast(e.message);}};actions.append(b);}}
+  body.append(actions);
 }
 function scrollBottom(){$('chatScroll').scrollTop=$('chatScroll').scrollHeight;}
 $('question').oninput=()=>{$('question').style.height='auto';$('question').style.height=Math.min($('question').scrollHeight,180)+'px';};
@@ -166,11 +170,11 @@ $('chatForm').onsubmit=async event=>{
     let draft='';
     const status=document.createElement('p');status.className='notice';status.setAttribute('role','status');
     const draftAnswer=document.createElement('div');draftAnswer.className='answer';
-    const result=await api('/ask',{method:'POST',body:JSON.stringify({question,chat_id:state.chat.id,depth:$('answerDepth').value,use_web:({auto:null,web:true,papers:false})[$('researchMode').value]}),onEvent:(event,data)=>{
+    const result=await api('/ask',{method:'POST',body:JSON.stringify({question,chat_id:state.chat.id,...window.SpaceMindPapers?.selection(),...(state.execution?{execution:state.execution}:{}),depth:$('answerDepth').value,use_web:({auto:null,web:true,papers:false})[$('researchMode').value]}),onEvent:(event,data)=>{
       if(event==='status'){if(!status.isConnected)body.replaceChildren(status,draftAnswer);status.textContent=data.message;}
       if(event==='delta'){draft+=data.text;draftAnswer.textContent=draft;scrollBottom();}
     }});
-    fillAnswer(body,result,{live:true});await refreshChats();state.chat=state.chats.find(c=>c.id===state.chat.id)||state.chat;$('chatTitle').textContent=state.chat.title;
+    state.execution=null;fillAnswer(body,result,{live:true});await refreshChats();state.chat=state.chats.find(c=>c.id===state.chat.id)||state.chat;$('chatTitle').textContent=state.chat.title;
   }catch(error){if(body){body.replaceChildren();const p=document.createElement('p');p.className='error';p.textContent=error.message;body.append(p);const retry=document.createElement('button');retry.className='secondary';retry.textContent='Try again';retry.onclick=()=>{$('question').value=question;$('question').focus();body.closest('.turn').remove();$('chatForm').requestSubmit();};body.append(retry);}else toast(error.message);$('question').value=question;}
   finally{state.busy=false;$('send').disabled=false;$('question').disabled=false;$('newChat').disabled=false;scrollBottom();if(state.user)$('question').focus();}
 };
@@ -229,7 +233,7 @@ async function resources(kind){const dialog=$('resourceDialog');$('resourceTitle
     });
   }catch(e){$('resourceBody').textContent=e.message;}
 }
-$('libraryBtn').onclick=()=>resources('library');$('pathsBtn').onclick=()=>resources('paths');
+$('libraryBtn').onclick=()=>window.SpaceMindPapers?window.SpaceMindPapers.open().catch(e=>toast(e.message)):resources('library');$('pathsBtn').onclick=()=>resources('paths');
 document.addEventListener('keydown',e=>{if(e.key==='Escape')sidebar(false);});
 $('forgotPassword').hidden=!window.SpaceMindBackend;
 $('forgotPassword').onclick=async()=>{
@@ -247,3 +251,15 @@ $('recoveryForm').onsubmit=async e=>{e.preventDefault();const value=$('recoveryP
 (async()=>{try{await enterWorkspace(await api('/auth/me'));}catch(error){showAuth();if(window.SpaceMindAuthError){$('authError').textContent=window.SpaceMindAuthError;window.SpaceMindAuthError=null;}else if(error.status!==401)$('authError').textContent=error.message;}showRecovery();})();
 
 $('scienceBtn').onclick=()=>window.SpaceMindScience?.open();
+
+window.SpaceMindUI={toast,prepare(question){$('question').value=question;$('question').focus();},explain(execution){
+ if(state.busy)return toast('Please wait for the current answer.');
+ if(execution.code.length>16000)return toast('This calculation is too long to attach. Shorten the code to 16,000 characters.');
+ state.execution={code:execution.code,output:execution.output.slice(0,11900)+(execution.output.length>11900?'\n[Output truncated for explanation]':'')};window.SpaceMindPapers?.reset();document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+ $('question').value='Explain this executed Python result, including units, checks and limitations.';$('question').focus();toast('Calculation attached. Send your question to request an explanation.');
+}};
+const paperSelection=document.createElement('p');paperSelection.id='paperSelection';paperSelection.className='notice';$('chatForm').prepend(paperSelection);
+const notesButton=document.createElement('button');notesButton.className='text-button';notesButton.textContent='Chat notes';$('chatTitle').parentElement.append(notesButton);
+notesButton.onclick=async()=>{if(!state.chat)return toast('Start a conversation before adding notes.');const id=state.chat.id;
+ try{const current=await api('/notes/'+id);const dialog=$('resourceDialog');$('resourceTitle').textContent='Conversation notes';const text=document.createElement('textarea');text.rows=12;text.style.width='100%';text.maxLength=20000;text.value=current.note;text.setAttribute('aria-label','Conversation notes');const save=document.createElement('button');save.className='primary';save.textContent='Save notes';save.onclick=async()=>{try{await post('/notes/'+id,{note:text.value});dialog.close();toast('Notes saved.');}catch(e){toast(e.message);}};$('resourceBody').replaceChildren(text,save);dialog.showModal();}catch(e){toast(e.message);}
+};

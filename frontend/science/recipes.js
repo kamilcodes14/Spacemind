@@ -1,5 +1,7 @@
+import {advancedRecipe,advancedDefaults} from './advanced-recipes.js';
 import {BODIES,elements,finite} from './orbits.js';
 export function recipe(kind,p){
+ if(kind in advancedDefaults)return advancedRecipe(kind,p);
  if(kind==='spice'){
   for(const k of ['target','observer'])if(!/^-?\d{1,9}$/.test(String(p[k])))throw Error('Use numeric NAIF target and observer IDs.');
   if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(p.epoch)||!Number.isFinite(Date.parse(p.epoch)))throw Error('Enter an ISO UTC epoch, for example 2026-01-01T00:00:00Z.');

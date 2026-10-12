@@ -31,5 +31,9 @@ export function safeURL(value){try{const u=new URL(value);return ['https:','http
 export async function fetchJSON(url,options={},fetcher=fetch,timeout=15000){
   let response;try{response=await fetcher(url,{...options,signal:AbortSignal.timeout(timeout)});}catch{throw new HttpError(503,'A research provider did not respond. Please try again.');}
   if(!response.ok)throw new HttpError(response.status===429?429:503,'A research provider is unavailable or rate limited. Please try again.');
-  return response.json();
+  const reader=response.body?.getReader();if(!reader)throw new HttpError(503,'A research provider returned an empty response.');
+  let size=0,text='';const decoder=new TextDecoder();
+  try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000)throw new HttpError(503,'The research provider returned too much data. Narrow your query.');text+=decoder.decode(value,{stream:true});}text+=decoder.decode();return JSON.parse(text);}
+  finally{await reader.cancel().catch(()=>{});}
+
 }

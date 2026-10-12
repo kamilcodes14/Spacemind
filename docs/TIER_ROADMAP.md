@@ -13,16 +13,27 @@ Source: user-provided SpaceMind review and roadmap, 9 October 2026.
 
 Validation: run `npm test`, `npm run test:db`, `npm run check`, and a configured `npm run build`. A live signed-in research request must still verify the complete UI → API → database → provider → UI flow before marking this tier complete.
 
-## Tier 2 — real research assistant (in progress)
+## Tier 2 — research assistant (backend deployed; frontend release pending)
 
-- First increment: BibTeX and plain-text APA reference drafts can be downloaded from the Sources section of both new and saved answers. Repeated chunks are deduplicated; Mission Lab tool records are excluded. Exports retain available metadata and do not invent journal, volume or page information. APA drafts require review of author family names, publication details and italics.
-- Remaining: PDF upload; paper comparison, literature reviews and open problems; citation graph; saved collections and notes; personalized digest; additional astronomy archives.
-- Tier 1 release gate remains open: complete corpus import and a signed-in end-to-end research request. Read-only production check on 11 October 2026 UTC found 2,552 embedded chunks (2,350 arXiv full-text chunks, 136 arXiv abstract chunks, 50 NTRS full-text chunks and 16 NTRS abstract chunks). Requested astro-ph.SR/CO/EP/HE and NASA NTRS categories are present. This is a point-in-time count, not proof of import completion.
+Implemented PDF text extraction with page citations, selected-paper chat/summary/comparison/literature/open-problems/equations/tables, BibTeX/APA exports, private collections and paper/chat notes, citation relationships and related papers, topic subscriptions and an in-app daily digest. Additional fixed astronomy archive adapters are included. ADS requires its optional provider token. Scanned PDFs need OCR outside this version; equation/table extraction depends on PDF text quality and selected-page coverage is explicitly bounded.
 
-## Tier 3 — Mission Lab upgrades (pending)
+Production migrations match all six local SQL files by content hash. Version filenames now match live migration history. Supabase Edge Functions research v9, space-data v2, paper-discovery v1 and daily-digest v1 are ACTIVE. The digest authenticated job returned HTTP 200 and processed 100 abstracts; the cron runs at 07:15 Asia/Karachi. Digest records are lexical-only until separately embedded. The feed is limited to the first 100 newest papers, not exhaustive.
 
-Delta-v budgets, rocket equation, light curves, transits, Gaia HR diagrams and orbit decay; result feedback to the model; PNG/CSV export and shareable notebooks.
+## Tier 3 — Mission Lab (implemented; browser acceptance and release pending)
 
-## Tier 4 — models and infrastructure (pending)
+Delta-v budget, existing rocket equation, light curves, transit search, Gaia HR diagrams and simplified orbital decay; attach executed code/output to chat; PNG/CSV and Jupyter notebook exports/import. Actual local Python execution passed synthetic numerical checks for all five new recipes. Browser/Pyodide execution and download acceptance remain open; local Python is not a substitute.
 
-Model routing/fallbacks; 50-question evaluation set in CI; vector index removal from git; shared infrastructure and observability.
+## Tier 4 — infrastructure (implemented; deployed-stack evaluation pending)
+
+Small/large model routing and bounded fallbacks, public provider cache and global ephemeris lease, privacy-limited metrics and answer feedback, 50-question evaluation fixtures, CI and untracking local vector binaries. Existing Git history is not rewritten. Optional external fallback providers require configuration.
+
+`npm run eval:live` now targets the deployed research API using a normal dedicated test account, preserves quota, checks answer persistence through RLS, and records answers, sources, scores, errors and p50/p95 latency in timestamped reports. No live score or before/after comparison exists yet. The direct-model diagnostic is separately available as `node scripts/evaluate.mjs --model-only`.
+
+## Release gates — 12 October 2026
+
+1. Backend deployment and migration-history parity: verified through the native Supabase deployment API (no duplicate CLI deployment needed).
+2. Tier 1 import and real-session acceptance: OPEN. Original local corpus dry-run is 3,932 chunks versus 2,400 original-corpus chunks in production; 152 additional abstracts were embedded before the new digest. Missing import operator token prevents completion. Google sign-in from the verification browser reached a 502 connection-refused page; a fresh app tab remained signed out. Local two-user RLS tests pass, but a real-session read/write test is still required.
+3. One frontend release for Tiers 2 and 3: OPEN. Vercel project access returned 403 for scope syed-kamil. Environment values and the release cannot be verified until the connection is reauthorized. Browser recipe/export acceptance must precede the production release, followed by Ctrl+Shift+R verification. Placeholder build artifacts are test-only and must never be deployed.
+4. Tier 4 live evaluation: WAITING on the above gates. Use a confirmed dedicated test account via protected EVAL_EMAIL/EVAL_PASSWORD plus SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY. Existing 30/hour quota remains in place; a full run can span two hourly windows. CI stores reports as artifacts for comparison. It retains labeled evaluation conversations in the test account for audit; it never reads unrelated conversations.
+
+No tier is marked fully released until its acceptance gates pass.

@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.space-data]
 verify_jwt = true
+
+[functions.paper-discovery]
+verify_jwt = true
+# Vault-managed per-job token is checked against a service-only SHA-256 digest.
+[functions.daily-digest]
+verify_jwt = false
