@@ -37,3 +37,11 @@ Small/large model routing and bounded fallbacks, public provider cache and globa
 4. Tier 4 live evaluation: WAITING on the above gates. Use a confirmed dedicated test account via protected EVAL_EMAIL/EVAL_PASSWORD plus SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY. Existing 30/hour quota remains in place; a full run can span two hourly windows. CI stores reports as artifacts for comparison. It retains labeled evaluation conversations in the test account for audit; it never reads unrelated conversations.
 
 No tier is marked fully released until its acceptance gates pass.
+
+## 13 October follow-up
+
+Vercel access restored. Production and combined preview bundles point to the intended Supabase project; their publishable keys were accepted by Auth settings. User reports no errors during mobile preview testing, without specifying each workflow tested. This is user-reported smoke-test evidence, not full acceptance.
+
+A full-corpus workflow now restores the original text database from immutable revision bf6e16c4b39f18322c5b1369abc4896d247d68f0, checks 3,932 unique chunks, refreshes bibliographic metadata, and invokes the authenticated idempotent importer. It can run manually after registration on the default branch, or by adding run-full-corpus-import to this same-repository PR after all three repository secrets are configured. Existing vector data is never copied into Supabase. No successful full import is claimed.
+
+Import-token rotation requires the owner to save one matching random value (at least 32 characters) in Supabase Edge Function secrets and GitHub Actions secrets. Current connectors have no secret-write operation. Browser credential changes require user handoff; do not embed tokens in source or weaken endpoint authentication.
