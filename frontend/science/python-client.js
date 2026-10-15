@@ -25,7 +25,7 @@ export function mountPython(host,code,{auto=false}={}){
   frame.onload=()=>{const channel=new MessageChannel();port=channel.port1;port.onmessage=e=>{
    const m=e.data;if(m.type==='ready'){clearTimeout(loadTimer);resolveReady(true);return;}
    if(m.type==='stdout'||m.type==='stderr'){if(output.textContent.length<50000)output.textContent+=m.text+'\n';}
-   if(m.type==='image'){if(!/^[A-Za-z0-9+/=]+$/.test(m.text)||m.text.length>3_000_000)return;const img=document.createElement('img');img.src='data:image/png;base64,'+m.text;img.alt='Python-generated plot';images.append(img);plots.push(m.text);const save=document.createElement('a');save.href=img.src;save.download='spacemind-plot-'+plots.length+'.png';save.textContent='Download PNG';images.append(save);}
+   if(m.type==='image'){if(!/^[A-Za-z0-9+/=]+$/.test(m.text)||m.text.length>3_000_000)return;const img=document.createElement('img');img.src='data:image/png;base64,'+m.text;img.alt='Python-generated plot';images.append(img);plots.push(m.text);const save=document.createElement('button');save.className='secondary';save.textContent='Download PNG';const filename='spacemind-plot-'+plots.length+'.png';save.onclick=()=>downloadArtifact(Uint8Array.from(atob(m.text),c=>c.charCodeAt(0)),filename,'image/png');images.append(save);}
    if(m.type==='table'){try{const data=JSON.parse(m.text);if(Array.isArray(data)&&data.length<=20000)rows=data;}catch{}}
    if(m.type==='status')status.textContent=m.text;
    if(m.type==='done'&&pending==='run'){execution={code:runCode,output:output.textContent,images:[...plots]};explain.disabled=!execution.output.trim();exportNotebook.disabled=false;exportCSV.disabled=!rows.length;}
