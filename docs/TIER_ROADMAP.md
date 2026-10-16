@@ -71,3 +71,10 @@ User explicitly approved pushing the prepared branch changes and deploying the e
 - Semantic Scholar returned a provider outage/rate-limit error. Paper-discovery v4 now falls back to authenticated imported-corpus search with explicit source warning; it does not fabricate citation-graph edges. Frontend now displays that warning and prevents stale tab responses from replacing a newly selected paper-library view.
 - 75 automated tests pass; configured frontend build succeeds. The 50 offline fixtures are not a completed live evaluation.
 - Remaining gates: complete export and remaining paper-workflow browser acceptance; dedicated-account 50-question live evaluation (credentials not confirmed); final production frontend release approval. No full tier is declared released on partial acceptance evidence.
+
+
+## 17 October signed-in acceptance
+
+Google-authenticated preview checks passed: archive outage fallback returns imported papers with an explicit non-live warning; private paper/collection/notes persist; the revised summary treats its two cited pages as one synthetic fixture. BibTeX and APA downloads contain one deduplicated reference with missing metadata left unspecified. Browser mission-budget CSV contains 2,585 m/s required, 2,875.4376018347784 m/s available, and 5,612.122654799894 kg propellant. Exported notebook validates as nbformat 4, includes code/output, and reopens in SpaceMind. Browser BLS recovered 3.0010005002501248 days from a synthetic 3-day signal (depth 0.01934012118762932; duration 0.1 days). PNG plot download is valid. This synthetic acceptance is not scientific validation on observational data.
+
+The 50-question live evaluation remains unrun: no dedicated EVAL_EMAIL/EVAL_PASSWORD is configured in this runtime, and protected CI credential availability is unconfirmed. Additional paper comparison/extraction workflows and remaining recipe acceptance are still open. Production frontend release remains pending. Latest application commit 031246a passed GitHub validation and its Vercel preview is READY.
