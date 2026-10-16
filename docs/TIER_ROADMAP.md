@@ -45,3 +45,19 @@ Vercel access restored. Production and combined preview bundles point to the int
 A full-corpus workflow now restores the original text database from immutable revision bf6e16c4b39f18322c5b1369abc4896d247d68f0, checks 3,932 unique chunks, refreshes bibliographic metadata, and invokes the authenticated idempotent importer. It can run manually after registration on the default branch, or by adding run-full-corpus-import to this same-repository PR after all three repository secrets are configured. Existing vector data is never copied into Supabase. No successful full import is claimed.
 
 Import-token rotation requires the owner to save one matching random value (at least 32 characters) in Supabase Edge Function secrets and GitHub Actions secrets. Current connectors have no secret-write operation. Browser credential changes require user handoff; do not embed tokens in source or weaken endpoint authentication.
+
+## 16 October verification and blocked release
+
+- Production corpus read-only verification: 3,670 arXiv + 262 NTRS full-text chunks (3,932 original chunks), all embedded. Total 4,432 rows; 4,187 embedded. The 245 unembedded arXiv abstracts remain lexical-only.
+- Fresh local validation: 72 tests pass, database ownership/RLS tests pass, 50 offline fixtures pass (20 numerical checks); configured frontend build succeeds against the intended Supabase project. These are not a live model evaluation.
+- Research v11 is ACTIVE with the exact first-party stable branch alias allowed. Live OPTIONS from that alias returns 204 and the matching CORS origin; unrelated.vercel.app returns 403. JWT verification remains enabled. No wildcard origin was added.
+- Matching space-data and paper-discovery deployments were rejected by automatic approval review. Both still return 403 to the stable preview. No alternate deployment route was attempted.
+- Local commit 04f5062 contains the allowlist change and regression test. Git push was rejected by automatic approval review; the branch update is not confirmed remote.
+- Fresh acceptance browser is signed out. Full Explain result behavior and live 50-question evaluation have not been rerun. Dedicated evaluation credentials are not confirmed available.
+- Production frontend release remains pending. No entire tier is marked complete.
+
+Next approval needed: push the prepared fix to kamilcodes14/Spacemind branch codex/tier2-citation-exports and deploy the exact preview-origin change to space-data and paper-discovery in project aqblctjucyxqjmylojgc. Preserve JWT authentication and all other deployed source. Then restore a signed-in acceptance session, run remaining workflows/live evaluation, and resolve production-release approval separately from preview testing.
+
+## 16 October approved follow-up
+
+User explicitly approved pushing the prepared branch changes and deploying the exact stable-preview origin to space-data and paper-discovery. Both deployments succeeded: space-data v4 and paper-discovery v3 are ACTIVE with verify_jwt=true. Research remains v11. Standard git push had no HTTPS credentials; the authorized GitHub connector is used to publish the reviewed three-file change. Signed-in acceptance, the live evaluation, and final production frontend release remain pending.

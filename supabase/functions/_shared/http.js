@@ -3,7 +3,10 @@ export function cors(req,allowed){
   const origin=req.headers.get('origin');
   // This repository's deployed frontend must work without a separate origin secret.
   // ALLOWED_ORIGINS can add development or custom domains; never allow all origins.
-  const allow=['https://spacemind-frontend.vercel.app',...allowed.split(',').map(s=>s.trim().replace(/\/$/,'')).filter(Boolean)];
+  const allow=['https://spacemind-frontend.vercel.app',
+    // Exact first-party branch alias; do not trust arbitrary Vercel previews.
+    'https://spacemind-frontend-git-codex-tier2-citation-exports-syed-kamil.vercel.app',
+    ...allowed.split(',').map(s=>s.trim().replace(/\/$/,'')).filter(Boolean)];
   if(origin&&!allow.includes(origin))throw new HttpError(403,'This website is not allowed to call the research backend.');
   return {'Access-Control-Allow-Origin':origin||allow[0]||'null','Access-Control-Allow-Headers':'authorization,x-client-info,apikey,content-type','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Vary':'Origin','Cache-Control':'no-store'};
 }

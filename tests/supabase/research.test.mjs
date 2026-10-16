@@ -38,6 +38,17 @@ test('production preflight works with no origin secret, but unrelated origins st
   const unauthenticated=await handler(new Request('https://test',{headers:{origin}}));
   assert.equal(unauthenticated.status,401);assert.equal(unauthenticated.headers.get('Access-Control-Allow-Origin'),origin);
 });
+test('stable preview preflight succeeds without granting other previews access',async()=>{
+  const origin='https://spacemind-frontend-git-codex-tier2-citation-exports-syed-kamil.vercel.app';
+  const handler=makeHandler({env:{},createClient:()=>assert.fail('preflight must not access Auth')});
+  const response=await handler(new Request('https://test',{method:'OPTIONS',headers:{origin}}));
+  assert.equal(response.status,204);
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'),origin);
+  for(const blocked of [origin+'.evil.test','https://unrelated.vercel.app','https://spacemind-frontend-git-untrusted-syed-kamil.vercel.app']){
+    assert.equal((await handler(new Request('https://test',{method:'OPTIONS',headers:{origin:blocked}}))).status,403);
+  }
+  assert.equal((await handler(new Request('https://test',{method:'POST',headers:{origin}}))).status,401);
+});
 test('authenticated turn persists with warnings',async()=>{const f=fixture();assert.equal((await f.handler(request())).status,200);assert.deepEqual(f.saved().p_warnings,[]);});
 
 test('casual shorthand answers directly in every mode without model or search',async()=>{
