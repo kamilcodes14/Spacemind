@@ -110,6 +110,7 @@ function answerNotice(result){
   if(uncertain)return 'Some details could not be verified. Please check the sources before relying on this answer.';
   if(warnings.some(w=>/web.*(unavailable|not configured|no usable)/i.test(w)))return 'Live web search was unavailable. This answer uses the other sources I could access.';
   if(warnings.some(w=>w.startsWith('Evidence ranking')))return 'Evidence ranking was unavailable; results use the original search order.';
+  if(warnings.some(w=>w.startsWith('Selected paper excerpts')))return 'This answer uses selected paper excerpts and may not cover every page. Check equations and tables against the original PDF.';
   if(warnings.length)return 'Some research sources were unavailable. This answer uses the sources I could access.';
   return '';
 }

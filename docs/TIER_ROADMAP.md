@@ -61,3 +61,13 @@ Next approval needed: push the prepared fix to kamilcodes14/Spacemind branch cod
 ## 16 October approved follow-up
 
 User explicitly approved pushing the prepared branch changes and deploying the exact stable-preview origin to space-data and paper-discovery. Both deployments succeeded: space-data v4 and paper-discovery v3 are ACTIVE with verify_jwt=true. Research remains v11. Standard git push had no HTTPS credentials; the authorized GitHub connector is used to publish the reviewed three-file change. Signed-in acceptance, the live evaluation, and final production frontend release remain pending.
+
+## 16 October live acceptance follow-up
+
+- Approved CORS changes are published in commit 39cbab1. The prior approval-review blocks are resolved.
+- Real Google-authenticated browser session: Python mission budget ran successfully (2,585 m/s required; 2,875.4376 m/s available); Explain result persisted and reopened. Research v12 corrects final-mass interpretation and preserves document/page identity in evidence. Its live explanation retest correctly distinguished dry mass from dry mass plus remaining propellant.
+- Uploaded synthetic paper summary returned its 3-day period with citations. Private collection and notes persisted. Page-count wording was corrected in model evidence context; the revised summary wording still needs live acceptance.
+- NASA Exoplanet Archive returned live catalogue rows, including Kepler-22 b, through the signed-in preview. CSV/result download controls are present; download contents are not yet verified.
+- Semantic Scholar returned a provider outage/rate-limit error. Paper-discovery v4 now falls back to authenticated imported-corpus search with explicit source warning; it does not fabricate citation-graph edges. Frontend now displays that warning and prevents stale tab responses from replacing a newly selected paper-library view.
+- 75 automated tests pass; configured frontend build succeeds. The 50 offline fixtures are not a completed live evaluation.
+- Remaining gates: complete export and remaining paper-workflow browser acceptance; dedicated-account 50-question live evaluation (credentials not confirmed); final production frontend release approval. No full tier is declared released on partial acceptance evidence.
