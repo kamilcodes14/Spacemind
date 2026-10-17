@@ -2,7 +2,7 @@
 
 Source: user-provided SpaceMind review and roadmap, 9 October 2026.
 
-## Tier 1 — trustworthy answers (implementation complete; release verification pending)
+## Tier 1 — trustworthy answers (complete; production acceptance verified 18 October 2026 PKT)
 
 - Expanded corpus collection: existing full text plus explicitly labelled arXiv and NASA NTRS abstracts. Requested categories: astro-ph.SR, CO, EP, HE.
 - New `match_papers_hybrid` RPC combines lexical and semantic ranks with RRF (k=60), caps candidates, and limits chunks per document. No fixed similarity cutoff.
@@ -78,3 +78,16 @@ User explicitly approved pushing the prepared branch changes and deploying the e
 Google-authenticated preview checks passed: archive outage fallback returns imported papers with an explicit non-live warning; private paper/collection/notes persist; the revised summary treats its two cited pages as one synthetic fixture. BibTeX and APA downloads contain one deduplicated reference with missing metadata left unspecified. Browser mission-budget CSV contains 2,585 m/s required, 2,875.4376018347784 m/s available, and 5,612.122654799894 kg propellant. Exported notebook validates as nbformat 4, includes code/output, and reopens in SpaceMind. Browser BLS recovered 3.0010005002501248 days from a synthetic 3-day signal (depth 0.01934012118762932; duration 0.1 days). PNG plot download is valid. This synthetic acceptance is not scientific validation on observational data.
 
 The 50-question live evaluation remains unrun: no dedicated EVAL_EMAIL/EVAL_PASSWORD is configured in this runtime, and protected CI credential availability is unconfirmed. Additional paper comparison/extraction workflows and remaining recipe acceptance are still open. Production frontend release remains pending. Latest application commit 031246a passed GitHub validation and its Vercel preview is READY.
+
+
+## 18 October Tier 1 production acceptance — COMPLETE
+
+Tier 1 acceptance is closed on the existing production frontend https://spacemind-frontend.vercel.app/ (Vercel deployment dpl_4K15y9cYzddFRY56CoxZ915gBiPe, main commit bf6e16c4b39f18322c5b1369abc4896d247d68f0), with the currently deployed research backend. No combined Tiers 2–4 release is implied.
+
+- Read-only corpus verification: 3,670 arXiv and 262 NTRS original chunks, all 3,932 embedded. Total 4,432 rows, 4,187 embedded; 245 supplemental abstracts remain lexical-only.
+- Real Google-authenticated production UI request in Papers only mode completed retrieval, ranking, answer generation, claim checks, and persistence. The indexed halo-based intrinsic-alignment paper was returned first with rerank_score 0.95, author/year/arXiv metadata and exact supporting quotes. Saved acceptance message 42 contains the 1,044-character answer and eight retrieval-source records. Three cited claims were supported and one remained unverified; the UI retained its uncertainty notice and confident=false.
+- Negative coverage check on Enceladus explicitly stated that supplied evidence was insufficient instead of inventing evidence; saved message 41 has confident=false and used_web=false.
+- After a new sign-in/session, the production history reopened message 42 with the same answer, references, highlighted supporting quotations, and unverified-claim warning. This confirms the real UI-to-provider-to-database-to-UI path and authenticated history readback.
+- Ownership policies on chats/messages remain authenticated-user scoped with auth.uid() in USING and WITH CHECK; no auth/RLS changes were made.
+
+This is Tier 1 functional acceptance, not a general scientific-accuracy score. Corpus coverage is limited; unrelated retrieval candidates may remain in the source list, and automated claim checking can leave claims unverified. The Tier 4 50-question live evaluation and remaining Tiers 2–3 acceptance/release work remain open. Earlier dated OPEN statements above are historical and superseded for Tier 1 by this entry.
