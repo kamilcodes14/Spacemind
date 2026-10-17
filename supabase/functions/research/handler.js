@@ -1,6 +1,9 @@
+import {serviceClient} from '../_shared/provider-cache.js';
+import {selectedEvidence} from '../_shared/paper-tools.js';
 import {authenticate,bodyJSON,cors,HttpError,json} from '../_shared/http.js';
 import {research,validateQuestion} from '../_shared/research.js';
 export function makeHandler({createClient,env,embed,fetcher=fetch}){
+ const admin=serviceClient(createClient,env);
  return async req=>{
   let headers={};try{
     headers=cors(req,env.ALLOWED_ORIGINS||'');
@@ -8,7 +11,7 @@ export function makeHandler({createClient,env,embed,fetcher=fetch}){
     if(!['GET','POST'].includes(req.method))throw new HttpError(405,'Method not allowed.');
     const {client,user}=await authenticate(req,createClient,env);
     if(req.method==='GET')return json({web_search:!!env.TAVILY_API_KEY,semantic_scholar:!!env.SEMANTIC_SCHOLAR_API_KEY},200,headers);
-    const body=await bodyJSON(req);const input=validateQuestion(body);
+    const body=await bodyJSON(req,50000);const input=validateQuestion(body);
     const streaming=body.stream===true&&req.headers.get('accept')?.includes('text/event-stream');
     const {data:chat,error:chatError}=await client.from('chats').select('id').eq('id',input.chatId).eq('user_id',user.id).maybeSingle();
     if(chatError)throw new HttpError(503,'Conversation storage is unavailable.');
@@ -24,11 +27,25 @@ export function makeHandler({createClient,env,embed,fetcher=fetch}){
       if(matched.error)throw new Error('Paper lookup failed');
       return (matched.data||[]).map(p=>({source_file:p.title,origin:p.origin,url:p.url,snippet:p.content.slice(0,6000),title:p.title,authors:p.authors||[],year:p.year,arxiv_id:p.arxiv_id,doc_id:p.doc_id,score:p.score}));
     };
+    let selectedSources=[];
+    if(input.paperIds.length){
+      const papers=await client.from('saved_papers').select('id,title,metadata,pages').in('id',input.paperIds).eq('user_id',user.id);
+      if(papers.error)throw new HttpError(503,'Your papers could not be loaded.');
+      if(papers.data.length!==input.paperIds.length)throw new HttpError(404,'One or more selected papers are unavailable.');
+      selectedSources=selectedEvidence(papers.data,input.question);
+    }
     const run=async onEvent=>{
-      const result=await research(input,(previous.data||[]).reverse(),{env,fetcher,lookupPapers,onEvent});
+      const started=Date.now(),models=[];let result,outcome='error';
+      try{
+      result=await research(input,(previous.data||[]).reverse(),{env:{...env,onModel:model=>models.push(model)},fetcher,lookupPapers,onEvent,selectedSources});
       const saved=await client.rpc('save_research_turn',{p_chat_id:input.chatId,p_question:input.question,p_answer:result.answer,p_citations:result.citations,p_follow_ups:result.follow_up_questions,p_confident:result.confident,p_used_web:result.used_web,p_warnings:result.warnings});
       if(saved.error)throw new HttpError(409,'The answer could not be saved. The conversation may have been deleted.');
-      return result;
+      outcome='saved';return {...result,message_id:saved.data};
+      }finally{
+        const metric={request_id:crypto.randomUUID(),latency_ms:Date.now()-started,source_count:result?.citations?.length||0,outcome,model:[...new Set(models)].join(','),empty_retrieval:!!result&&result.confident===false&&!result.citations?.length};
+        console.log(JSON.stringify({event:'research_complete',...metric}));
+        if(admin){try{const recorded=await admin.from('research_metrics').insert(metric);if(recorded.error)console.warn(JSON.stringify({event:'metrics_write_failed'}));}catch{console.warn(JSON.stringify({event:'metrics_write_failed'}));}}
+      }
     };
     if(!streaming)return json(await run(),200,headers);
     const encoder=new TextEncoder();let cancelled=false;

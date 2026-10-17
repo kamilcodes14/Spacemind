@@ -7,7 +7,7 @@ async function get(url,fetcher,options={}){
  if(!response.ok)throw new HttpError(response.status===429?429:503,'This data source is temporarily unavailable. Please try again later.');
  const reader=response.body.getReader();let size=0,text='';const decoder=new TextDecoder();
  while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>3_000_000){await reader.cancel();throw new HttpError(503,'The data source returned too much data. Narrow your query.');}text+=decoder.decode(value,{stream:true});}text+=decoder.decode();
- try{return JSON.parse(text);}catch{throw new HttpError(503,'The data source returned an unreadable response.');}
+ try{return JSON.parse(text.replace(/"(?:\\.|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,token=>/^-?\d{16,}$/.test(token)?JSON.stringify(token):token));}catch{throw new HttpError(503,'The data source returned an unreadable response.');}
 }
 export function parseHorizons(data){
  if(data.error||typeof data.result!=='string')throw new HttpError(422,'No ephemeris matched. Check target, observer and time coverage.');
@@ -19,6 +19,19 @@ export function parseHorizons(data){
 export async function queryProvider(input,fetcher=fetch){
  let tool;try{tool=validateTool(input);}catch(e){throw new HttpError(422,e.message);}const {kind,params:p}=tool;
  const retrieved_at=new Date().toISOString();
+ if(['gaia','esa','simbad','vizier','exoplanets'].includes(kind)){
+  const cone=(ra,dec)=>`1=CONTAINS(POINT('ICRS',${ra},${dec}),CIRCLE('ICRS',${p.ra},${p.dec},${p.radius}))`;
+  const configs={
+   gaia:['https://gea.esac.esa.int/tap-server/tap/sync',`SELECT TOP 200 source_id,ra,dec,parallax,parallax_over_error,phot_g_mean_mag,bp_rp FROM gaiadr3.gaia_source WHERE ${cone('ra','dec')} AND parallax>0 AND parallax_over_error>10 AND bp_rp IS NOT NULL`,'ESA Gaia DR3'],
+   esa:['https://nxsa.esac.esa.int/tap-server/tap/sync',`SELECT TOP 50 observation_id,citext,ra,dec,start_utc,duration FROM xsa.v_all_observations WHERE ${cone('ra','dec')}`,'ESA XMM-Newton Science Archive'],
+   simbad:['https://simbad.cds.unistra.fr/simbad/sim-tap/sync',`SELECT TOP 50 main_id,ra,dec,otype FROM basic WHERE ${cone('ra','dec')}`,'CDS SIMBAD'],
+   vizier:['https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync',`SELECT TOP 100 Source,RA_ICRS,DE_ICRS,Plx,Gmag FROM "I/355/gaiadr3" WHERE ${cone('RA_ICRS','DE_ICRS')}`,'CDS VizieR · Gaia DR3'],
+   exoplanets:['https://exoplanetarchive.ipac.caltech.edu/TAP/sync',`SELECT TOP 50 pl_name,hostname,discoverymethod,disc_year,pl_orbper,pl_rade,pl_bmasse,sy_dist FROM pscomppars WHERE LOWER(pl_name) LIKE '%${String(p.query||'').toLowerCase().replaceAll("'","''").replaceAll('%','').replaceAll('_','')}%'`,'NASA Exoplanet Archive']
+  };
+  const [endpoint,query,provider]=configs[kind];const u=endpoint+'?'+new URLSearchParams({REQUEST:'doQuery',LANG:'ADQL',FORMAT:'json',QUERY:query,query,format:'json'});
+  const data=await get(u,fetcher);const rows=Array.isArray(data)?data:(data.data||[]).map(row=>Object.fromEntries((data.metadata||[]).map((column,i)=>[column.name,row[i]])));
+  return {kind,provider,source:u,retrieved_at,request:p,rows,note:'Bounded catalogue sample, not exhaustive. Coordinates are ICRS degrees; Gaia parallax is mas, magnitudes are mag. Null values are missing measurements. Gaia HR samples require positive parallax and parallax/error > 10; extinction is not corrected.'};
+ }
  if(kind==='horizons'){
   const u=new URL(endpoints.horizons);u.search=new URLSearchParams({format:'json',COMMAND:`'${p.target}'`,CENTER:`'500@${p.observer}'`,MAKE_EPHEM:"'YES'",EPHEM_TYPE:"'VECTORS'",TLIST:`'${p.epoch.replace('T',' ').replace('Z','')}'`,TLIST_TYPE:"'CAL'",TIME_TYPE:"'UT'",OUT_UNITS:"'KM-S'",REF_PLANE:"'FRAME'",REF_SYSTEM:"'ICRF'",VEC_CORR:"'NONE'",VEC_TABLE:"'2'",CSV_FORMAT:"'YES'",OBJ_DATA:"'YES'"}).toString();
   return {kind,provider:'NASA/JPL Horizons',source:u.href,retrieved_at,request:p,...parseHorizons(await get(u.href,fetcher)),note:'Geometric state in equatorial ICRF/J2000 axes. Input and output epochs use UT (UTC from 1962 onward; UT1 earlier). Ephemerides are modeled estimates, not live telemetry.'};

@@ -23,7 +23,7 @@ test('partial JSON answer never emits reasoning or incomplete escapes',()=>{
 });
 function bytes(text,step=1){const data=new TextEncoder().encode(text);return new ReadableStream({start(c){for(let i=0;i<data.length;i+=step)c.enqueue(data.slice(i,i+step));c.close();}});}
 test('real provider token frames reach callback before final JSON, including UTF8',async()=>{
- const text=JSON.stringify({answer:'Mars 🌌 [1].',confident:true});const frames=[...text].map(content=>'data: '+JSON.stringify({choices:[{delta:{content}}]})+'\n\n').join('')+'data: {"choices":[{"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n';let draft='';const raw=await streamCompletion([],{},async()=>new Response(bytes(frames)),t=>draft+=t);assert.equal(JSON.parse(raw).answer,draft);
+ const text=JSON.stringify({answer:'Mars 🌌 [1].',confident:true});const frames=[...text].map(content=>'data: '+JSON.stringify({choices:[{delta:{content}}]})+'\n\n').join('')+'data: {"choices":[{"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n';let draft='';const raw=await streamCompletion([],{GROQ_API_KEY:'test'},async()=>new Response(bytes(frames)),t=>draft+=t);assert.equal(JSON.parse(raw).answer,draft);
 });
 test('frontend requires done and propagates stream errors',async()=>{
  const frame='event: delta\ndata: {"text":"hi 🌌"}\n\n';await assert.rejects(readResearchStream(new Response(bytes(frame),{headers:{'Content-Type':'text/event-stream'}})),/interrupted/);

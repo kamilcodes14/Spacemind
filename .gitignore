@@ -19,3 +19,8 @@ dist/
 !supabase/functions/.env.example
 supabase/.temp/
 supabase/.branches/
+
+# Hosted vector index is authoritative; optional local copies remain untracked.
+data/chroma_db/
+evals/latest-report.json
+evals/reports/

@@ -13,17 +13,33 @@ export function validateTool(value){
  else if(kind==='horizons'||kind==='spice'){
   for(const key of ['target','observer']){const s=string(p,key,16);if(!/^-?\d{1,9}$/.test(s))throw Error('Use a numeric NAIF ID.');params[key]=s;}
   params.epoch=string(p,'epoch',30);if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(params.epoch)||!Number.isFinite(Date.parse(params.epoch)))throw Error('Use an ISO UTC epoch.');
- }else if(kind==='mast'){params={ra:number(p,'ra',0,360),dec:number(p,'dec',-90,90),radius:number(p,'radius',.001,1)};}
+ }else if(['gaia','esa','simbad','vizier'].includes(kind)){params={ra:number(p,'ra',0,360),dec:number(p,'dec',-90,90),radius:number(p,'radius',.001,1)};}
+ else if(kind==='exoplanets'){params.query=string(p,'query',80);}
+ else if(kind==='mast'){params={ra:number(p,'ra',0,360),dec:number(p,'dec',-90,90),radius:number(p,'radius',.001,1)};}
  else if(kind==='mast-products'){params.obsid=string(p,'obsid',30);if(!/^\d+$/.test(params.obsid))throw Error('Invalid observation ID.');}
  else if(kind==='pds'){params.query=string(p,'query',120);}
  else if(kind==='weather'||kind==='launches'){params={};}
  else if(kind==='lagrange'){if(!['Sun–Earth','Earth–Moon'].includes(p.system))throw Error('Unknown system.');params.system=p.system;}
+ else if(kind==='budget'){
+  const burns=string(p,'burns',500);const values=burns.split(',').map(x=>Number(x.trim()));if(values.length>30||values.some(v=>!Number.isFinite(v)||v<0||v>1e6)||burns.split(',').some(x=>!x.trim()))throw Error('Enter comma-separated nonnegative burns in m/s.');
+  params={burns,margin:number(p,'margin',0,100),isp:number(p,'isp',1,100000),wet:number(p,'wet',1,1e12),dry:number(p,'dry',1,1e12)};if(params.dry>params.wet)throw Error('Dry mass exceeds wet mass.');
+ }else if(['lightcurve','transit','hrdiagram'].includes(kind)){
+  params.filename=string(p,'filename',110);if(!/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,100}\.csv$/.test(params.filename))throw Error('Use a simple CSV filename.');
+  if(kind==='transit'){params.minimum=number(p,'minimum',.01,1000);params.maximum=number(p,'maximum',params.minimum+.001,10000);params.duration=number(p,'duration',.001,params.minimum*.5);}
+ }else if(kind==='decay'){params={altitude:number(p,'altitude',121,1500),days:number(p,'days',.1,365),ballistic:number(p,'ballistic',1,10000),density:number(p,'density',1e-16,1e-7),scale:number(p,'scale',5,200)};}
  else if(kind==='python'){params.code=string(p,'code',16000);}
  else throw Error('Unsupported science tool.');
  return {kind,params};
 }
 export const scienceInstructions=`For requests to calculate, simulate, visualize, query ephemerides, browse mission data or inspect space weather/launch schedules, use mode="science" and tool={kind,params} with exactly one supported schema below. Include answer: a short introduction that STATES assumptions and units; never claim a calculation ran or invent its output. Missing inputs: use mode="chat" and ask one specific clarification. Never substitute an orbit illustration for a requested numerical calculation.
 Supported tools:
+budget: {burns:"comma separated m/s values",margin:number,isp:number,wet:number,dry:number}. Margin percent; Isp seconds; masses kg.
+lightcurve: {filename:"uploaded.csv"}. CSV time in days and flux.
+transit: {filename:"uploaded.csv",minimum:number,maximum:number,duration:number}. Trial periods and duration in days.
+hrdiagram: {filename:"spacemind-gaia.csv"}. Gaia CSV from the archive tool, uploaded into Python.
+decay: {altitude:number,days:number,ballistic:number,density:number,scale:number}. Earth altitude km, mass/(Cd*A) kg/m², density kg/m³ at initial altitude, exponential scale height km. Illustrative only; require user assumptions.
+gaia, esa, simbad, vizier: {ra:number,dec:number,radius:number}. Cone coordinates in ICRS degrees; radius .001–1 degrees. ESA uses XMM-Newton archive; VizieR uses Gaia DR3 catalogue.
+exoplanets: {query:"planet or host name"}. NASA Exoplanet Archive.
 orbit: {body:"Earth"|"Moon"|"Mars"|"Sun",periapsis:number,apoapsis:number,inclination:number}. Altitudes in km above body surface, inclination in degrees. For a generic visualization only, you may explicitly propose a 400 km circular Earth orbit at 51.6 degrees as an editable example.
 hohmann: {body,start:number,end:number}. Circular orbit ALTITUDES in km above the named central body's surface, coplanar impulsive transfer; requires both altitudes. For interplanetary orbit radii subtract Sun radius 695700 km. Never imply this includes planet escape/capture.
 rocket: {isp:number,wet:number,dry:number}. Isp seconds, masses kg. Requires all three.
