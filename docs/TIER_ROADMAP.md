@@ -91,3 +91,12 @@ Tier 1 acceptance is closed on the existing production frontend https://spacemin
 - Ownership policies on chats/messages remain authenticated-user scoped with auth.uid() in USING and WITH CHECK; no auth/RLS changes were made.
 
 This is Tier 1 functional acceptance, not a general scientific-accuracy score. Corpus coverage is limited; unrelated retrieval candidates may remain in the source list, and automated claim checking can leave claims unverified. The Tier 4 50-question live evaluation and remaining Tiers 2–3 acceptance/release work remain open. Earlier dated OPEN statements above are historical and superseded for Tier 1 by this entry.
+
+
+## 18 October Tier 2 follow-up — in progress
+
+- Google-authenticated stable-preview comparison ran with two selected documents (the saved stellar-photosphere abstract and the two-page synthetic transit fixture). It kept their identities distinct and cited three excerpts from two documents. It correctly retained the synthetic-data limitation, but exposed internal document UUIDs and included interpretive method descriptions; comparison acceptance is not yet closed.
+- Prepared and committed fix 270ae107b9a91c74ea55d16ad939255641e749e3: replace raw document IDs in generation evidence with per-request grouping labels, require user-facing titles/numbered citations, and explicitly prohibit inferring absent methods/results. Existing 24 research/HTTP/authentication/SSE tests passed against the patched live-source bundle.
+- Deploying the research Edge Function was rejected by automatic approval review because it immediately replaces the production-shared backend and explicit production-deployment approval was required. No alternative deployment route was attempted. Research remains on its prior version; the fix is committed but not live-retested.
+- Negative table-extraction acceptance passed on the selected synthetic PDF: the response correctly reported no printed tables rather than inventing one from prose measurements. This does not validate positive extraction of real tables/equations.
+- Next: approve deployment of the exact research fix in project aqblctjucyxqjmylojgc with verify_jwt=true and unchanged dependencies, then retest comparison; complete remaining extraction/paper workflows and frontend release checks. Tier 2 remains in progress.
