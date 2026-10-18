@@ -100,3 +100,8 @@ This is Tier 1 functional acceptance, not a general scientific-accuracy score. C
 - Deploying the research Edge Function was rejected by automatic approval review because it immediately replaces the production-shared backend and explicit production-deployment approval was required. No alternative deployment route was attempted. Research remains on its prior version; the fix is committed but not live-retested.
 - Negative table-extraction acceptance passed on the selected synthetic PDF: the response correctly reported no printed tables rather than inventing one from prose measurements. This does not validate positive extraction of real tables/equations.
 - Next: approve deployment of the exact research fix in project aqblctjucyxqjmylojgc with verify_jwt=true and unchanged dependencies, then retest comparison; complete remaining extraction/paper workflows and frontend release checks. Tier 2 remains in progress.
+
+
+## 18 October approved Tier 2 backend deployment
+
+User approved the prepared production-shared research fix. Research v13 is ACTIVE with verify_jwt=true. Readback confirms _shared/research.js exactly matches commit 270ae107b9a91c74ea55d16ad939255641e749e3; all other files were preserved from live v12. The earlier deployment approval block is resolved. Comparison retest and remaining extraction/paper-workflow acceptance require the Google-authenticated browser session; device verification is currently pending. Tier 2 frontend release and completion remain open.
