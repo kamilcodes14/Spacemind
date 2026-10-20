@@ -19,9 +19,9 @@ Implemented PDF text extraction with page citations, selected-paper chat/summary
 
 Production migrations match all six local SQL files by content hash. Version filenames now match live migration history. Supabase Edge Functions research v9, space-data v2, paper-discovery v1 and daily-digest v1 are ACTIVE. The digest authenticated job returned HTTP 200 and processed 100 abstracts; the cron runs at 07:15 Asia/Karachi. Digest records are lexical-only until separately embedded. The feed is limited to the first 100 newest papers, not exhaustive.
 
-## Tier 3 — Mission Lab (implemented; browser acceptance and release pending)
+## Tier 3 — Mission Lab (complete; released 20 October 2026)
 
-Delta-v budget, existing rocket equation, light curves, transit search, Gaia HR diagrams and simplified orbital decay; attach executed code/output to chat; PNG/CSV and Jupyter notebook exports/import. Actual local Python execution passed synthetic numerical checks for all five new recipes. Browser/Pyodide execution and download acceptance remain open; local Python is not a substitute.
+Delta-v budget, existing rocket equation, light curves, transit search, Gaia HR diagrams and simplified orbital decay; attach executed code/output to chat; PNG/CSV and Jupyter notebook exports/import. All five new recipes passed browser/Pyodide functional acceptance with synthetic inputs. CSV/PNG and notebook export/import checks passed; executed-result chat explanations persisted and reopened. The tested code is released in production. See the dated acceptance evidence below.
 
 ## Tier 4 — infrastructure (implemented; deployed-stack evaluation pending)
 
@@ -116,3 +116,18 @@ Tier 2 core workflows are implemented, accepted and released: PDF upload with pa
 External limitations remain explicit: live citation relationships were unavailable from the provider; the graph showed per-relationship load warnings and no fabricated edges. Discovery returned imported-corpus matches with a non-live warning. NASA ADS requires an optional token. Scanned PDFs require external OCR; text extraction does not guarantee complex layout/symbol fidelity. These limitations are not claimed as successful live provider acceptance.
 
 Shared frontend release checks: browser mission budget and BLS/export checks previously passed; this session also passed orbit decay (394.2989680998856 km after the default 30-day scenario), Gaia HR diagram with 3 synthetic rows and checked exported magnitudes (5, 4.505149978319906, 5.494850021680094), and light-curve analysis (2.983582089552239-day strongest sampled period from the synthetic 3-day fixture). These are functional synthetic checks, not scientific validation. GitHub validation at the release head passed syntax, tests, offline evaluation, database/RLS and build. Tier 4's dedicated-account live evaluation remains open.
+
+
+## 20 October 2026 Tier 3 acceptance — COMPLETE
+
+Tier 3 functional implementation, browser acceptance and production release are closed. The production alias was verified at deployment dpl_DFJrSdxDZWJmB1BMpGURFntCHUCy (READY, main 26b60a2074f0fd01bd745d61cdc150942535183e), containing the application release merged in 149e5e7. The later commit changes only release documentation.
+
+Acceptance evidence from the signed-in release candidate against the shared backend:
+- Mission delta-v: required 2,585 m/s; available 2,875.4376018347784 m/s; propellant 5,612.122654799894 kg. Exported CSV checked. Explain result saved and reopened with correct final-mass interpretation.
+- Transit search: BLS recovered 3.0010005002501248 days for the synthetic 3-day fixture, with explicit non-confirmation caveats. PNG output validated.
+- Light-curve analysis: browser execution returned a strongest sampled period of 2.983582089552239 days, with no false-alarm-significance claim.
+- Gaia HR diagram: browser execution retained three synthetic quality-filtered rows. Exported absolute magnitudes were checked: 5, 4.505149978319906 and 5.494850021680094.
+- Simplified orbit decay: browser execution returned 394.2989680998856 km after the default 30-day scenario; monotonic-decay assertion passed and model assumptions were displayed.
+- Notebook exported as valid nbformat 4 with code/output and reopened in SpaceMind.
+
+These checks establish functionality on synthetic fixtures, not observational accuracy or operational mission safety. Post-release production page loading was verified; a separate new signed-in production test was not performed. Optional library/provider limitations remain documented. Tier 4 live evaluation is separate and remains pending. Earlier dated Tier 3 OPEN statements are superseded by this entry.
