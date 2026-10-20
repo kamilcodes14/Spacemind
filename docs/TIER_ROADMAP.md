@@ -131,3 +131,10 @@ Acceptance evidence from the signed-in release candidate against the shared back
 - Notebook exported as valid nbformat 4 with code/output and reopened in SpaceMind.
 
 These checks establish functionality on synthetic fixtures, not observational accuracy or operational mission safety. Post-release production page loading was verified; a separate new signed-in production test was not performed. Optional library/provider limitations remain documented. Tier 4 live evaluation is separate and remains pending. Earlier dated Tier 3 OPEN statements are superseded by this entry.
+
+
+## 20 October Tier 4 live evaluation attempt — credentials blocked
+
+Manually dispatched the reviewed main workflow at 94ca526e5dbab6faee1e20f4455e8f4c6b889e59. Run https://github.com/kamilcodes14/Spacemind/actions/runs/39407699892 failed before any questions were evaluated. CI logs confirm SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are configured, but EVAL_EMAIL and EVAL_PASSWORD are empty. A dedicated confirmed normal test account must be supplied through repository secrets. No evaluation score, report or Tier 4 completion is claimed.
+
+Latest main Validate workspace run 39407383162 succeeded. Historical scheduled refresh run 39247024148 failed when the old workflow attempted to push a 104 MB Chroma database. The newly released reingest.yml now imports abstracts to the hosted index with read-only repository permissions instead of committing vector binaries; that historical failure is not from the new workflow. Its first live run remains unverified.
