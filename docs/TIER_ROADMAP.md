@@ -13,7 +13,7 @@ Source: user-provided SpaceMind review and roadmap, 9 October 2026.
 
 Validation: run `npm test`, `npm run test:db`, `npm run check`, and a configured `npm run build`. A live signed-in research request must still verify the complete UI → API → database → provider → UI flow before marking this tier complete.
 
-## Tier 2 — research assistant (backend deployed; frontend release pending)
+## Tier 2 — research assistant (core workflows released; external-provider limitations documented)
 
 Implemented PDF text extraction with page citations, selected-paper chat/summary/comparison/literature/open-problems/equations/tables, BibTeX/APA exports, private collections and paper/chat notes, citation relationships and related papers, topic subscriptions and an in-app daily digest. Additional fixed astronomy archive adapters are included. ADS requires its optional provider token. Scanned PDFs need OCR outside this version; equation/table extraction depends on PDF text quality and selected-page coverage is explicitly bounded.
 
@@ -105,3 +105,14 @@ This is Tier 1 functional acceptance, not a general scientific-accuracy score. C
 ## 18 October approved Tier 2 backend deployment
 
 User approved the prepared production-shared research fix. Research v13 is ACTIVE with verify_jwt=true. Readback confirms _shared/research.js exactly matches commit 270ae107b9a91c74ea55d16ad939255641e749e3; all other files were preserved from live v12. The earlier deployment approval block is resolved. Comparison retest and remaining extraction/paper-workflow acceptance require the Google-authenticated browser session; device verification is currently pending. Tier 2 frontend release and completion remain open.
+
+
+## 20 October 2026 Tier 2 production release
+
+PR #3 merged at 149e5e732a53f19ceeed75a27a76fecf4fea4915. Vercel production deployment dpl_5ePHHf4Q7LGKTLfpuPEMxhY5mjRc is READY and assigned to https://spacemind-frontend.vercel.app/. The production page was reloaded successfully; the browser lacks a WebGL context, so animated-background rendering was not verified. The new production session was signed out; signed-in workflow evidence below comes from the matching release candidate against the shared live backend, not a new post-release authenticated run.
+
+Tier 2 core workflows are implemented, accepted and released: PDF upload with page citations; selected-paper chat/summary/comparison; bounded literature synthesis and open-problem suggestions; equation/table extraction; BibTeX/APA export; private collections and paper/chat notes; topic subscriptions and in-app digest infrastructure. Comparison retest after research v13 no longer exposes UUIDs and distinguishes abstract methods from synthetic inputs. Positive extraction reproduced both table rows (A: 0.10, 0.0100, 3 days; B: 0.05, 0.0025, 7 days) and delta=(Rp/Rs)^2 with symbol definitions. Negative extraction declined to invent a table. Literature and open-problem outputs retained uncertainty warnings where verification was incomplete. Conversation notes reopened unchanged, and the exoplanet atmosphere subscription persisted in the UI.
+
+External limitations remain explicit: live citation relationships were unavailable from the provider; the graph showed per-relationship load warnings and no fabricated edges. Discovery returned imported-corpus matches with a non-live warning. NASA ADS requires an optional token. Scanned PDFs require external OCR; text extraction does not guarantee complex layout/symbol fidelity. These limitations are not claimed as successful live provider acceptance.
+
+Shared frontend release checks: browser mission budget and BLS/export checks previously passed; this session also passed orbit decay (394.2989680998856 km after the default 30-day scenario), Gaia HR diagram with 3 synthetic rows and checked exported magnitudes (5, 4.505149978319906, 5.494850021680094), and light-curve analysis (2.983582089552239-day strongest sampled period from the synthetic 3-day fixture). These are functional synthetic checks, not scientific validation. GitHub validation at the release head passed syntax, tests, offline evaluation, database/RLS and build. Tier 4's dedicated-account live evaluation remains open.
