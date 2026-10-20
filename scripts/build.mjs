@@ -1,5 +1,5 @@
 import {build} from 'esbuild';
-import {mkdir,rm,readFile,writeFile,copyFile} from 'node:fs/promises';
+import {mkdir,rm,readFile,writeFile,copyFile,cp} from 'node:fs/promises';
 const url=process.env.SUPABASE_URL?.replace(/\/$/,'');
 const key=process.env.SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY;
 if(!url||!key) throw new Error('Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) before building.');
@@ -10,7 +10,10 @@ if(!key.startsWith('sb_publishable_')){
   if(role!=='anon') throw new Error('Only a publishable or legacy anon key belongs in the frontend. Never use a service-role/secret key.');
 }
 await rm('dist',{recursive:true,force:true});await mkdir('dist/assets',{recursive:true});
-for(const name of ['app.js','styles.css','logo.png','logo.mp4'])await copyFile('frontend/'+name,'dist/assets/'+name);
+for(const dir of ['cmaps','standard_fonts','wasm'])await cp('node_modules/pdfjs-dist/'+dir,'dist/assets/'+dir,{recursive:true});
+await copyFile('node_modules/pdfjs-dist/build/pdf.worker.mjs','dist/assets/pdf.worker.mjs');
+await build({entryPoints:['frontend/paper-workspace.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,outfile:'dist/assets/papers.js'});
+for(const name of ['app.js','citation-export.js','styles.css','logo.png','logo.mp4'])await copyFile('frontend/'+name,'dist/assets/'+name);
 await build({entryPoints:['frontend/universe.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,outfile:'dist/assets/universe.js'});
 const frameBuild=await build({entryPoints:['frontend/science/python-frame.js'],bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,write:false,plugins:[{name:'worker-text',setup(b){b.onResolve({filter:/\?text$/},args=>({path:new URL('../frontend/science/'+args.path.replace('./','').replace('?text',''),import.meta.url).pathname,namespace:'worker-text'}));b.onLoad({filter:/.*/,namespace:'worker-text'},async args=>({contents:await readFile(args.path,'utf8'),loader:'text'}));}}]});
 const frameHTML=`<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src blob:; connect-src https://cdn.jsdelivr.net https://pypi.org https://files.pythonhosted.org; img-src data:; style-src 'none'; form-action 'none'; base-uri 'none'"><script>${frameBuild.outputFiles[0].text.replaceAll('</script','<\\/script')}</script>`;

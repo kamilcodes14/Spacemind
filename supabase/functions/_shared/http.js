@@ -3,7 +3,10 @@ export function cors(req,allowed){
   const origin=req.headers.get('origin');
   // This repository's deployed frontend must work without a separate origin secret.
   // ALLOWED_ORIGINS can add development or custom domains; never allow all origins.
-  const allow=['https://spacemind-frontend.vercel.app',...allowed.split(',').map(s=>s.trim().replace(/\/$/,'')).filter(Boolean)];
+  const allow=['https://spacemind-frontend.vercel.app',
+    // Exact first-party branch alias; do not trust arbitrary Vercel previews.
+    'https://spacemind-frontend-git-codex-tier2-citation-exports-syed-kamil.vercel.app',
+    ...allowed.split(',').map(s=>s.trim().replace(/\/$/,'')).filter(Boolean)];
   if(origin&&!allow.includes(origin))throw new HttpError(403,'This website is not allowed to call the research backend.');
   return {'Access-Control-Allow-Origin':origin||allow[0]||'null','Access-Control-Allow-Headers':'authorization,x-client-info,apikey,content-type','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Vary':'Origin','Cache-Control':'no-store'};
 }
@@ -31,5 +34,9 @@ export function safeURL(value){try{const u=new URL(value);return ['https:','http
 export async function fetchJSON(url,options={},fetcher=fetch,timeout=15000){
   let response;try{response=await fetcher(url,{...options,signal:AbortSignal.timeout(timeout)});}catch{throw new HttpError(503,'A research provider did not respond. Please try again.');}
   if(!response.ok)throw new HttpError(response.status===429?429:503,'A research provider is unavailable or rate limited. Please try again.');
-  return response.json();
+  const reader=response.body?.getReader();if(!reader)throw new HttpError(503,'A research provider returned an empty response.');
+  let size=0,text='';const decoder=new TextDecoder();
+  try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000)throw new HttpError(503,'The research provider returned too much data. Narrow your query.');text+=decoder.decode(value,{stream:true});}text+=decoder.decode();return JSON.parse(text);}
+  finally{await reader.cancel().catch(()=>{});}
+
 }

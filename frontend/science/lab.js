@@ -1,11 +1,13 @@
+import {advancedDefaults,advancedTitles} from './advanced-recipes.js';
+import {csv} from './notebook.js';
 import {mountPython} from './python-client.js';
 import {mountViewer,mountLagrange} from './viewer.js';
 import {recipe} from './recipes.js';
 import {validateTool,TOOL_ORIGIN} from '../../supabase/functions/_shared/science-tools.js';
 const cleanups=new Map();
-const titles={orbit:'Orbit playground',hohmann:'Hohmann transfer',rocket:'Delta-v budget',spice:'SPICE kernel query',horizons:'JPL Horizons',mast:'MAST archive',pds:'Planetary Data System',weather:'Space weather',launches:'Launch schedule',lagrange:'Lagrange points',python:'Python workspace','mast-products':'Observation products'};
-const defaults={orbit:{body:'Earth',periapsis:400,apoapsis:1200,inclination:51.6},hohmann:{body:'Earth',start:400,end:35786},rocket:{isp:320,wet:10000,dry:4000},spice:{target:'301',observer:'399',epoch:'2026-01-01T00:00:00Z'},horizons:{target:'301',observer:'399',epoch:'2026-01-01T00:00:00Z'},mast:{ra:83.633,dec:22.0145,radius:.02},pds:{query:'Mars'},weather:{},launches:{},lagrange:{system:'Earth–Moon'},python:{code:'import numpy as np\nfrom astropy import units as u\n\n# Example: circular orbit speed at 400 km Earth altitude.\nmu = 398600.4418 * u.km**3 / u.s**2\nr = (6378.137 + 400) * u.km\nprint(np.sqrt(mu/r).to(u.km/u.s))\n'}};
-const labels={body:'Central body',start:'Initial altitude · km',end:'Final altitude · km',isp:'Specific impulse · s',wet:'Wet mass · kg',dry:'Dry mass · kg',target:'Target NAIF ID',observer:'Observer NAIF ID',epoch:'Epoch · UTC ISO 8601',ra:'Right ascension · degrees',dec:'Declination · degrees',radius:'Cone radius · degrees',query:'Dataset keywords',system:'Two-body system'};
+const titles={...advancedTitles,gaia:'ESA Gaia DR3',esa:'ESA XMM-Newton',simbad:'SIMBAD',vizier:'VizieR Gaia catalogue',exoplanets:'NASA Exoplanet Archive',orbit:'Orbit playground',hohmann:'Hohmann transfer',rocket:'Delta-v budget',spice:'SPICE kernel query',horizons:'JPL Horizons',mast:'MAST archive',pds:'Planetary Data System',weather:'Space weather',launches:'Launch schedule',lagrange:'Lagrange points',python:'Python workspace','mast-products':'Observation products'};
+const defaults={...advancedDefaults,gaia:{ra:56.75,dec:24.12,radius:1},esa:{ra:83.633,dec:22.0145,radius:.5},simbad:{ra:83.633,dec:22.0145,radius:.02},vizier:{ra:56.75,dec:24.12,radius:.1},exoplanets:{query:'Kepler-22'},orbit:{body:'Earth',periapsis:400,apoapsis:1200,inclination:51.6},hohmann:{body:'Earth',start:400,end:35786},rocket:{isp:320,wet:10000,dry:4000},spice:{target:'301',observer:'399',epoch:'2026-01-01T00:00:00Z'},horizons:{target:'301',observer:'399',epoch:'2026-01-01T00:00:00Z'},mast:{ra:83.633,dec:22.0145,radius:.02},pds:{query:'Mars'},weather:{},launches:{},lagrange:{system:'Earth–Moon'},python:{code:'import numpy as np\nfrom astropy import units as u\n\n# Example: circular orbit speed at 400 km Earth altitude.\nmu = 398600.4418 * u.km**3 / u.s**2\nr = (6378.137 + 400) * u.km\nprint(np.sqrt(mu/r).to(u.km/u.s))\n'}};
+const labels={filename:'Uploaded CSV filename',burns:'Burns · m/s, comma separated',margin:'Delta-v margin · %',minimum:'Minimum period · days',maximum:'Maximum period · days',duration:'Transit duration · days',altitude:'Initial altitude · km',days:'Duration · days',ballistic:'Mass / (Cd × area) · kg/m²',density:'Initial atmospheric density · kg/m³',scale:'Density scale height · km',body:'Central body',start:'Initial altitude · km',end:'Final altitude · km',isp:'Specific impulse · s',wet:'Wet mass · kg',dry:'Dry mass · kg',target:'Target NAIF ID',observer:'Observer NAIF ID',epoch:'Epoch · UTC ISO 8601',ra:'Right ascension · degrees',dec:'Declination · degrees',radius:'Cone radius · degrees',query:'Dataset keywords',system:'Two-body system'};
 function el(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text)n.textContent=text;return n;}
 function button(text,fn,primary=false){const b=el('button',primary?'primary':'secondary',text);b.type='button';b.onclick=fn;return b;}
 function download(data,name,type='application/json'){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([typeof data==='string'?data:JSON.stringify(data,null,2)],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -16,6 +18,8 @@ function renderData(host,data){
  if(data.warnings?.length)host.append(el('p','notice',data.warnings.join(' ')));
  host.append(button('Download result',()=>download(data,'spacemind-'+data.kind+'.json')));
  if(Array.isArray(data.rows)){
+  host.append(button('Download CSV',()=>download(csv(data.rows),'spacemind-'+data.kind+'.csv','text/csv')));
+  if(data.kind==='gaia'&&data.rows.length>1)host.append(button('Plot HR diagram',()=>{const code=recipe('hrdiagram',{filename:'spacemind-gaia.csv'}).replace(`data=Table.read("/work/spacemind-gaia.csv",format='ascii.csv')`,'import json\ndata=Table(rows=json.loads('+JSON.stringify(JSON.stringify(data.rows))+'))');mountPython(host,code);}));
   if(!data.rows.length){host.append(el('p','muted','No matching records were returned. Try a different query.'));return;}
   const scroll=el('div','science-table-scroll'),table=el('table','science-table');const keys=Object.keys(data.rows[0]).filter(k=>!['files','labels','url'].includes(k));
   const tr=el('tr');keys.forEach(k=>tr.append(el('th',null,k.replaceAll('_',' '))));tr.append(el('th',null,'Open'));const head=el('thead');head.append(tr);table.append(head);const tbody=el('tbody');
@@ -35,7 +39,7 @@ export function mountTool(host,input,{live=false,saved=true}={}){
  if(tool.kind==='hohmann'){card.append(el('p','science-note','Coplanar transfer between circular orbits. The full transfer ellipse and endpoint circles are shown; the transfer takes half a period. Interplanetary examples omit planetary escape/capture and launch-window phasing.'));disposers.push(mountViewer(card,{body:tool.params.body,periapsis:Math.min(tool.params.start,tool.params.end),apoapsis:Math.max(tool.params.start,tool.params.end),inclination:0,transfer:true}));}
  if(tool.kind==='orbit'){disposers.push(mountViewer(card,tool.params));const details=el('details'),summary=el('summary',null,'Verify the original orbit in Python');details.append(summary);card.append(details);disposers.push(mountPython(details,recipe('orbit',tool.params)));}
  else if(tool.kind==='lagrange')disposers.push(mountLagrange(card,tool.params.system));
- else if(['hohmann','rocket','spice','python'].includes(tool.kind)){
+ else if(['hohmann','rocket','spice','python',...Object.keys(advancedDefaults)].includes(tool.kind)){
   if(tool.kind==='spice'){card.append(el('p','notice','Experimental browser SPICE. Upload matching .bsp and .tls kernels before running. Accuracy and available epochs depend on those kernels.'));
    const a=link('https://naif.jpl.nasa.gov/naif/data.html','NASA kernel archive ↗');card.append(a);
   }

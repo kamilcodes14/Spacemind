@@ -32,7 +32,10 @@ onmessage=async e=>{
   }
   emit('status','Executing Python…');const started=performance.now();
   // Fresh namespace per run. Uploaded files and installed packages survive until reset.
-  const globals=py.toPy({});try{await py.runPythonAsync(m.code,{globals});}finally{globals.destroy();}
+  const globals=py.toPy({});try{
+   await py.runPythonAsync(m.code,{globals});
+   const rows=globals.get('result_rows');if(rows){try{const raw=rows.toJs({dict_converter:Object.fromEntries});const encoded=JSON.stringify(raw);if(encoded.length<=2_000_000&&Array.isArray(raw)&&raw.length<=20000)postMessage({type:'table',text:encoded});}finally{rows.destroy?.();}}
+  }finally{globals.destroy();}
   const figures=await py.runPythonAsync("import io, base64, matplotlib.pyplot as plt\n_images=[]\nfor n in plt.get_fignums()[:4]:\n    _buf=io.BytesIO()\n    plt.figure(n).savefig(_buf,format='png',dpi=100,bbox_inches='tight')\n    _images.append(base64.b64encode(_buf.getvalue()).decode())\nplt.close('all')\n_images");
   for(const data of figures.toJs())if(data.length<3_000_000)postMessage({type:'image',text:data});figures.destroy();
   emit('done',`Executed in ${((performance.now()-started)/1000).toFixed(2)} s. Numerical checks, when present, are shown above.`);

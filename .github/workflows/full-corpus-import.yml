@@ -1,0 +1,68 @@
+name: Complete original paper corpus import
+on:
+  workflow_dispatch: {}
+  pull_request:
+    types: [labeled]
+permissions:
+  contents: read
+concurrency:
+  group: spacemind-full-corpus-import
+  cancel-in-progress: false
+jobs:
+  import:
+    if: github.event_name == 'workflow_dispatch' || (github.event.label.name == 'run-full-corpus-import' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check import configuration without printing credentials
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          PAPER_IMPORT_TOKEN: ${{ secrets.PAPER_IMPORT_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os
+          assert os.environ.get('SUPABASE_URL', '').rstrip('/') == 'https://aqblctjucyxqjmylojgc.supabase.co', 'Set the SpaceMind SUPABASE_URL repository secret.'
+          assert os.environ.get('SUPABASE_PUBLISHABLE_KEY', '').startswith('sb_publishable_'), 'Set the public SUPABASE_PUBLISHABLE_KEY repository secret.'
+          assert len(os.environ.get('PAPER_IMPORT_TOKEN', '')) >= 32, 'Set PAPER_IMPORT_TOKEN to match the Edge Function secret.'
+          print('Import configuration present; no credential values printed.')
+          PY
+      # The original database remains in Git history, not in the current tree.
+      # Use a reviewed immutable revision and extract text only; never reuse vectors.
+      - uses: actions/checkout@v4
+        with:
+          ref: bf6e16c4b39f18322c5b1369abc4896d247d68f0
+          path: original-corpus
+          sparse-checkout: data/chroma_db
+          persist-credentials: false
+      - name: Verify the complete original corpus is available
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          from import_supabase_papers import rows
+          count=len({r['id'] for r in rows(Path('original-corpus/data/chroma_db/chroma.sqlite3'))})
+          assert count == 3932, f'Unexpected corpus size: {count}'
+          print(f'Validated {count} original unique chunks.')
+          PY
+      - name: Collect original text and refresh bibliographic metadata
+        run: python scripts/collect_hosted_corpus.py --database original-corpus/data/chroma_db/chroma.sqlite3 --per-source 15
+      - name: Import with normal operator authentication
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          PAPER_IMPORT_TOKEN: ${{ secrets.PAPER_IMPORT_TOKEN }}
+        run: python scripts/import_supabase_papers.py --jsonl data/processed/hosted-corpus.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-corpus-import-manifest
+          path: data/processed/hosted-corpus.manifest.json
+          if-no-files-found: ignore

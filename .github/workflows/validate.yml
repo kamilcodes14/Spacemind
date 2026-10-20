@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+      - run: npm run eval
       - run: npm run test:db
       - run: npm run build
         env:

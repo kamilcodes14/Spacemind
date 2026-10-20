@@ -58,8 +58,8 @@ def ntrs_metadata(citation):
         'url':'https://ntrs.nasa.gov/citations/'+str(citation['id']),
         'abstract':citation.get('abstract','')}
 
-def collect(database, count, output):
-    existing=list({r['id']:r for r in rows(database)}.values()) if database.exists() else []
+def collect(database, count, output, abstracts_only=False):
+    existing=list({r['id']:r for r in rows(database)}.values()) if database.exists() and not abstracts_only else []
     metadata={}; added=[]; errors=[]
     def add(papers):
         for paper in papers:
@@ -108,6 +108,7 @@ def collect(database, count, output):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--database',type=Path,default=Path('data/chroma_db/chroma.sqlite3'))
+    p.add_argument('--abstracts-only',action='store_true',help='Fetch fresh abstracts without reading the optional local vector index.')
     p.add_argument('--per-source',type=int,default=15)
     p.add_argument('--output',type=Path,default=Path('data/processed/hosted-corpus.jsonl'))
-    a=p.parse_args();collect(a.database,a.per_source,a.output)
+    a=p.parse_args();collect(a.database,a.per_source,a.output,a.abstracts_only)

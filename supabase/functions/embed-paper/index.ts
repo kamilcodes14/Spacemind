@@ -1,5 +1,6 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.117.2';
 import {bodyJSON,HttpError,json,safeURL} from '../_shared/http.js';
+import {cleanPaperFields} from './clean-text.js';
 declare const Supabase: {ai:{Session:new (model:string)=>{run:(text:string,options:object)=>Promise<number[]>}}};
 let model:InstanceType<typeof Supabase.ai.Session>;
 Deno.serve(async req=>{
@@ -7,7 +8,7 @@ Deno.serve(async req=>{
   if(req.method!=='POST')throw new HttpError(405,'Method not allowed.');
   const secret=Deno.env.get('PAPER_IMPORT_TOKEN');
   if(!secret||secret.length<32||req.headers.get('authorization')!==`Bearer ${secret}`)throw new HttpError(401,'Operator authorization required.');
-  const body=await bodyJSON(req,12000);
+  const body=cleanPaperFields(await bodyJSON(req,12000));
   for(const key of ['id','doc_id','title','origin','content'])if(typeof body[key]!=='string'||!body[key].trim())throw new HttpError(422,'Missing paper fields.');
   if(body.id.length>200||body.doc_id.length>200||body.title.length>500||body.content.length>1800)throw new HttpError(422,'Paper chunk is too large.');
   const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
