@@ -76,3 +76,27 @@ These checks refer to the optional Python backend and the earlier interface demo
 - Full original corpus import incomplete: local dry-run 3,932 unique chunks, live original-corpus rows 2,400 plus 152 additional embedded abstracts before digest run. Operator import token unavailable.
 - Frontend release/env verification blocked by Vercel scope access 403. Recipes/exports browser acceptance and hard-refresh release check remain pending.
 - Deployed-stack live eval runner prepared, not executed. Timestamped reports retain scores, citations, errors and latency for later comparisons; respects normal auth, RLS and quotas. No baseline was captured before this backend deployment; do not invent one.
+
+## Evaluation harness v2 — 24 October 2026
+- Replaced keyword-only grading with reference answers and per-dimension rubrics; added `evals/space-questions-v2.json` (50 questions), `scripts/eval-rubric.mjs`, `scripts/eval-review.mjs` and 13 grader tests (88/88 repository tests pass, including a citation-splitting bug found by the self-consistency test). See `docs/EVALUATION.md`.
+- Live read-only checks (Supabase project aqblctjucyxqjmylojgc): Edge Functions research v13, account v4, embed-paper v6, space-data v4, paper-discovery v4, daily-digest v2 are ACTIVE; zero evaluation conversations exist; `paper_chunks` holds 4,732 rows (30 full-text arXiv documents, 6 full-text NTRS documents, 622 arXiv and 15 NTRS abstract documents); 4,187 rows are embedded and 545 abstract rows are lexical-only.
+- **No live baseline exists.** The deployed-stack run did not execute (no test-account credentials; sandbox cannot reach the deployed hosts). No result is claimed.
+
+## Phase 2 retrieval and evidence — 24 October 2026 (implemented and tested locally; NOT deployed)
+- Evidence on the production corpus (read-only SQL): all 30 full-text arXiv papers also exist as abstract records; 31 canonical arXiv ids appear more than once. With embeddings unavailable, the deployed keyword search returned 0 chunks for 5 of 6 natural-language paper questions (1 for the sixth) because it requires every query term. The new function returned the expected paper at rank 1 for all six (6-question sample written by the maintainer; keyword component only, since embeddings cannot be computed outside the Edge runtime; semantic ranking is unchanged).
+- Migration `20261024000000_phase2_retrieval.sql`: strict AND + relaxed OR keyword lists + semantic list fused by RRF; per-paper cap on canonical arXiv id; full text preferred on ties at every ranking step. Same signature and columns, so research and paper-discovery are unaffected. PGlite tests cover relaxed recall, canonical cap, tie-break, stop-word-only queries, permissions.
+- `_shared/evidence-quality.js`: source classification (full text / abstract / web / uploaded PDF / computed; "preprint" only for arXiv, never "published"), canonical identity, near-duplicate removal that keeps distinct passages, paper-first ordering with a relevance floor, evidence coverage with explicit warnings (abstract-only, no paper evidence, uncovered query terms, single-document), supporting-passage links (text-fragment links for web and abstract pages, page numbers for uploaded PDFs only), and a numeric guard that downgrades "supported" claims whose numbers are absent from the cited excerpt. Mutation checks confirmed the tests fail when the guard or the ordering is removed.
+- UI: source cards show the evidence label, supporting quotes show an "Open at passage" or "Open source" link and a page for uploaded PDFs, the Sources section shows a one-line coverage summary, and claim labels distinguish numeric-guard downgrades.
+- 104 Node tests and the database suite pass; syntax checks and a placeholder-configuration build pass. Not verified: live behaviour after deployment, browser rendering, or the effect on answer quality (the Phase 1 live baseline does not exist yet).
+- Known limits: corpus full-text chunks carry no page numbers (the schema has no page column), so only uploaded PDFs show pages; text-fragment links depend on browser support and on the quote appearing verbatim on the target page; 545 abstract records remain unembedded (keyword-only) until the operator import/embedding step runs; the numeric guard checks only digits, not units or meaning.
+
+## Independent patch review follow-up — 24 October 2026
+
+The two preceding contributed entries describe the patch author's checks; their live
+corpus counts and six-query findings were not independently reproduced here. Do not
+interpret them as a deployed 50-question baseline. Independent review reproduced 104
+original combined tests, found four gaps despite those passes, and added fixes and
+Phase 3 extraction work. Now 119 tests, database suite, syntax/build and actual PDF parser
+checks pass. Research v14 and retrieval migration are deployed; signed-in acceptance
+remains open. See docs/RESEARCH_REVIEW_2026-10-24.md for exact before/after SQL evidence,
+limitations and the independent evaluation protocol. No phase is declared fully complete.

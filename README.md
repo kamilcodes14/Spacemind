@@ -26,11 +26,11 @@ Deploy `dist/`. On Vercel use the **repository root**, framework **Other**, buil
 - Illustrated planets, moons, stars, galaxies, nebulae, black hole and comets; four scenes, motion/brightness/quality controls, reduced-motion support.
 - Responsive mobile sidebar and a focused main screen.
 
-Backgrounds are artistic illustrations, not a complete astronomical catalog or a simulation to scale. Google login and PDF upload are not included.
+Backgrounds are artistic illustrations, not a complete astronomical catalog or a simulation to scale. Google sign-in and text-PDF upload are implemented. Scanned PDFs require external OCR; extraction can lose complex equations and table layout. See the dated acceptance records in [docs/TIER_ROADMAP.md](docs/TIER_ROADMAP.md) for tested workflows and limitations.
 
 ## Research behavior
 
-Web mode uses Tavily exclusively. Papers mode uses the imported corpus and optional Semantic Scholar abstracts. Auto can supplement papers with web results. Missing configuration, provider failures and insufficient evidence are surfaced. Citation-number checks flag missing or invalid references; they do not prove scientific correctness.
+Web mode uses Tavily exclusively. Papers mode uses the imported corpus and optional Semantic Scholar abstracts. Auto can supplement papers with web results. Missing configuration, provider failures and insufficient evidence are surfaced. Citation checks include model-assisted claim verification against retrieved excerpts. They are not independent scientific validation, and source availability does not guarantee claim support.
 
 The hosted backend uses Groq (not xAI/Grok). Existing configuration in this repository used `GROQ_API_KEY`. If your key is actually for xAI, a separate provider adapter is needed; the keys are not interchangeable.
 
@@ -47,3 +47,17 @@ npm run test:db
 The database suite applies the actual migrations in PGlite/Postgres with pgvector and checks ownership, permissions, quota and deletion. Provider calls in unit tests are mocked. See [VALIDATION.md](VALIDATION.md) for scope and deployment limits.
 
 The original Python/Chroma ingestion and local Ollama/Groq research workflow is retained. **[Local Python setup](docs/LOCAL_PYTHON_SETUP.md)** uses its own SQLite accounts and same-origin API; those accounts do not automatically migrate into Supabase Auth. **[Research engine reference](docs/RESEARCH_ENGINE_REFERENCE.md)** documents the original pipeline. `render.yaml` is legacy local-backend deployment configuration and is not used by the Supabase build.
+
+## Research-quality evaluation status
+
+**No completed 50-question deployed baseline or before/after quality score is available.**
+The 24 October 2026 attempt stopped at the dedicated-account credential preflight before
+making research requests. Offline tests and historical synthetic Mission Lab acceptance
+must not be described as measured model accuracy or observational validation.
+
+The evaluation now uses 50 reference-answer cases with six explicit review dimensions,
+including false-premise and future-date cases. Keyword matches no longer award passes.
+Captured answers require independent sentence-level review, with exact source passages,
+reviewer identity, response hashes and rationales. Auto mode is recorded explicitly.
+See [evaluation protocol](docs/EVALUATION_PROTOCOL.md) and
+[current evidence/status](docs/RESEARCH_REVIEW_2026-10-24.md).

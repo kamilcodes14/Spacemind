@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/supabase/*.test.mjs tests/science/*.test.mjs",
+    "test": "node --test tests/supabase/*.test.mjs tests/science/*.test.mjs tests/evals/*.test.mjs",
     "test:db": "node tests/supabase/database.mjs",
     "check": "node --check frontend/app.js && node --check frontend/universe.js && node --check frontend/science/lab.js && node --check supabase/functions/space-data/providers.js",
     "eval": "node scripts/evaluate.mjs",
-    "eval:live": "node scripts/evaluate.mjs --live"
+    "eval:live": "node scripts/evaluate.mjs --live",
+    "eval:fixtures": "node evals/build-fixtures-v2.mjs",
+    "eval:review": "node scripts/review-evaluation.mjs",
+    "eval:compare": "node scripts/compare-evaluations.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",

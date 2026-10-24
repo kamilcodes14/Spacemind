@@ -6,7 +6,7 @@ export function selectedEvidence(papers,question){
   const pages=(Array.isArray(p.pages)?p.pages:[]).filter(x=>x&&typeof x.text==='string'&&x.text.trim());
   if(!pages.length&&p.metadata?.snippet)pages.push({page:1,text:p.metadata.snippet});
   return pages.map((page,i)=>({...page,rank:terms.reduce((sum,t)=>sum+(page.text.toLowerCase().includes(t)?1:0),0)+(i===0?.1:0)})).sort((a,b)=>b.rank-a.rank).slice(0,3).map(page=>({
-   ...p.metadata,title:p.title,source_file:`${p.title} · p. ${page.page}`,origin:p.metadata?.origin||'uploaded_pdf',doc_id:p.id,url:p.metadata?.url||null,snippet:page.text.slice(0,4000),page:page.page,total_pages:pages.length
+   ...p.metadata,title:p.title,source_file:p.metadata?.origin==='uploaded_pdf'?`${p.title} · p. ${page.page}`:p.title,origin:p.metadata?.origin||'uploaded_pdf',doc_id:p.id,url:p.metadata?.url||null,snippet:page.text.slice(0,4000),page:p.metadata?.origin==='uploaded_pdf'?page.page:null,total_pages:p.metadata?.page_count||pages.length,excerpt_truncated:page.text.length>4000,extraction_warnings:p.metadata?.extraction_warnings||[]
   }));
  });
 }

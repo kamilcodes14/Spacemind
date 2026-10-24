@@ -125,14 +125,18 @@ function fillAnswer(body,result,{live=false}={}){
   const citations=(result.citations||[]).filter(c=>c.origin!=='spacemind-tool-v1');
   if(citations.length){
     const sources=document.createElement('details');sources.className='sources';const summary=document.createElement('summary');summary.textContent=citations.length+' sources';sources.append(summary);
+    const coverage=window.SpaceMindEvidence?.evidenceSummary(result.evidence_summary||citations[0]?.evidence_summary);if(coverage){const p=document.createElement('p');p.className='source-meta';p.textContent=coverage;sources.append(p);}
     citations.forEach((c,i)=>{const card=document.createElement('div');card.className='source';const url=safeURL(c.url);
       const title=document.createElement(url?'a':'span');title.textContent=`[${i+1}] ${c.source_file || c.origin || 'Source'}`;
       if(url){title.href=url;title.target='_blank';title.rel='noopener noreferrer';}
-      const meta=document.createElement('p');meta.className='source-meta';meta.textContent=[Array.isArray(c.authors)&&c.authors.length?c.authors.join(', '):null,c.year,c.arxiv_id?'arXiv:'+c.arxiv_id:null,c.origin?.includes('abstract')?'Abstract only':null].filter(Boolean).join(' · ');
+      const meta=document.createElement('p');meta.className='source-meta';meta.textContent=[Array.isArray(c.authors)&&c.authors.length?c.authors.join(', '):null,c.year,c.arxiv_id?'arXiv:'+c.arxiv_id:null,window.SpaceMindEvidence?.sourceLabel(c)||(c.origin?.includes('abstract')?'Abstract only':null)].filter(Boolean).join(' · ');
       const snippet=document.createElement('p');snippet.textContent=c.snippet;
       card.append(title,meta);
       if(window.SpaceMindPapers){for(const [label,action]of [['Save paper',()=>window.SpaceMindPapers.saveSource(c)],['Citations / related',()=>window.SpaceMindPapers.graph(c)]]){const b=document.createElement('button');b.className='text-button';b.textContent=label;b.onclick=()=>action().catch(e=>toast(e.message));card.append(b);}}
-      for(const quote of c.supporting_quotes||[]){const block=document.createElement('blockquote');const highlight=document.createElement('mark');highlight.textContent=quote;block.append(highlight);card.append(block);}
+      const passages=window.SpaceMindEvidence?window.SpaceMindEvidence.passages(c):(c.supporting_quotes||[]).map(quote=>({quote,page:null,href:'',linkLabel:''}));
+      for(const passage of passages){const block=document.createElement('blockquote');const highlight=document.createElement('mark');highlight.textContent=passage.quote;block.append(highlight);
+        if(passage.page||passage.href){const where=document.createElement('p');where.className='source-meta';if(passage.page)where.append(`Page ${passage.page} `);if(passage.href){const a=document.createElement('a');a.href=passage.href;a.target='_blank';a.rel='noopener noreferrer';a.textContent=passage.linkLabel;where.append(a);}block.append(where);}
+        card.append(block);}
       const excerpt=document.createElement('details');const label=document.createElement('summary');label.textContent='Retrieved excerpt';excerpt.append(label,snippet);card.append(excerpt);sources.append(card);
     });
     if(window.SpaceMindCitations?.papers(citations).length){
@@ -150,7 +154,7 @@ function fillAnswer(body,result,{live=false}={}){
   const checks=result.claim_checks||[...new Map(citations.flatMap(c=>c.claim_checks||[]).map(c=>[c.id,c])).values()];
   if(checks.length){const details=document.createElement('details');details.className='claim-checks';const summary=document.createElement('summary');const flagged=checks.filter(c=>c.status!=='supported').length;summary.textContent=flagged?`${flagged} cited claim${flagged===1?'':'s'} need checking`:'Cited claims checked against retrieved excerpts';details.append(summary);
     const note=document.createElement('p');note.className='notice';note.textContent='Automated evidence checks can make mistakes. Read the original papers for context.';details.append(note);
-    for(const check of checks){const row=document.createElement('div');row.className='claim-check '+check.status;const label=document.createElement('strong');label.textContent=({supported:'Supported by excerpt',partial:'Partially supported',unsupported:'Unsupported',unverified:'Not verified'})[check.status]||'Not verified';const claim=document.createElement('p');claim.textContent=check.text;const reason=document.createElement('p');reason.textContent=check.reason;row.append(label,claim,reason);details.append(row);}body.append(details);
+    for(const check of checks){const row=document.createElement('div');row.className='claim-check '+check.status;const label=document.createElement('strong');label.textContent=window.SpaceMindEvidence?window.SpaceMindEvidence.claimLabel(check):(({supported:'Supported by excerpt',partial:'Partially supported',unsupported:'Unsupported',unverified:'Not verified'})[check.status]||'Not verified');const claim=document.createElement('p');claim.textContent=check.text;const reason=document.createElement('p');reason.textContent=check.reason;row.append(label,claim,reason);details.append(row);}body.append(details);
   }
   if(result.follow_up_questions?.length){const follow=document.createElement('div');follow.className='followups';result.follow_up_questions.forEach(q=>{const b=document.createElement('button');b.textContent=q;b.onclick=()=>{if(!state.busy){$('question').value=q;$('question').focus();}};follow.append(b);});body.append(follow);}
   const actions=document.createElement('div');actions.className='answer-actions';const copy=document.createElement('button');copy.className='text-button';copy.textContent='Copy answer';copy.onclick=async()=>{try{await navigator.clipboard.writeText(result.answer);toast('Answer copied.');}catch{toast('Clipboard is unavailable. You can select and copy the answer.');}};actions.append(copy);
