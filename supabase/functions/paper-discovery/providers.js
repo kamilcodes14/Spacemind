@@ -3,12 +3,14 @@ const fields='paperId,title,abstract,url,year,authors,externalIds';
 const normalize=p=>({paperId:p.paperId,title:p.title||'Untitled paper',source_file:p.title,authors:(p.authors||[]).map(a=>a.name),year:p.year,url:safeURL(p.url),arxiv_id:p.externalIds?.ArXiv||null,doi:p.externalIds?.DOI||null,origin:'semantic_scholar_abstract',snippet:(p.abstract||'').slice(0,12000)});
 export async function discoverWithFallback(input,env,client,fetcher=fetch){
  try{return await discover(input,env,fetcher);}catch(error){
-  if(input.kind!=='scholar'||![429,503].includes(error.status))throw error;
-  const result=await client.rpc('match_papers_hybrid',{query_embedding:null,query_text:input.query,match_count:30});
+  if(!['scholar','ads'].includes(input.kind)||![429,503].includes(error.status))throw error;
+  const query=input.query.replace(/\bblackholes\b/gi,'black holes').replace(/\bblackhole\b/gi,'black hole');
+  const result=await client.rpc('match_papers_hybrid',{query_embedding:null,query_text:query,match_count:30});
   if(result.error)throw error;
   const seen=new Set(),papers=[];
   for(const p of result.data||[]){if(seen.has(p.doc_id))continue;seen.add(p.doc_id);papers.push({title:p.title,source_file:p.title,authors:p.authors||[],year:p.year,url:safeURL(p.url),arxiv_id:p.arxiv_id,doc_id:p.doc_id,origin:p.origin,snippet:p.content||''});}
-  return {papers:papers.slice(0,20),source:'imported_corpus',warnings:['The live archive is temporarily unavailable. Showing matches from the imported SpaceMind corpus; these are not live archive search results.']};
+  const archive=input.kind==='ads'?'NASA ADS':'Semantic Scholar';
+  return {papers:papers.slice(0,20),source:'imported_corpus',requested_source:input.kind,warnings:[`${archive} is unavailable. Showing matches from the imported SpaceMind library; these are not live archive search results.`,...(query!==input.query?[`Searched the imported library for “${query}”.`]:[])]};
  }
 }
 export async function discover(input,env,fetcher=fetch){
