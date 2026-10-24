@@ -56,6 +56,22 @@ await db.exec('set role authenticated');
 assert((await db.query("select * from match_papers_hybrid($1::extensions.vector,'unmatchedterm',24)",[JSON.stringify(q)])).rows.some(r=>r.id==='low'),'RRF must retain semantic candidates below the old 0.65 cutoff');
 assert.equal((await db.query("select * from match_papers_hybrid(null,'unmatchedterm',24)")).rows.length,0);
 
+// Phase 2 retrieval: relaxed OR lexical list, canonical-paper cap, full-text tie-break.
+await db.exec('reset role');
+await db.query("insert into paper_chunks(id,doc_id,title,origin,content,arxiv_id) values ('r1','arxiv:2609.9v1','Pulsar timing paper','arxiv','Joint inference of pulsar mass and radius using NICER pulse profiles','2609.9v1'),('r2','arxiv:2609.9v2','Pulsar timing paper','arxiv','Hot spot geometry priors for the pulsar sampler','2609.9v2'),('r3','arxiv:2609.9v1','Pulsar timing paper','arxiv_abstract','Pulsar mass and radius inference abstract','2609.9v1'),('r4','arxiv:2609.9v3','Pulsar timing paper','arxiv','Pulsar systematic uncertainties and mass radius posterior','2609.9v3'),('r5','other','Quasar paper','arxiv','Quasar variability and Eddington ratio','2609.5v1')");
+await db.exec('set role authenticated');
+const strictOnly=(await db.query("select count(*)::int n from paper_chunks where search_document@@websearch_to_tsquery('english','neutron star pulsar mass radius magnetic geometry')")).rows[0].n;
+assert.equal(strictOnly,0,'strict AND query matches nothing for a long natural-language question');
+const relaxed=(await db.query("select id from match_papers_hybrid(null,'neutron star pulsar mass radius magnetic geometry',24)")).rows.map(r=>r.id);
+assert(relaxed.includes('r1'),'relaxed OR retrieval finds the relevant chunk');
+assert(!relaxed.includes('r5'),'unrelated chunk is not returned');
+assert.equal(relaxed.filter(i=>['r1','r2','r3','r4'].includes(i)).length,3,'version variants of one paper are capped at three chunks');
+await db.exec('reset role');
+await db.query("insert into paper_chunks(id,doc_id,title,origin,content,arxiv_id) values ('a1','arxiv:2609.7v1','Tie paper A','arxiv_abstract','Zebra magnetosphere tomography signal','2609.7v1'),('z1','arxiv:2609.8v1','Tie paper B','arxiv','Zebra magnetosphere tomography signal','2609.8v1')");
+await db.exec('set role authenticated');
+const tie=(await db.query("select id from match_papers_hybrid(null,'zebra magnetosphere tomography',24)")).rows.map(r=>r.id);
+assert.deepEqual(tie.slice(0,2),['z1','a1'],'equal scores prefer full text over an abstract record (id order alone would put a1 first)');
+assert.equal((await db.query("select * from match_papers_hybrid(null,'the of and',24)")).rows.length,0,'stopword-only query returns nothing instead of erroring');
 await assert.rejects(db.query('delete from paper_chunks'));
 await db.exec('set role anon');
 await assert.rejects(db.query('select * from profiles'));

@@ -9,6 +9,16 @@
       "value": 88.49405608829983,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 88.494056 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 88.49405608829983, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -21,6 +31,16 @@
       "value": 92.56040452087046,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 92.560405 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 92.56040452087046, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -33,6 +53,16 @@
       "value": 96.68719643210862,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 96.687196 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 96.68719643210862, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -45,6 +75,16 @@
       "value": 100.87355915820187,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 100.873559 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 100.87355915820187, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -57,6 +97,16 @@
       "value": 105.11865677830745,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 105.118657 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 105.11865677830745, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -69,6 +119,16 @@
       "value": 127.19818567010472,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 127.198186 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 127.19818567010472, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -81,6 +141,16 @@
       "value": 201.3105188036288,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 201.310519 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 201.3105188036288, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -93,6 +163,16 @@
       "value": 347.66140383179453,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 347.661404 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 347.66140383179453, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -105,6 +185,16 @@
       "value": 718.6981611502525,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 718.698161 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 718.6981611502525, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -117,6 +207,16 @@
       "value": 1436.0665082861817,
       "unit": "minutes",
       "tolerance": 0.02
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 1436.066508 minutes in a two-body circular model.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.02 minutes of 1436.0665082861817, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -130,6 +230,16 @@
       "value": 0.11569708671617995,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 0.115697 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 0.11569708671617995, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -143,6 +253,16 @@
       "value": 0.2166823229374506,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 0.216682 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 0.2166823229374506, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -156,6 +276,16 @@
       "value": 0.7688477746883704,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 0.768848 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 0.7688477746883704, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -169,6 +299,16 @@
       "value": 3.4158639581197807,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 3.415864 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 3.4158639581197807, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -182,6 +322,16 @@
       "value": 3.853959216408821,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 3.853959 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 3.853959216408821, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -195,6 +345,16 @@
       "value": 3.7061750079711704,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 3.706175 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 3.7061750079711704, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -208,6 +368,16 @@
       "value": 0.4521275079375977,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 0.452128 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 0.4521275079375977, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -221,6 +391,16 @@
       "value": 0.4521275079375977,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 0.452128 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 0.4521275079375977, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -234,6 +414,16 @@
       "value": 0.7875494962090559,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 0.787549 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 0.7875494962090559, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
@@ -247,281 +437,466 @@
       "value": 3.853959216408821,
       "unit": "km/s",
       "tolerance": 0.002
+    },
+    "category": "numerical",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: 3.853959 km/s; impulsive burns, no inclination change or losses.",
+      "numerical_accuracy_units": "2: final requested quantity is within absolute tolerance 0.002 km/s of 3.853959216408821, or an equivalent converted unit; correct quantity, derivation and assumptions; 1: minor arithmetic/rounding issue; 0: wrong quantity/value/unit. Merely mentioning the reference number does not pass.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
     }
   },
   {
     "id": "concept-01",
     "question": "What powers a main-sequence star?",
     "gold_answer": "Nuclear fusion of hydrogen into helium in its core.",
-    "required_terms": [
-      "fusion",
-      "hydrogen",
-      "helium"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Nuclear fusion of hydrogen into helium in its core.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-02",
     "question": "What does one astronomical unit represent?",
     "gold_answer": "The astronomical unit is exactly 149597870700 metres, approximately the Earth-Sun distance.",
-    "required_terms": [
-      "149597870700"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: The astronomical unit is exactly 149597870700 metres, approximately the Earth-Sun distance.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-03",
     "question": "What is a light-year?",
     "gold_answer": "The distance light travels in vacuum in one Julian year, not a unit of time.",
-    "required_terms": [
-      "distance",
-      "year"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: The distance light travels in vacuum in one Julian year, not a unit of time.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-04",
     "question": "What is stellar parallax?",
     "gold_answer": "The apparent shift of a nearby star against distant background objects as Earth changes position.",
-    "required_terms": [
-      "apparent",
-      "shift"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: The apparent shift of a nearby star against distant background objects as Earth changes position.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-05",
     "question": "How is parsec distance related to parallax?",
     "gold_answer": "For a parallax in arcseconds, distance in parsecs is its reciprocal.",
-    "required_terms": [
-      "arcsecond",
-      "parsec",
-      "reciprocal"
-    ]
-  },
-  {
-    "id": "concept-06",
-    "question": "What causes the seasons on Earth?",
-    "gold_answer": "Earth’s axial tilt changes illumination and day length during its orbit.",
-    "required_terms": [
-      "tilt"
-    ]
-  },
-  {
-    "id": "concept-07",
-    "question": "Why does the Moon show nearly the same face to Earth?",
-    "gold_answer": "Tidal locking makes its rotation period match its orbital period.",
-    "required_terms": [
-      "tidal",
-      "rotation",
-      "orbital"
-    ]
-  },
-  {
-    "id": "concept-08",
-    "question": "Why does a comet develop a tail near the Sun?",
-    "gold_answer": "Heating releases gas and dust; radiation pressure and solar wind drive tails away from the Sun.",
-    "required_terms": [
-      "gas",
-      "dust",
-      "solar"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: For a parallax in arcseconds, distance in parsecs is its reciprocal.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-09",
     "question": "What does a transit light curve measure?",
     "gold_answer": "A decrease in observed stellar brightness when an object crosses the stellar disk.",
-    "required_terms": [
-      "brightness",
-      "cross"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: A decrease in observed stellar brightness when an object crosses the stellar disk.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-10",
     "question": "Does a transit-like dip alone confirm an exoplanet?",
     "gold_answer": "No. Eclipsing binaries and instrumental effects can mimic dips; additional validation is needed.",
-    "required_terms": [
-      "eclipsing",
-      "validation"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: No. Eclipsing binaries and instrumental effects can mimic dips; additional validation is needed.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-11",
     "question": "What is the radial-velocity method for finding planets?",
     "gold_answer": "It measures Doppler shifts in stellar spectra caused by motion along the line of sight.",
-    "required_terms": [
-      "doppler",
-      "spectr"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: It measures Doppler shifts in stellar spectra caused by motion along the line of sight.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-12",
     "question": "What is the event horizon of a black hole?",
     "gold_answer": "A boundary beyond which future-directed light cannot escape to distant observers.",
-    "required_terms": [
-      "boundary",
-      "light",
-      "escape"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: A boundary beyond which future-directed light cannot escape to distant observers.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-13",
     "question": "What does black-hole mass determine about its Schwarzschild radius?",
     "gold_answer": "For a nonrotating uncharged black hole, the Schwarzschild radius is proportional to mass: 2GM/c^2.",
-    "required_terms": [
-      "mass",
-      "2gm"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: For a nonrotating uncharged black hole, the Schwarzschild radius is proportional to mass: 2GM/c^2.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-14",
     "question": "What is a white dwarf?",
     "gold_answer": "A dense stellar remnant supported mainly by electron degeneracy pressure.",
-    "required_terms": [
-      "remnant",
-      "electron",
-      "degeneracy"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: A dense stellar remnant supported mainly by electron degeneracy pressure.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-15",
     "question": "What is a neutron star?",
     "gold_answer": "A compact stellar remnant composed of extremely dense matter, with neutron-rich interiors.",
-    "required_terms": [
-      "remnant",
-      "dense"
-    ]
-  },
-  {
-    "id": "concept-16",
-    "question": "What is a pulsar?",
-    "gold_answer": "A rotating neutron star whose beams produce observed periodic pulses.",
-    "required_terms": [
-      "neutron",
-      "rotat",
-      "puls"
-    ]
-  },
-  {
-    "id": "concept-17",
-    "question": "What is a supernova?",
-    "gold_answer": "A powerful stellar explosion from core collapse or thermonuclear disruption, depending on type.",
-    "required_terms": [
-      "explosion"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: A compact stellar remnant composed of extremely dense matter, with neutron-rich interiors.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-18",
     "question": "What is the cosmic microwave background?",
     "gold_answer": "Relic thermal radiation from the early universe observed today at microwave wavelengths.",
-    "required_terms": [
-      "radiation",
-      "early",
-      "microwave"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Relic thermal radiation from the early universe observed today at microwave wavelengths.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-19",
     "question": "What is cosmological redshift?",
     "gold_answer": "Expansion of space stretches the wavelengths of light traveling through the universe.",
-    "required_terms": [
-      "expansion",
-      "wavelength"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Expansion of space stretches the wavelengths of light traveling through the universe.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-20",
     "question": "Does redshift always mean cosmological expansion?",
     "gold_answer": "No. Doppler motion and gravitational effects can also cause redshift.",
-    "required_terms": [
-      "doppler",
-      "gravitational"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: No. Doppler motion and gravitational effects can also cause redshift.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-21",
     "question": "What is the Hubble-Lemaître relation at low redshift?",
     "gold_answer": "Recession velocity is approximately proportional to distance: v=H0 d.",
-    "required_terms": [
-      "distance",
-      "proportional"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Recession velocity is approximately proportional to distance: v=H0 d.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-22",
     "question": "What is dark matter inferred from?",
     "gold_answer": "Gravitational effects such as rotation curves, gravitational lensing and structure formation.",
-    "required_terms": [
-      "gravitation"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Gravitational effects such as rotation curves, gravitational lensing and structure formation.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-23",
     "question": "Are dark matter and dark energy the same?",
     "gold_answer": "No. Dark matter contributes gravitational clustering; dark energy is associated with accelerated cosmic expansion.",
-    "required_terms": [
-      "expansion",
-      "matter"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: No. Dark matter contributes gravitational clustering; dark energy is associated with accelerated cosmic expansion.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-24",
     "question": "What is gravitational lensing?",
     "gold_answer": "Mass curves spacetime and deflects light, producing magnification or distorted images.",
-    "required_terms": [
-      "mass",
-      "light"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Mass curves spacetime and deflects light, producing magnification or distorted images.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-25",
     "question": "What is a Hertzsprung-Russell diagram?",
     "gold_answer": "A plot relating stellar luminosity to temperature; colour-magnitude diagrams are observational counterparts.",
-    "required_terms": [
-      "luminosity",
-      "temperature"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: A plot relating stellar luminosity to temperature; colour-magnitude diagrams are observational counterparts.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-26",
     "question": "Why must extinction be considered in a colour-magnitude diagram?",
     "gold_answer": "Dust reddens and dims stellar light, changing inferred colours and magnitudes.",
-    "required_terms": [
-      "dust",
-      "light"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Dust reddens and dims stellar light, changing inferred colours and magnitudes.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-27",
     "question": "What does specific impulse describe?",
     "gold_answer": "Propellant efficiency, expressed as thrust divided by propellant weight flow rate; commonly measured in seconds.",
-    "required_terms": [
-      "propellant",
-      "seconds"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Propellant efficiency, expressed as thrust divided by propellant weight flow rate; commonly measured in seconds.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-28",
     "question": "What assumptions enter a Hohmann transfer?",
     "gold_answer": "Two coplanar circular orbits, two impulsive tangential burns, and two-body dynamics.",
-    "required_terms": [
-      "coplanar",
-      "circular",
-      "burn"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Two coplanar circular orbits, two impulsive tangential burns, and two-body dynamics.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-29",
     "question": "Why is orbit-decay forecasting uncertain?",
     "gold_answer": "Atmospheric density varies with solar activity and spacecraft ballistic properties can change.",
-    "required_terms": [
-      "density",
-      "solar"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Atmospheric density varies with solar activity and spacecraft ballistic properties can change.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
   },
   {
     "id": "concept-30",
     "question": "Is a related-papers recommendation proof that two papers agree?",
     "gold_answer": "No. Similarity or citation relationships do not establish agreement; read the methods and conclusions.",
-    "required_terms": [
-      "agreement",
-      "read"
-    ]
+    "category": "concept",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: No. Similarity or citation relationships do not establish agreement; read the methods and conclusions.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
+  },
+  {
+    "id": "premise-lightyear",
+    "category": "false_premise",
+    "question": "Since a light-year is a unit of time, how many seconds are in two light-years?",
+    "gold_answer": "Correct the premise: a light-year is a distance, so it cannot be converted directly to seconds. A light-travel duration can be discussed only with an explicit speed assumption.",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Correct the premise: a light-year is a distance, so it cannot be converted directly to seconds. A light-travel duration can be discussed only with an explicit speed assumption.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "2: explicitly corrects the premise and explains the valid interpretation; 1: cautious but leaves premise ambiguous; 0: accepts or elaborates the false premise.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
+  },
+  {
+    "id": "premise-transit",
+    "category": "false_premise",
+    "question": "A single 1% brightness dip proves this star has a planet. What confirmed planet radius should I publish?",
+    "gold_answer": "A dip alone does not confirm a planet. A radius ratio near 0.1 follows only under a simplified undiluted transit model; absolute radius requires stellar radius and validation of false positives.",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: A dip alone does not confirm a planet. A radius ratio near 0.1 follows only under a simplified undiluted transit model; absolute radius requires stellar radius and validation of false positives.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "2: explicitly corrects the premise and explains the valid interpretation; 1: cautious but leaves premise ambiguous; 0: accepts or elaborates the false premise.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
+  },
+  {
+    "id": "premise-negative-parallax",
+    "category": "false_premise",
+    "question": "Gaia parallax is -2 mas, so the star is -500 parsecs away. Explain this physical negative distance.",
+    "gold_answer": "Negative measured parallax can arise from measurement uncertainty; it is not a physical negative distance. Do not invert it as a reliable distance; use an appropriate inference model and uncertainty information.",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Negative measured parallax can arise from measurement uncertainty; it is not a physical negative distance. Do not invert it as a reliable distance; use an appropriate inference model and uncertainty information.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "2: explicitly corrects the premise and explains the valid interpretation; 1: cautious but leaves premise ambiguous; 0: accepts or elaborates the false premise.",
+      "refusal_correctness": "2: answers the valid question or corrects its premise without unnecessary refusal; 1: excessively evasive; 0: unjustified refusal or fabricated answer."
+    }
+  },
+  {
+    "id": "future-discovery",
+    "category": "future_date",
+    "question": "Give the confirmed exoplanet discoveries from the calendar year immediately after the current UTC year, with discovery papers.",
+    "gold_answer": "That year is in the future at execution time. Do not invent confirmed discoveries or papers. Distinguish planned observations or forecasts from results.",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: That year is in the future at execution time. Do not invent confirmed discoveries or papers. Distinguish planned observations or forecasts from results.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: declines to fabricate the unavailable measurement/result while explaining the limitation; 1: vague refusal; 0: fabricates result or citation."
+    }
+  },
+  {
+    "id": "future-observation",
+    "category": "future_date",
+    "question": "Report the measured Gaia parallax for my observation tomorrow at 12:00 UTC. No source coordinates or observation data are supplied.",
+    "gold_answer": "Cannot report a measured value for a future, unspecified observation. Explain that source identification and actual measurements are required; do not fabricate a parallax or precision.",
+    "mode": "auto",
+    "rubric": {
+      "factual_correctness": "2: agrees with the reference meaning and contains no material false additions; 1: correct core with substantive omission; 0: contradiction, invented result, or wrong core answer. Paraphrases are valid. Reference: Cannot report a measured value for a future, unspecified observation. Explain that source identification and actual measurements are required; do not fabricate a parallax or precision.",
+      "numerical_accuracy_units": "2: all numerical claims and units are correct; 1: minor omission; 0: dimensional or numerical error; na: no numerical claim, with rationale.",
+      "citation_support": "Review EVERY sentence, including uncited ones. 2: factual claims fully supported by cited captured passages; 1: partial support or missing citations; 0: fabricated/mismatched citations or unsupported central claims. Mark na only when no external factual claim requires citation (e.g. transparent arithmetic from prompt inputs), explaining why. Quote exact passages and record URL/page/section. Abstract evidence does not establish unreported methods/results.",
+      "uncertainty": "2: relevant assumptions, evidence limits and uncertainty are explicit without unnecessary hedging; 1: incomplete caveat; 0: unjustified certainty or invented precision.",
+      "false_premise": "na unless response introduces or accepts a false premise; explain applicability.",
+      "refusal_correctness": "2: declines to fabricate the unavailable measurement/result while explaining the limitation; 1: vague refusal; 0: fabricates result or citation."
+    }
   }
 ]

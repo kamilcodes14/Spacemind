@@ -18,7 +18,7 @@ test('paper task validation rejects missing, duplicate, foreign-shaped and exces
 });
 test('selected-paper retrieval is bounded and retains paper/page provenance',()=>{
  const pages=Array.from({length:10},(_,i)=>({page:i+1,text:(i===7?'Mars ice. ':'Background. ').repeat(1000)}));
- const sources=selectedEvidence([{id,title:'A',pages},{id:'b',title:'B',pages:[{page:1,text:'Other paper'}]}],'Mars');
+ const sources=selectedEvidence([{id,title:'A',metadata:{origin:'uploaded_pdf'},pages},{id:'b',title:'B',metadata:{origin:'uploaded_pdf'},pages:[{page:1,text:'Other paper'}]}],'Mars');
  assert.equal(sources.length,4);assert.equal(sources[0].page,8);assert.equal(sources[0].doc_id,id);assert(sources.every(s=>s.snippet.length<=4000));assert(sources.some(s=>s.doc_id==='b'));
 });
 test('selected-paper chat never searches another corpus or routes a casual query away from selected evidence',async()=>{
@@ -54,4 +54,8 @@ test('cache shares public provider results and rejects a held global ephemeris l
  const chain={select(){return this},eq(){return this},gt(){return this},async maybeSingle(){return {data:{value:{rows:[1]}}}}};
  let called=false;const cached=await cachedProvider({from:()=>chain},'key',async()=>{called=true;});assert.equal(cached.cached,true);assert.equal(called,false);
  chain.maybeSingle=async()=>({data:null});await assert.rejects(cachedProvider({from:()=>chain,rpc:async()=>({data:false})},'key',async()=>{}, {serialized:true}),/busy/);
+});
+
+test('saved abstracts do not acquire invented PDF page provenance',()=>{
+ const [s]=selectedEvidence([{id,title:'Abstract',metadata:{origin:'arxiv_abstract'},pages:[{page:1,text:'A saved abstract excerpt.'}]}],'abstract');assert.equal(s.page,null);assert.equal(s.source_file,'Abstract');assert.equal(s.origin,'arxiv_abstract');
 });

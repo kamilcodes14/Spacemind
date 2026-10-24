@@ -1,26 +1,12 @@
-import {getDocument,GlobalWorkerOptions} from 'pdfjs-dist';
+import {extractPaperPDF} from './pdf-extract.js';
+import {getDocument,GlobalWorkerOptions,version} from 'pdfjs-dist';
 GlobalWorkerOptions.workerSrc='/assets/pdf.worker.mjs';
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
 const state={selected:[],task:'chat'};
 const request=(path,body,method=body?'POST':'GET')=>window.SpaceMindBackend.request(path,{method,...(body?{body:JSON.stringify(body)}:{})});
 const button=(title,fn)=>{const b=el('button',title,'secondary');b.type='button';b.onclick=async()=>{b.disabled=true;try{await fn();}catch(e){window.SpaceMindUI?.toast(e.message);}finally{b.disabled=false;}};return b;};
 function link(url,title){try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))return el('span',title);const a=el('a',title);a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';return a;}catch{return el('span',title);}}
-export async function extractPDF(file){
- if(file.size>20*1024*1024)throw Error('Choose a PDF smaller than 20 MB.');
- const bytes=new Uint8Array(await file.arrayBuffer());if(new TextDecoder().decode(bytes.slice(0,5))!=='%PDF-')throw Error('Choose a valid PDF.');
- const task=getDocument({data:bytes,isEvalSupported:false,enableXfa:false,cMapUrl:'/assets/cmaps/',cMapPacked:true,standardFontDataUrl:'/assets/standard_fonts/',wasmUrl:'/assets/wasm/'});
- try{
- const pdf=await task.promise;if(pdf.numPages>100)throw Error('Upload at most 100 pages at a time.');
- const pages=[];let size=0;
- for(let n=1;n<=pdf.numPages;n++){
-  const page=await pdf.getPage(n),content=await page.getTextContent();let lastY=null,line='';
-  for(const item of content.items){if(!('str' in item))continue;const y=Math.round(item.transform[5]);if(lastY!==null&&Math.abs(y-lastY)>3)line+='\n';line+=item.str+' ';if(item.hasEOL)line+='\n';lastY=y;}
-  const text=line.replace(/\u0000/g,'').slice(0,50000);size+=new TextEncoder().encode(text).length;if(size>500000)throw Error('This PDF has too much extracted text. Split it into smaller papers.');pages.push({page:n,text});page.cleanup();
- }
- if(!pages.some(p=>p.text.trim().length>40))throw Error('No readable text was found. Scanned PDFs need OCR before upload.');
- return {title:file.name.replace(/\.pdf$/i,'').slice(0,500),metadata:{origin:'uploaded_pdf',filename:file.name,page_count:pdf.numPages,extraction:'PDF text; check equation symbols and table alignment against the original'},pages};
- }finally{await task.destroy();}
-}
+export const extractPDF=(file,options={})=>extractPaperPDF(file,{...options,getDocument,parserVersion:version});
 function selectedNotice(){const n=document.getElementById('paperSelection');if(n)n.textContent=state.selected.length?`${state.selected.length} selected paper(s) · ${state.task}. Clear selection to search all sources.`:'';}
 async function saveSource(source){
  await request('/papers',{title:(source.title||source.source_file||'Research source').slice(0,500),metadata:source,pages:[{page:source.page||1,text:source.snippet||''}]});window.SpaceMindUI.toast('Saved to your papers.');
@@ -58,8 +44,23 @@ async function open(){
  if(tab==='papers'){
   const [papers,collections]=await Promise.all([request('/papers'),request('/collections')]);if(version!==viewVersion)return;content.replaceChildren();
   const upload=el('input');upload.type='file';upload.accept='.pdf,application/pdf';upload.setAttribute('aria-label','Upload a paper PDF');
-  const status=el('p',null,'notice');upload.onchange=async()=>{if(!upload.files[0])return;upload.disabled=true;status.textContent='Reading and saving your PDF…';try{await request('/papers',await extractPDF(upload.files[0]));await show('papers');}catch(e){status.textContent=e.message;upload.disabled=false;}};
-  content.append(upload,el('p','PDF text is saved privately to your account. Up to 20 MB / 100 pages; scanned pages need OCR. Check equations and table layout against the original.','science-note'),status);
+  const status=el('p',null,'notice');status.setAttribute('role','status');
+  const progress=el('progress');progress.hidden=true;progress.setAttribute('aria-label','PDF extraction progress');
+  let uploadController;const cancelUpload=button('Cancel reading',()=>uploadController?.abort());cancelUpload.hidden=true;
+  d.dialog.addEventListener('close',()=>uploadController?.abort(),{once:true});
+  upload.onchange=async()=>{
+   if(!upload.files[0])return;upload.disabled=true;uploadController=new AbortController();cancelUpload.hidden=false;progress.hidden=false;
+   try{
+    const paper=await extractPDF(upload.files[0],{signal:uploadController.signal,onProgress:p=>{status.textContent=p.total?`Reading page ${p.page} of ${p.total}…`:'Reading PDF…';if(p.total){progress.max=p.total;progress.value=p.page;}}});
+    if(version!==viewVersion||!d.dialog.open)return;
+    const duplicate=papers.find(p=>p.metadata?.content_sha256===paper.metadata.content_sha256);
+    if(duplicate){status.textContent=`This exact PDF is already saved as “${duplicate.title}”. Its notes and collection were preserved.`;return;}
+    cancelUpload.hidden=true;status.textContent='Saving extracted text privately…';
+    await request('/papers',paper);if(version===viewVersion&&d.dialog.open)await show('papers');
+   }catch(e){if(version===viewVersion)status.textContent=e.name==='AbortError'?'PDF reading cancelled. Nothing was saved.':e.message;}
+   finally{upload.disabled=false;cancelUpload.hidden=true;progress.hidden=true;upload.value='';}
+  };
+  content.append(upload,el('p','PDF text is saved privately to your account. Up to 20 MB / 100 pages; scanned pages need OCR. Check equations and table layout against the original.','science-note'),status,progress,cancelUpload);
   const collection=el('input');collection.placeholder='New collection name';collection.maxLength=100;collection.setAttribute('aria-label','New collection name');
   content.append(collection,button('Create collection',async()=>{if(!collection.value.trim())return;await request('/collections',{name:collection.value.trim()});await show('papers');}));
   const filter=el('select');filter.setAttribute('aria-label','Filter by collection');const all=el('option','All papers');all.value='';filter.append(all);for(const c of collections){const o=el('option',c.name);o.value=c.id;filter.append(o);}content.append(filter);
@@ -70,7 +71,8 @@ async function open(){
    const card=el('article',null,'resource-card'),label=el('label'),check=el('input');check.type='checkbox';check.checked=state.selected.includes(p.id);check.onchange=()=>{if(check.checked&&state.selected.length>=6){check.checked=false;return window.SpaceMindUI.toast('Select up to six papers.');}state.selected=check.checked?[...state.selected,p.id]:state.selected.filter(x=>x!==p.id);selectedNotice();};label.append(check,document.createTextNode(p.title));
    const move=el('select');move.setAttribute('aria-label','Collection for '+p.title);const none=el('option','Unfiled');none.value='';move.append(none);collections.forEach(c=>{const o=el('option',c.name);o.value=c.id;move.append(o);});move.value=p.collection_id||'';
    const notes=el('textarea');notes.value=p.notes;notes.maxLength=20000;notes.placeholder='Notes for this paper';notes.setAttribute('aria-label','Notes for '+p.title);
-   card.append(label,move,notes,button('Save notes / collection',async()=>{await request('/papers/'+p.id,{notes:notes.value,collection_id:move.value},'PATCH');window.SpaceMindUI.toast('Saved.');}),button('Citations / related',()=>graph(p.metadata)),button('Delete paper',async()=>{if(!confirm('Delete this saved paper and its notes?'))return;await request('/papers/'+p.id,undefined,'DELETE');state.selected=state.selected.filter(x=>x!==p.id);selectedNotice();await show('papers');}));list.append(card);
+   const limits=el('p',(p.metadata?.extraction_warnings||[]).join(' '),'notice');
+   card.append(label,limits,move,notes,button('Save notes / collection',async()=>{await request('/papers/'+p.id,{notes:notes.value,collection_id:move.value},'PATCH');window.SpaceMindUI.toast('Saved.');}),button('Citations / related',()=>graph(p.metadata)),button('Delete paper',async()=>{if(!confirm('Delete this saved paper and its notes?'))return;await request('/papers/'+p.id,undefined,'DELETE');state.selected=state.selected.filter(x=>x!==p.id);selectedNotice();await show('papers');}));list.append(card);
   }if(!papers.length)list.append(el('p','Upload a PDF or save a source from a research answer.'));}filter.onchange=draw;draw();
  }else if(tab==='discover'){
   content.replaceChildren();const form=el('form'),q=el('input'),provider=el('select'),results=el('div');q.placeholder='Search astronomy papers';q.required=true;q.maxLength=100;q.setAttribute('aria-label','Paper search');for(const [v,t]of [['scholar','Semantic Scholar'],['ads','NASA ADS']]){const o=el('option',t);o.value=v;provider.append(o);}provider.setAttribute('aria-label','Paper archive');const submit=el('button','Search','primary');form.append(q,provider,submit);content.append(form,results);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;results.textContent='Searching…';try{const data=await request('/discovery',{kind:provider.value,query:q.value});results.replaceChildren();for(const warning of data.warnings||[])results.append(el('p',warning,'notice'));renderPapers(results,data.papers);}catch(e){results.textContent=e.message;}finally{submit.disabled=false;}};
