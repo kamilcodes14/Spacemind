@@ -1,3 +1,7 @@
+> Latest evidence: [25 October 2026 phase status](docs/REMAINING_PHASES_2026-10-25.md)
+> and [real observational checks](validation/observational/README.md). Historical
+> acceptance below does not imply that new workflows have passed signed-in testing.
+
 # Supabase update validation — 3 October 2026
 
 - 12 research/HTTP tests passed: input validation, forced Web routing, evidence handling, citation warnings, missing keys, bounded requests, authentication, chat ownership, quota and origin rejection.

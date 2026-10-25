@@ -14,7 +14,7 @@
       const arxiv = text(source.arxiv_id);
       const link = url(source.url);
       const doi = text(source.doi).replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, '');
-      const key = arxiv ? `arxiv:${arxiv}` : doi ? `doi:${doi.toLowerCase()}` : link || text(source.doc_id) || JSON.stringify([title.toLowerCase(), year, authors]);
+      const key = source.origin === 'uploaded_pdf' && source.doc_id ? `upload:${source.doc_id}` : arxiv ? `arxiv:${arxiv}` : doi ? `doi:${doi.toLowerCase()}` : link || text(source.doc_id) || JSON.stringify([title.toLowerCase(), year, authors]);
       const paper = {title, authors, year, arxiv, url:link, doi, origin:text(source.origin)};
       const previous = records.get(key);
       if (!previous) records.set(key, paper);

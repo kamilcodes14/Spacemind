@@ -101,6 +101,18 @@ async function request(path,options={}){
     if(method==='PATCH'){checked(await client.from('chats').update({title:body.title,pinned:body.pinned}).eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
     if(method==='DELETE'){checked(await client.from('chats').delete().eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
   }
+  if(path==='/projects'){
+    if(method==='GET')return checked(await client.from('research_projects').select('*').eq('user_id',u.id).order('created_at',{ascending:false}));
+    if(method==='POST')return checked(await client.from('research_projects').insert({user_id:u.id,name:body.name}).select().single());
+  }
+  if(path.startsWith('/projects/')){
+    const id=path.slice(10);
+    if(method==='GET')return {project:checked(await client.from('research_projects').select('*').eq('id',id).eq('user_id',u.id).single()),items:checked(await client.from('research_project_items').select('*').eq('project_id',id).eq('user_id',u.id).order('created_at'))};
+    if(method==='PATCH')return checked(await client.from('research_projects').update({notes:body.notes}).eq('id',id).eq('user_id',u.id).select().single());
+    if(method==='DELETE'){checked(await client.from('research_projects').delete().eq('id',id).eq('user_id',u.id).select('id').single());return {ok:true};}
+  }
+  if(path==='/project-items'&&method==='POST')return checked(await client.from('research_project_items').insert({user_id:u.id,project_id:body.project_id,title:body.title,paper_id:body.paper_id||null,chat_id:body.chat_id||null,execution:body.execution||null}).select('id').single());
+  if(path.startsWith('/project-items/')&&method==='DELETE'){checked(await client.from('research_project_items').delete().eq('id',path.slice(15)).eq('user_id',u.id).select('id').single());return {ok:true};}
   if(path==='/papers'){
     if(method==='GET')return checked(await client.from('saved_papers').select('id,title,metadata,collection_id,notes,created_at').eq('user_id',u.id).order('created_at',{ascending:false}).limit(500));
     if(method==='POST')return checked(await client.from('saved_papers').insert({user_id:u.id,title:body.title,metadata:body.metadata||{},pages:body.pages||[],collection_id:body.collection_id||null}).select('id,title').single());
@@ -134,7 +146,7 @@ async function request(path,options={}){
     if(!options.onEvent)return invoke('research',body);
     const session=checked(await client.auth.getSession())?.session;
     if(!session)fail('Please sign in to continue.',401);
-    const response=await fetch(__SUPABASE_URL__+'/functions/v1/research',{method:'POST',headers:{'Content-Type':'application/json',Accept:'text/event-stream',apikey:__SUPABASE_KEY__,Authorization:'Bearer '+session.access_token},body:JSON.stringify({...body,stream:true})});
+    const response=await fetch(__SUPABASE_URL__+'/functions/v1/research',{method:'POST',signal:options.signal,headers:{'Content-Type':'application/json',Accept:'text/event-stream',apikey:__SUPABASE_KEY__,Authorization:'Bearer '+session.access_token},body:JSON.stringify({...body,stream:true})});
     return readResearchStream(response,options.onEvent);
   }
   if(path==='/capabilities')return invoke('research',undefined,'GET');
@@ -142,8 +154,8 @@ async function request(path,options={}){
   if(path==='/learning-paths'){const r=await fetch('/assets/learning_paths.json');if(!r.ok)fail('Learning paths are unavailable.');return r.json();}
   if(path==='/export'){
     const [p,chats,messages]=await Promise.all([profile(),allRows('chats',q=>q.eq('user_id',u.id).order('id')),allRows('messages',q=>q.order('id'))]);
-    const [papers,collections,notes,topics]=await Promise.all(['saved_papers','paper_collections','chat_notes','research_topics'].map(t=>allRows(t,q=>q.eq('user_id',u.id))));
-    return {profile:p,papers,collections,notes,topics,chats:chats.map(c=>({...c,messages:messages.filter(m=>m.chat_id===c.id)}))};
+    const [papers,collections,notes,topics,projects,project_items]=await Promise.all(['saved_papers','paper_collections','chat_notes','research_topics','research_projects','research_project_items'].map(t=>allRows(t,q=>q.eq('user_id',u.id))));
+    return {profile:p,papers,collections,notes,topics,projects,project_items,chats:chats.map(c=>({...c,messages:messages.filter(m=>m.chat_id===c.id)}))};
   }
   fail('Unknown request.',404);
 }

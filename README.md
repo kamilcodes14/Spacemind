@@ -60,4 +60,17 @@ including false-premise and future-date cases. Keyword matches no longer award p
 Captured answers require independent sentence-level review, with exact source passages,
 reviewer identity, response hashes and rationales. Auto mode is recorded explicitly.
 See [evaluation protocol](docs/EVALUATION_PROTOCOL.md) and
-[current evidence/status](docs/RESEARCH_REVIEW_2026-10-24.md).
+[current evidence/status](docs/REMAINING_PHASES_2026-10-25.md).
+
+## Research projects and reproducibility
+
+Library → Projects links private papers, chats, project notes and completed calculation
+records. Mission Lab can export a reproducibility JSON bundle with executed code,
+notebook, output, parameters, package versions and input checksums. Input bytes are
+opt-in (16 MB total); saving a project calculation does not upload those bytes.
+Use `python scripts/unpack-research-bundle.py bundle.json NEW_DIRECTORY` to verify
+and unpack a bundle without executing its code.
+
+Real observational checks and their limits are recorded in
+[observational validation](validation/observational/README.md). These local checks
+do not replace the blocked 50-answer deployed evaluation or signed-in acceptance.

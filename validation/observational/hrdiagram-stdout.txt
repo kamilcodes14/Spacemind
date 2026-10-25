@@ -1,0 +1,5 @@
+Additional quality cut: finite RUWE < 1.4 (selection criterion, not a guarantee of reliability).
+Input stars: 200 accepted: 193
+Reported magnitude errors propagate parallax only; exclude photometric error, zero-point and extinction systematics.
+Quality-filtered stars: 193
+Distances use inverse parallax; no parallax zero-point or extinction correction. This is a sampled colour–magnitude diagram, not a complete stellar population.

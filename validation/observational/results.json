@@ -1,0 +1,59 @@
+{
+  "scope": "CPython execution of current Mission Lab recipes plus production JS orbital solver; not deployed authenticated UI validation",
+  "environment": {
+    "python": "3.12.14",
+    "packages": {
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "astropy": "8.0.2",
+      "matplotlib": "3.10.8"
+    }
+  },
+  "transit": {
+    "target": "TrES-2 b / KIC 11446443",
+    "input_rows": 1639,
+    "accepted_rows": 1410,
+    "period_days": 2.4722361180590293,
+    "reference_period_days": 2.47063,
+    "absolute_period_error_days": 0.0016061180590294377,
+    "grid_step_days": 0.0005002501250626068,
+    "depth_relative_flux": 0.010909454792475631,
+    "conditional_depth_error": 6.73247458838677e-06,
+    "epoch_bkjd_tdb_days": 132.6373081918282,
+    "time_system": "BJD_TDB - 2454833 days; original FITS headers verified",
+    "reference": {
+      "pl_name": "TrES-2 b",
+      "pl_orbper": 2.47063,
+      "pl_orbpererr1": 1e-05,
+      "pl_orbpererr2": -1e-05,
+      "pl_trandur": null,
+      "pl_trandep": 1.6,
+      "pl_refname": "<a refstr=STASSUN_ET_AL__2017 href=https://ui.adsabs.harvard.edu/abs/2017AJ....153..136S/abstract target=ref>Stassun et al. 2017</a>"
+    },
+    "acceptance": "absolute period difference < 0.005 d; depth in (0.005, 0.025); >= 1000 accepted cadences",
+    "limits": "One quarter; fixed 0.075-day box duration; no additional detrending or limb darkening fit; error is conditional on independent supplied flux errors. Grid spacing is not period uncertainty. No planet-validation significance inferred."
+  },
+  "gaia": {
+    "catalogue": "Gaia DR3",
+    "input_rows": 200,
+    "accepted_rows": 193,
+    "max_absolute_magnitude_error_mag": 3.552713678800501e-15,
+    "quality_cuts": "finite positive parallax; finite parallax/error > 10; finite G and BP-RP; finite RUWE < 1.4",
+    "coordinates": "ICRS degrees, Gaia DR3 reference epoch J2016.0; one-degree cone at (56.75,24.12)",
+    "acceptance": ">= 50 accepted stars and absolute-G agrees with Astropy distance modulus within 1e-10 mag",
+    "limits": "TOP 200 ordered by source_id, not a complete or cluster-membership-selected population. Inverse parallaxes. No extinction/zero-point correction, colour-excess cut or photometric error propagation. Error column is parallax-only."
+  },
+  "orbit": {
+    "target": "Moon relative to Earth centres",
+    "epoch_jd_tdb": 2461041.5,
+    "frame": "ICRF equatorial",
+    "aberration": "NONE",
+    "ephemeris": "DE441",
+    "position_error_km": 4.665698955615924e-10,
+    "period_error_seconds": 9.313225746154785e-10,
+    "keplerian_gm_km3_s2": 403503.2356254801,
+    "acceptance": "position < 1e-5 km and osculating period < 1e-6 s against same-epoch Horizons",
+    "limits": "Tests conversion of osculating elements using the app Kepler solver, not future two-body propagation accuracy. Uses Horizons Earth+Moon GM, not the app Earth-only constant. Ephemeris uncertainties are not supplied; tolerances measure numerical agreement only."
+  },
+  "acceptance_passed": true
+}
