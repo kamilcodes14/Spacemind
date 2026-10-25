@@ -174,7 +174,8 @@ $('chatForm').onsubmit=async event=>{
   state.busy=true;$('send').disabled=true;$('question').disabled=true;$('newChat').disabled=true;
   let body;
   try{
-    if(!state.chat){state.chat=await post('/chats');state.chats.unshift(state.chat);renderChats();}
+    if(!state.chat){const created=await post('/chats');if(state.user!==requestUser)return;state.chat=created;state.chats.unshift(state.chat);renderChats();}
+    if(researchController.signal.aborted)throw new DOMException('Stopped','AbortError');
     $('empty').hidden=true;$('question').value='';$('question').style.height='auto';body=renderTurn(question);scrollBottom();
     let draft='';
     const status=document.createElement('p');status.className='notice';status.setAttribute('role','status');
@@ -263,7 +264,7 @@ $('recoveryForm').onsubmit=async e=>{e.preventDefault();const value=$('recoveryP
 
 $('scienceBtn').onclick=()=>window.SpaceMindScience?.open();
 
-window.SpaceMindUI={toast,async openChat(id){if(state.busy)throw Error('Wait for the current answer or stop it first.');await openChat(id);},prepare(question){$('question').value=question;$('question').focus();},explain(execution){
+window.SpaceMindUI={toast,accountId:()=>state.user?.id,async openChat(id){if(state.busy)throw Error('Wait for the current answer or stop it first.');await openChat(id);},prepare(question){$('question').value=question;$('question').focus();},explain(execution){
  if(state.busy)return toast('Please wait for the current answer.');
  if(execution.code.length>16000)return toast('This calculation is too long to attach. Shorten the code to 16,000 characters.');
  state.execution={code:execution.code,output:execution.output.slice(0,11900)+(execution.output.length>11900?'\n[Output truncated for explanation]':'')};window.SpaceMindPapers?.reset();document.querySelectorAll('dialog[open]').forEach(d=>d.close());

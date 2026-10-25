@@ -10,7 +10,8 @@ export function executionSnapshot(execution){
  return snapshot;
 }
 export async function chooseProjectForExecution(execution){
- const snapshot=executionSnapshot(execution),projects=await request('/projects');
+ const account=window.SpaceMindUI.accountId(),snapshot=executionSnapshot(execution),projects=await request('/projects');
+ if(!account||window.SpaceMindUI.accountId()!==account)return;
  if(!projects.length)throw Error('Create a project in Library → Projects first.');
  const dialog=el('dialog');dialog.className='research-dialog';const body=el('div');body.className='research-body';const select=el('select');select.setAttribute('aria-label','Project for calculation');
  for(const p of projects){const o=el('option',p.name);o.value=p.id;select.append(o);}
