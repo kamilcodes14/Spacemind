@@ -19,7 +19,7 @@ function renderData(host,data){
  host.append(button('Download result',()=>download(data,'spacemind-'+data.kind+'.json')));
  if(Array.isArray(data.rows)){
   host.append(button('Download CSV',()=>download(csv(data.rows),'spacemind-'+data.kind+'.csv','text/csv')));
-  if(data.kind==='gaia'&&data.rows.length>1)host.append(button('Plot HR diagram',()=>{const code=recipe('hrdiagram',{filename:'spacemind-gaia.csv'}).replace(`data=Table.read("/work/spacemind-gaia.csv",format='ascii.csv')`,'import json\ndata=Table(rows=json.loads('+JSON.stringify(JSON.stringify(data.rows))+'))');mountPython(host,code);}));
+  if(data.kind==='gaia'&&data.rows.length>1)host.append(button('Plot HR diagram',()=>{const code=recipe('hrdiagram',{filename:'spacemind-gaia.csv'}).replace(`data=Table.read("/work/spacemind-gaia.csv",format='ascii.csv')`,'import json\ndata=Table(rows=json.loads('+JSON.stringify(JSON.stringify(data.rows))+'))');mountPython(host,code,{context:{kind:'hrdiagram',provider:data.provider,source:data.source,retrieved_at:data.retrieved_at,note:data.note}});}));
   if(!data.rows.length){host.append(el('p','muted','No matching records were returned. Try a different query.'));return;}
   const scroll=el('div','science-table-scroll'),table=el('table','science-table');const keys=Object.keys(data.rows[0]).filter(k=>!['files','labels','url'].includes(k));
   const tr=el('tr');keys.forEach(k=>tr.append(el('th',null,k.replaceAll('_',' '))));tr.append(el('th',null,'Open'));const head=el('thead');head.append(tr);table.append(head);const tbody=el('tbody');
@@ -37,13 +37,13 @@ export function mountTool(host,input,{live=false,saved=true}={}){
  const card=el('section','science-card');card.append(el('p','eyebrow','RESEARCH TOOL'),el('h3',null,titles[tool.kind]));host.append(card);const disposers=[];
  card.append(el('p','science-note',(saved?'Original tool inputs are saved with this conversation. ':'Mission lab inputs are temporary. ')+'Python output and uploaded files are temporary; download results you want to keep.'));
  if(tool.kind==='hohmann'){card.append(el('p','science-note','Coplanar transfer between circular orbits. The full transfer ellipse and endpoint circles are shown; the transfer takes half a period. Interplanetary examples omit planetary escape/capture and launch-window phasing.'));disposers.push(mountViewer(card,{body:tool.params.body,periapsis:Math.min(tool.params.start,tool.params.end),apoapsis:Math.max(tool.params.start,tool.params.end),inclination:0,transfer:true}));}
- if(tool.kind==='orbit'){disposers.push(mountViewer(card,tool.params));const details=el('details'),summary=el('summary',null,'Verify the original orbit in Python');details.append(summary);card.append(details);disposers.push(mountPython(details,recipe('orbit',tool.params)));}
+ if(tool.kind==='orbit'){disposers.push(mountViewer(card,tool.params));const details=el('details'),summary=el('summary',null,'Verify the original orbit in Python');details.append(summary);card.append(details);disposers.push(mountPython(details,recipe('orbit',tool.params),{context:tool}));}
  else if(tool.kind==='lagrange')disposers.push(mountLagrange(card,tool.params.system));
  else if(['hohmann','rocket','spice','python',...Object.keys(advancedDefaults)].includes(tool.kind)){
   if(tool.kind==='spice'){card.append(el('p','notice','Experimental browser SPICE. Upload matching .bsp and .tls kernels before running. Accuracy and available epochs depend on those kernels.'));
    const a=link('https://naif.jpl.nasa.gov/naif/data.html','NASA kernel archive ↗');card.append(a);
   }
-  disposers.push(mountPython(card,tool.kind==='python'?tool.params.code:recipe(tool.kind,tool.params),{auto:live&&['hohmann','rocket'].includes(tool.kind)}));
+  disposers.push(mountPython(card,tool.kind==='python'?tool.params.code:recipe(tool.kind,tool.params),{auto:live&&['hohmann','rocket'].includes(tool.kind),context:tool}));
  }else{const result=el('div');card.append(button('Fetch data',()=>fetchData(result,tool),true),result);if(live)fetchData(result,tool);}
  cleanups.set(card,()=>disposers.forEach(fn=>fn?.()));
 }

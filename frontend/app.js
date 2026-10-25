@@ -4,6 +4,7 @@ const state = {user:null, chats:[], chat:null, busy:false, signup:false, web:fal
 const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeURL = value => {try {const u=new URL(value); return ['https:','http:'].includes(u.protocol)?u.href:null;}catch{return null;}};
 let toastTimer;
+let researchController;
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,4500);}
 async function api(path, options={}) {
   if(window.SpaceMindBackend){try{return await window.SpaceMindBackend.request(path,options);}catch(error){if(error.status===401&&state.user)showAuth();throw error;}}
@@ -20,6 +21,7 @@ async function api(path, options={}) {
 }
 const post=(path,body={})=>api(path,{method:'POST',body:JSON.stringify(body)});
 function showAuth(){
+  researchController?.abort();
   window.SpaceMindPapers?.reset();state.execution=null;state.user=null;state.chat=null;state.chats=[];state.prefs=null;
   $('workspace').hidden=true;$('auth').hidden=false;$('loading').hidden=true;
   $('messages').replaceChildren();$('chatList').replaceChildren();$('question').value='';$('searchChats').value='';
@@ -165,23 +167,28 @@ function fillAnswer(body,result,{live=false}={}){
 function scrollBottom(){$('chatScroll').scrollTop=$('chatScroll').scrollHeight;}
 $('question').oninput=()=>{$('question').style.height='auto';$('question').style.height=Math.min($('question').scrollHeight,180)+'px';};
 $('question').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('chatForm').requestSubmit();}};
+const cancelAnswer=document.createElement('button');cancelAnswer.type='button';cancelAnswer.className='text-button';cancelAnswer.textContent='Stop response';cancelAnswer.hidden=true;cancelAnswer.onclick=()=>researchController?.abort();$('chatForm').append(cancelAnswer);
 $('chatForm').onsubmit=async event=>{
   event.preventDefault();const question=$('question').value.trim();if(!question||state.busy)return;
+  const requestUser=state.user;researchController=new AbortController();cancelAnswer.hidden=false;
   state.busy=true;$('send').disabled=true;$('question').disabled=true;$('newChat').disabled=true;
   let body;
   try{
-    if(!state.chat){state.chat=await post('/chats');state.chats.unshift(state.chat);renderChats();}
+    if(!state.chat){const created=await post('/chats');if(state.user!==requestUser)return;state.chat=created;state.chats.unshift(state.chat);renderChats();}
+    if(researchController.signal.aborted)throw new DOMException('Stopped','AbortError');
     $('empty').hidden=true;$('question').value='';$('question').style.height='auto';body=renderTurn(question);scrollBottom();
     let draft='';
     const status=document.createElement('p');status.className='notice';status.setAttribute('role','status');
     const draftAnswer=document.createElement('div');draftAnswer.className='answer';
-    const result=await api('/ask',{method:'POST',body:JSON.stringify({question,chat_id:state.chat.id,...window.SpaceMindPapers?.selection(),...(state.execution?{execution:state.execution}:{}),depth:$('answerDepth').value,use_web:({auto:null,web:true,papers:false})[$('researchMode').value]}),onEvent:(event,data)=>{
+    const result=await api('/ask',{method:'POST',signal:researchController.signal,body:JSON.stringify({question,chat_id:state.chat.id,...window.SpaceMindPapers?.selection(),...(state.execution?{execution:state.execution}:{}),depth:$('answerDepth').value,use_web:({auto:null,web:true,papers:false})[$('researchMode').value]}),onEvent:(event,data)=>{
+      if(state.user!==requestUser)return;
       if(event==='status'){if(!status.isConnected)body.replaceChildren(status,draftAnswer);status.textContent=data.message;}
       if(event==='delta'){draft+=data.text;draftAnswer.textContent=draft;scrollBottom();}
     }});
+    if(state.user!==requestUser)return;
     state.execution=null;fillAnswer(body,result,{live:true});await refreshChats();state.chat=state.chats.find(c=>c.id===state.chat.id)||state.chat;$('chatTitle').textContent=state.chat.title;
-  }catch(error){if(body){body.replaceChildren();const p=document.createElement('p');p.className='error';p.textContent=error.message;body.append(p);const retry=document.createElement('button');retry.className='secondary';retry.textContent='Try again';retry.onclick=()=>{$('question').value=question;$('question').focus();body.closest('.turn').remove();$('chatForm').requestSubmit();};body.append(retry);}else toast(error.message);$('question').value=question;}
-  finally{state.busy=false;$('send').disabled=false;$('question').disabled=false;$('newChat').disabled=false;scrollBottom();if(state.user)$('question').focus();}
+  }catch(error){if(state.user!==requestUser)return;if(researchController.signal.aborted)error=new Error('Response stopped on this device. The server may still save a completed answer; reopen this chat before retrying.');if(body){body.replaceChildren();const p=document.createElement('p');p.className='error';p.textContent=error.message;body.append(p);const retry=document.createElement('button');retry.className='secondary';retry.textContent='Try again';retry.onclick=()=>{$('question').value=question;$('question').focus();body.closest('.turn').remove();$('chatForm').requestSubmit();};body.append(retry);}else toast(error.message);$('question').value=question;}
+  finally{cancelAnswer.hidden=true;researchController=null;state.busy=false;$('send').disabled=false;$('question').disabled=false;$('newChat').disabled=false;scrollBottom();if(state.user)$('question').focus();}
 };
 $('researchMode').onchange=updateCapabilityNote;
 function askAction({title,description='',label='',value='',password=false,confirm='Confirm',danger=false}){
@@ -257,7 +264,7 @@ $('recoveryForm').onsubmit=async e=>{e.preventDefault();const value=$('recoveryP
 
 $('scienceBtn').onclick=()=>window.SpaceMindScience?.open();
 
-window.SpaceMindUI={toast,prepare(question){$('question').value=question;$('question').focus();},explain(execution){
+window.SpaceMindUI={toast,accountId:()=>state.user?.id,async openChat(id){if(state.busy)throw Error('Wait for the current answer or stop it first.');await openChat(id);},prepare(question){$('question').value=question;$('question').focus();},explain(execution){
  if(state.busy)return toast('Please wait for the current answer.');
  if(execution.code.length>16000)return toast('This calculation is too long to attach. Shorten the code to 16,000 characters.');
  state.execution={code:execution.code,output:execution.output.slice(0,11900)+(execution.output.length>11900?'\n[Output truncated for explanation]':'')};window.SpaceMindPapers?.reset();document.querySelectorAll('dialog[open]').forEach(d=>d.close());

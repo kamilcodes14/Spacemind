@@ -1,0 +1,16 @@
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+import {position} from '../frontend/science/orbits.js';
+const read=kind=>JSON.parse(readFileSync(new URL('../validation/observational/horizons-'+kind+'.json',import.meta.url),'utf8')).result;
+const row=text=>text.split('$$SOE')[1].split('$$EOE')[0].trim().split(',').map((v,i)=>i===1?v.trim():Number(v));
+const raw=read('elements'),e=row(raw),v=row(read('vectors')),rad=Math.PI/180;
+assert.equal(e[0],v[0]);assert.match(raw,/Reference frame : ICRF/);
+const [x,y]=position({a:e[11],e:e[2],inclination:0},e[9]*rad);
+const w=e[6]*rad,i=e[4]*rad,o=e[5]*rad;
+const xp=x*Math.cos(w)-y*Math.sin(w),yp=x*Math.sin(w)+y*Math.cos(w);
+const predicted=[xp*Math.cos(o)-yp*Math.cos(i)*Math.sin(o),xp*Math.sin(o)+yp*Math.cos(i)*Math.cos(o),yp*Math.sin(i)];
+const error=Math.hypot(...predicted.map((x,i)=>x-v[i+2]));
+const gm=Number(raw.match(/Keplerian GM\s*:\s*(\S+)/)[1]);
+const period=2*Math.PI*Math.sqrt(e[11]**3/gm),periodError=Math.abs(period-e[13]);
+assert(error<1e-5,`Position difference ${error} km`);assert(periodError<1e-6);
+console.log(JSON.stringify({target:'Moon relative to Earth centres',epoch_jd_tdb:e[0],frame:'ICRF equatorial',aberration:'NONE',ephemeris:'DE441',position_error_km:error,period_error_seconds:periodError,keplerian_gm_km3_s2:gm,acceptance:'position < 1e-5 km and osculating period < 1e-6 s against same-epoch Horizons',limits:'Tests conversion of osculating elements using the app Kepler solver, not future two-body propagation accuracy. Uses Horizons Earth+Moon GM, not the app Earth-only constant. Ephemeris uncertainties are not supplied; tolerances measure numerical agreement only.'}));

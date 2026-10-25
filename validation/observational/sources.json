@@ -1,0 +1,32 @@
+{
+  "tres2-q1.fits": {
+    "url": "https://archive.stsci.edu/missions/kepler/lightcurves/0114/011446443/kplr011446443-2009166043257_llc.fits",
+    "sha256": "10bfca91bdd928deda2e638de7a27cdc940b879452408a96b5be6146944639e9",
+    "bytes": 192960,
+    "retrieved_at": "2026-10-25T11:00:25.050568+00:00"
+  },
+  "gaia.csv": {
+    "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=SELECT+TOP+200+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cparallax_over_error%2Cphot_g_mean_mag%2Cphot_g_mean_flux_over_error%2Cbp_rp%2Cruwe+FROM+gaiadr3.gaia_source+WHERE+1%3DCONTAINS%28POINT%28%27ICRS%27%2Cra%2Cdec%29%2CCIRCLE%28%27ICRS%27%2C56.75%2C24.12%2C1%29%29+AND+parallax%3E0+AND+parallax_over_error%3E10+AND+bp_rp+IS+NOT+NULL+ORDER+BY+source_id",
+    "sha256": "394736821e15b30e9ec6db010c2f1b6b59987a3b118ab2085a0dd773d8e7457a",
+    "bytes": 26936,
+    "retrieved_at": "2026-10-25T11:00:23.863939+00:00"
+  },
+  "tres2-reference.json": {
+    "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name%2Cpl_orbper%2Cpl_orbpererr1%2Cpl_orbpererr2%2Cpl_trandur%2Cpl_trandep%2Cpl_refname+from+ps+where+pl_name%3D%27TrES-2+b%27+and+default_flag%3D1&format=json",
+    "sha256": "4b5738ea09e273e826829a6724bcd27d8b06e12e6a9f3aba4af937576d836858",
+    "bytes": 317,
+    "retrieved_at": "2026-10-25T11:00:24.005455+00:00"
+  },
+  "horizons-vectors.json": {
+    "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27301%27&CENTER=%27500%40399%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&TLIST=%272461041.5%27&TLIST_TYPE=%27JD%27&TIME_TYPE=%27TDB%27&OUT_UNITS=%27KM-S%27&REF_PLANE=%27FRAME%27&REF_SYSTEM=%27ICRF%27&CSV_FORMAT=%27YES%27&OBJ_DATA=%27YES%27&VEC_CORR=%27NONE%27&VEC_TABLE=%272%27",
+    "sha256": "78c64bdd0b16ff9112e1a3189b3fb0c7b5a2b4d5a4156f10708bc092a8bb7bdf",
+    "bytes": 6799,
+    "retrieved_at": "2026-10-25T11:00:24.194844+00:00"
+  },
+  "horizons-elements.json": {
+    "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27301%27&CENTER=%27500%40399%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27ELEMENTS%27&TLIST=%272461041.5%27&TLIST_TYPE=%27JD%27&TIME_TYPE=%27TDB%27&OUT_UNITS=%27KM-S%27&REF_PLANE=%27FRAME%27&REF_SYSTEM=%27ICRF%27&CSV_FORMAT=%27YES%27&OBJ_DATA=%27YES%27",
+    "sha256": "f608d27a9a49d0124774d40254ed0d101879cdae0c81a02ea822f4d35702d891",
+    "bytes": 7576,
+    "retrieved_at": "2026-10-25T11:00:24.278442+00:00"
+  }
+}

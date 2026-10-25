@@ -4,8 +4,8 @@ export function csv(rows){
  const cell=value=>{let s=value==null?'':typeof value==='object'?JSON.stringify(value):String(value);if(typeof value==='string'&&/^[\s]*[=+@-]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';};
  return [keys.map(cell).join(','),...rows.map(row=>keys.map(k=>cell(row[k])).join(','))].join('\r\n');
 }
-export function notebook({code,output,images=[]}){
- return {nbformat:4,nbformat_minor:5,metadata:{kernelspec:{display_name:'Python 3',language:'python',name:'python3'},language_info:{name:'python'}},cells:[
+export function notebook({code,output,images=[],environment=null,inputs=[],context={},limits={},completed_at=null}){
+ return {nbformat:4,nbformat_minor:5,metadata:{spacemind:{environment,inputs:inputs.map(({base64,...info})=>info),context,limits,completed_at},kernelspec:{display_name:'Python 3',language:'python',name:'python3'},language_info:{name:'python'}},cells:[
  {id:'assumptions',cell_type:'markdown',metadata:{},source:['# SpaceMind calculation\n','Review code, assumptions and units before running. Uploaded data files are not included; supply them separately. Results were produced in a browser Python session and are not independently verified.\n']},
  {id:'calculation',cell_type:'code',metadata:{},source:[code],execution_count:1,outputs:[{output_type:'stream',name:'stdout',text:[output]},...images.map(png=>({output_type:'display_data',data:{'image/png':png},metadata:{}}))]}
  ]};

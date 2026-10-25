@@ -1,0 +1,8 @@
+Input rows: 1639 quality/finite rows: 1410
+Time values are preserved from the CSV. Supply the time system and reference epoch in your provenance; no UTC/TDB conversion is performed.
+No detrending is applied. Flux errors supplied: True
+Candidate period (days): 2.4722361180590293 depth: 0.010909454792475631 duration (days): 0.075
+Epoch in input time system (days): 132.6373081918282
+Period grid step (days), NOT a confidence interval: 0.0005002501250626068
+Conditional box-depth standard error: 6.73247458838677e-06 ; excludes correlated noise, detrending and model uncertainty.
+Inspect aliases, systematics and eclipsing binaries; no detection significance or planet confirmation is inferred.
