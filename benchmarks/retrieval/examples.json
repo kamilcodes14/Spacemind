@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "kind": "example",
+  "documents": [],
+  "items": [
+    {
+      "id": "example-01",
+      "query": "How are exoplanet transit depths interpreted?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-02",
+      "query": "What limits radial velocity mass estimates?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-03",
+      "query": "How does dust affect stellar colours?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-04",
+      "query": "What evidence supports dark matter in galaxies?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-05",
+      "query": "How are stellar distances estimated?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-06",
+      "query": "What causes a supernova light curve?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-07",
+      "query": "How are black hole masses inferred?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-08",
+      "query": "What limits cosmic microwave background measurements?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-09",
+      "query": "How do protoplanetary disks evolve?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    },
+    {
+      "id": "example-10",
+      "query": "What distinguishes a comet from an asteroid?",
+      "review_status": "unreviewed",
+      "title_derived": false,
+      "gold_document_ids": null,
+      "note": "EXAMPLE authoring prompt; no gold answer or relevance labels."
+    }
+  ]
+}

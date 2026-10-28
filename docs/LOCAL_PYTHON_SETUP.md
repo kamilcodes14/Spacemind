@@ -61,7 +61,7 @@ There are no premium tiers. Google sign-in, email verification/reset mail, and P
 
 ## Research and data
 
-The existing ingestion pipeline, Chroma index, provider configuration, scripts, and learning paths are retained. The original scientific-engine documentation is in [docs/RESEARCH_ENGINE_REFERENCE.md](docs/RESEARCH_ENGINE_REFERENCE.md); its old UI, authentication, and API examples are superseded by this README.
+The existing ingestion pipeline, Chroma index, provider configuration, scripts, and learning paths are retained. The original scientific-engine documentation is in [docs/RESEARCH_ENGINE_REFERENCE.md](RESEARCH_ENGINE_REFERENCE.md); its old UI, authentication, and API examples are superseded by this README.
 
 Explicit Web mode searches the web before touching the paper index. If web search is unavailable or has no usable results, the user sees that fact. Auto can fall back from papers to web. AI-provider errors do not create fake saved answers.
 

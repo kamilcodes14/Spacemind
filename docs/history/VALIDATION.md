@@ -1,5 +1,5 @@
-> Latest evidence: [25 October 2026 phase status](docs/REMAINING_PHASES_2026-10-25.md)
-> and [real observational checks](validation/observational/README.md). Historical
+> Latest evidence: [25 October 2026 phase status](REMAINING_PHASES_2026-10-25.md)
+> and [real observational checks](../../validation/observational/README.md). Historical
 > acceptance below does not imply that new workflows have passed signed-in testing.
 
 # Supabase update validation — 3 October 2026
@@ -102,5 +102,5 @@ interpret them as a deployed 50-question baseline. Independent review reproduced
 original combined tests, found four gaps despite those passes, and added fixes and
 Phase 3 extraction work. Now 119 tests, database suite, syntax/build and actual PDF parser
 checks pass. Research v14 and retrieval migration are deployed; signed-in acceptance
-remains open. See docs/RESEARCH_REVIEW_2026-10-24.md for exact before/after SQL evidence,
+remains open. See docs/history/RESEARCH_REVIEW_2026-10-24.md for exact before/after SQL evidence,
 limitations and the independent evaluation protocol. No phase is declared fully complete.
