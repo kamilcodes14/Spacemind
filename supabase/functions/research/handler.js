@@ -37,7 +37,7 @@ export function makeHandler({createClient,env,embed,fetcher=fetch}){
     const run=async onEvent=>{
       const started=Date.now(),models=[];let result,outcome='error';
       try{
-      result=await research(input,(previous.data||[]).reverse(),{env:{...env,onModel:model=>models.push(model)},fetcher,lookupPapers,onEvent,selectedSources});
+      result=await research(input,(previous.data||[]).reverse(),{env:{...env,onModel:model=>models.push(model)},fetcher,lookupPapers,onEvent,selectedSources,admin});
       const saved=await client.rpc('save_research_turn',{p_chat_id:input.chatId,p_question:input.question,p_answer:result.answer,p_citations:result.citations,p_follow_ups:result.follow_up_questions,p_confident:result.confident,p_used_web:result.used_web,p_warnings:result.warnings});
       if(saved.error)throw new HttpError(409,'The answer could not be saved. The conversation may have been deleted.');
       outcome='saved';return {...result,message_id:saved.data};

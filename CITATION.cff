@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use SpaceMind, cite this software and the original scientific data sources separately."
+title: "SpaceMind"
+type: software
+authors:
+  - name: "SpaceMind contributors"
+repository-code: "https://github.com/kamilcodes14/Spacemind"
+abstract: "Astronomy research workspace. Automated evidence checks and catalogue comparisons do not establish scientific accuracy."
