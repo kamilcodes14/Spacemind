@@ -16,7 +16,7 @@ export function parseHorizons(data){
  if(!rows.length||rows.some(r=>Object.entries(r).some(([k,v])=>k!=='calendar_ut'&&!Number.isFinite(v))))throw new HttpError(503,'The ephemeris format changed. Please try again later.');
  return {rows,raw:data.result,signature:data.signature};
 }
-export async function queryProvider(input,fetcher=fetch){
+export async function queryProvider(input,fetcher=fetch,env={}){
  let tool;try{tool=validateTool(input);}catch(e){throw new HttpError(422,e.message);}const {kind,params:p}=tool;
  const retrieved_at=new Date().toISOString();
  if(['gaia','esa','simbad','vizier','exoplanets'].includes(kind)){
@@ -48,14 +48,26 @@ export async function queryProvider(input,fetcher=fetch){
   const rows=(data.data||[]).map(r=>{const properties=r.properties||{},first=k=>Array.isArray(properties[k])?properties[k][0]:properties[k];return {id:r.id||first('lidvid'),title:first('pds:Identification_Area.pds:title'),processing_level:first('pds:Primary_Result_Summary.pds:processing_level'),url:r.id?endpoints.pds+'/'+encodeURIComponent(r.id):null,files:properties['ops:Data_File_Info.ops:file_ref']||[],labels:properties['ops:Label_File_Info.ops:file_ref']||[]};});
   return {kind,provider:'NASA Planetary Data System',source:u.href,retrieved_at,request:p,rows,note:'First 20 matching product records. Archive coverage is incomplete; no results does not prove no observations exist. File links come from archive metadata.'};
  }
+ if(kind==='asteroids'){
+  const key=env.NASA_API_KEY;
+  if(!key)throw new HttpError(503,'NASA_API_KEY is not configured for this project.');
+  const u=new URL('https://api.nasa.gov/neo/rest/v1/feed');
+  u.search=new URLSearchParams({start_date:p.start_date,end_date:p.end_date,api_key:key}).toString();
+  const data=await get(u.href,fetcher);
+  const rows=Object.entries(data.near_earth_objects||{}).flatMap(([date,asteroids])=>(Array.isArray(asteroids)?asteroids:[]).map(a=>{
+    const approach=(a.close_approach_data||[]).find(x=>x.close_approach_date===date)||a.close_approach_data?.[0];
+    return {date,id:String(a.id),name:a.name,estimated_diameter_min_m:a.estimated_diameter?.meters?.estimated_diameter_min,estimated_diameter_max_m:a.estimated_diameter?.meters?.estimated_diameter_max,potentially_hazardous_asteroid:Boolean(a.is_potentially_hazardous_asteroid),close_approach_utc:approach?.close_approach_date_full||approach?.close_approach_date,miss_distance_km:approach?.miss_distance?.kilometers,relative_velocity_km_s:approach?.relative_velocity?.kilometers_per_second,source:a.nasa_jpl_url};
+  }));
+  return {kind,provider:'NASA NeoWs / JPL',source:'https://api.nasa.gov/neo/rest/v1/feed',retrieved_at,request:p,rows:rows.slice(0,500),note:'Close-approach forecasts, not live tracking or impact predictions. Hazard designation is a catalog classification, not a collision forecast. Estimated diameter is a range. Values and close-approach times come from NASA records.'};
+ }
  if(kind==='weather'){
   const feeds={flares:'/json/goes/primary/xray-flares-7-day.json',kp:'/products/noaa-planetary-k-index.json',alerts:'/products/alerts.json'};const rows={},warnings=[];
   // Independent NOAA datasets; one missing feed must not hide the others.
   for(const [name,path] of Object.entries(feeds)){try{const d=await get(endpoints.weather+path,fetcher);rows[name]=name==='kp'?[d[0],...d.slice(-12)]:d.slice(name==='alerts'?0:-20,name==='alerts'?10:undefined);}catch{warnings.push(`${name} data is unavailable.`);}}
   const start=new Date(Date.now()-7*86400000).toISOString().slice(0,10),end=new Date().toISOString().slice(0,10),cmeSource='https://ccmc.gsfc.nasa.gov/DONKI-API/get/CME?'+new URLSearchParams({startDate:start,endDate:end});
-  try{rows.cmes=await get(cmeSource,fetcher);}catch{warnings.push('NASA CME catalog is unavailable.');}
+  try{const nasaKey=env.NASA_API_KEY;const nasaUrl=new URL('https://api.nasa.gov/DONKI/CME');nasaUrl.search=new URLSearchParams({startDate:start,endDate:end,...(nasaKey?{api_key:nasaKey}:{api_key:'DEMO_KEY'})}).toString();rows.cmes=await get(nasaUrl.href,fetcher);}catch{warnings.push('NASA CME catalog is unavailable.');}
   if(!Object.keys(rows).length)throw new HttpError(503,'Space-weather data is temporarily unavailable.');
-  return {kind,provider:'NOAA SWPC + NASA CCMC DONKI',source:endpoints.weather,sources:{noaa:endpoints.weather,cmes:cmeSource},retrieved_at,rows,warnings,note:'Observation/issue timestamps are in each record. Retrieval time does not guarantee fresh observations. CME records cover the past seven days and contain analyst measurements; updates may lag events. An empty catalog is not an all-clear.'};
+  return {kind,provider:'NOAA SWPC + NASA CCMC DONKI',source:endpoints.weather,sources:{noaa:endpoints.weather,cmes:'https://api.nasa.gov/DONKI/CME'},retrieved_at,rows,warnings,note:'Observation/issue timestamps are in each record. Retrieval time does not guarantee fresh observations. CME records cover the past seven days and contain analyst measurements; updates may lag events. An empty catalog is not an all-clear.'};
  }
  if(kind==='launches'){
   const u=endpoints.launches+'?limit=10&mode=list&hide_recent_previous=true';const data=await get(u,fetcher);
