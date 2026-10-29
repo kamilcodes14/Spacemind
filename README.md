@@ -9,7 +9,7 @@
 | Retrieval benchmark | implemented-not-measured; examples have no gold labels | [Dataset card](benchmarks/retrieval/DATASET_CARD.md), [tests](tests/evals/retrieval-benchmark.test.mjs) |
 | Numeric catalogue labels | implemented-not-measured; mocked checks only | [Scope and limits](docs/CATALOGUE_VERIFIER.md), [tests](tests/supabase/catalogue.test.mjs) |
 | Completed live 50-answer evaluation / before-after quality scores | not done | [Evaluation protocol](docs/EVALUATION_PROTOCOL.md), [historical blocker](docs/history/REMAINING_PHASES_2026-10-25.md) |
-| New signed-in/browser acceptance | not done in this work | [Current status](docs/STATUS.md) |
+| Signed-in/browser acceptance | measured for specific execution, export, persistence and provider paths; incomplete overall | [29 October evidence and remaining gates](validation/browser-2026-10-29/README.md) |
 
 
 A private space-research workspace with sign-in, saved chats, cited research, settings, and an animated universe. No premium tier.

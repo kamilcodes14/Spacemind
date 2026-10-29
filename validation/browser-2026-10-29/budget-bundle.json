@@ -1,0 +1,70 @@
+{
+  "schema": "spacemind.reproducibility.v1",
+  "created_at": "2026-10-29T08:09:10.990Z",
+  "execution": {
+    "code": "# Ideal rocket performance; user-specified burn budget. No automatic loss model.\nimport numpy as np\nburns = np.array([1200,850,300], dtype=float)\nmargin = 10/100\navailable = 320*9.80665*np.log(10000/4000)\nrequired = burns.sum()*(1+margin)\npropellant = 10000*(1-np.exp(-required/(320*9.80665)))\nassert np.all(burns >= 0) and available >= 0\nresult_rows = [{'required_m_s':float(required),'available_m_s':float(available),'reserve_m_s':float(available-required),'propellant_kg':float(propellant)}]\nprint(result_rows[0])\nprint('Feasible under these assumptions:', bool(available >= required))\nprint('Add gravity, drag and steering losses to the burn list if applicable.')\n",
+    "output": "Loading Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\nLoaded Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\n{'required_m_s': 2585.0, 'available_m_s': 2875.4376018347784, 'reserve_m_s': 290.43760183477843, 'propellant_kg': 5612.122654799894}\nFeasible under these assumptions: True\nAdd gravity, drag and steering losses to the burn list if applicable.\n",
+    "images": [],
+    "csv": "\"required_m_s\",\"available_m_s\",\"reserve_m_s\",\"propellant_kg\"\r\n\"2585\",\"2875.4376018347784\",\"290.43760183477843\",\"5612.122654799894\"",
+    "context": {
+      "kind": "budget",
+      "params": {
+        "burns": "1200, 850, 300",
+        "margin": 10,
+        "isp": 320,
+        "wet": 10000,
+        "dry": 4000
+      }
+    },
+    "inputs": [],
+    "environment": {
+      "python": "3.14.2 (main, Sep 14 2026, 03:03:51) [Clang 23.0.0git (https:/github.com/llvm/llvm-project e5927fecf8a6ce89e1a4eac5b8",
+      "packages": {
+        "PyYAML": "6.0.3",
+        "packaging": "26.1",
+        "pytz": "2026.1.post1",
+        "numpy": "2.4.6",
+        "micropip": "0.11.1",
+        "six": "1.17.0",
+        "cycler": "0.12.1",
+        "fonttools": "4.62.1",
+        "pillow": "12.2.0",
+        "python-dateutil": "2.9.0.post0",
+        "pyparsing": "3.3.2",
+        "kiwisolver": "1.5.0",
+        "astropy-iers-data": "0.2026.4.1.15.5.49",
+        "contourpy": "1.3.3",
+        "pyerfa": "2.0.1.5",
+        "scipy": "1.18.0",
+        "matplotlib": "3.10.8",
+        "astropy": "7.2.0"
+      }
+    },
+    "runtime": "Pyodide 314.0.7",
+    "started_at": "2026-10-29T08:08:53.004Z",
+    "limits": {
+      "stdout_truncated": false,
+      "plots_limit": 4,
+      "table_limit_rows": 20000
+    },
+    "completed_at": "2026-10-29T08:08:53.014Z"
+  },
+  "files": {
+    "calculation.py": "# Ideal rocket performance; user-specified burn budget. No automatic loss model.\nimport numpy as np\nburns = np.array([1200,850,300], dtype=float)\nmargin = 10/100\navailable = 320*9.80665*np.log(10000/4000)\nrequired = burns.sum()*(1+margin)\npropellant = 10000*(1-np.exp(-required/(320*9.80665)))\nassert np.all(burns >= 0) and available >= 0\nresult_rows = [{'required_m_s':float(required),'available_m_s':float(available),'reserve_m_s':float(available-required),'propellant_kg':float(propellant)}]\nprint(result_rows[0])\nprint('Feasible under these assumptions:', bool(available >= required))\nprint('Add gravity, drag and steering losses to the burn list if applicable.')\n",
+    "stdout.txt": "Loading Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\nLoaded Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\n{'required_m_s': 2585.0, 'available_m_s': 2875.4376018347784, 'reserve_m_s': 290.43760183477843, 'propellant_kg': 5612.122654799894}\nFeasible under these assumptions: True\nAdd gravity, drag and steering losses to the burn list if applicable.\n",
+    "results.csv": "\"required_m_s\",\"available_m_s\",\"reserve_m_s\",\"propellant_kg\"\r\n\"2585\",\"2875.4376018347784\",\"290.43760183477843\",\"5612.122654799894\"",
+    "notebook.ipynb": "{\n  \"nbformat\": 4,\n  \"nbformat_minor\": 5,\n  \"metadata\": {\n    \"spacemind\": {\n      \"environment\": {\n        \"python\": \"3.14.2 (main, Sep 14 2026, 03:03:51) [Clang 23.0.0git (https:/github.com/llvm/llvm-project e5927fecf8a6ce89e1a4eac5b8\",\n        \"packages\": {\n          \"PyYAML\": \"6.0.3\",\n          \"packaging\": \"26.1\",\n          \"pytz\": \"2026.1.post1\",\n          \"numpy\": \"2.4.6\",\n          \"micropip\": \"0.11.1\",\n          \"six\": \"1.17.0\",\n          \"cycler\": \"0.12.1\",\n          \"fonttools\": \"4.62.1\",\n          \"pillow\": \"12.2.0\",\n          \"python-dateutil\": \"2.9.0.post0\",\n          \"pyparsing\": \"3.3.2\",\n          \"kiwisolver\": \"1.5.0\",\n          \"astropy-iers-data\": \"0.2026.4.1.15.5.49\",\n          \"contourpy\": \"1.3.3\",\n          \"pyerfa\": \"2.0.1.5\",\n          \"scipy\": \"1.18.0\",\n          \"matplotlib\": \"3.10.8\",\n          \"astropy\": \"7.2.0\"\n        }\n      },\n      \"inputs\": [],\n      \"context\": {\n        \"kind\": \"budget\",\n        \"params\": {\n          \"burns\": \"1200, 850, 300\",\n          \"margin\": 10,\n          \"isp\": 320,\n          \"wet\": 10000,\n          \"dry\": 4000\n        }\n      },\n      \"limits\": {\n        \"stdout_truncated\": false,\n        \"plots_limit\": 4,\n        \"table_limit_rows\": 20000\n      },\n      \"completed_at\": \"2026-10-29T08:08:53.014Z\"\n    },\n    \"kernelspec\": {\n      \"display_name\": \"Python 3\",\n      \"language\": \"python\",\n      \"name\": \"python3\"\n    },\n    \"language_info\": {\n      \"name\": \"python\"\n    }\n  },\n  \"cells\": [\n    {\n      \"id\": \"assumptions\",\n      \"cell_type\": \"markdown\",\n      \"metadata\": {},\n      \"source\": [\n        \"# SpaceMind calculation\\n\",\n        \"Review code, assumptions and units before running. Uploaded data files are not included; supply them separately. Results were produced in a browser Python session and are not independently verified.\\n\"\n      ]\n    },\n    {\n      \"id\": \"calculation\",\n      \"cell_type\": \"code\",\n      \"metadata\": {},\n      \"source\": [\n        \"# Ideal rocket performance; user-specified burn budget. No automatic loss model.\\nimport numpy as np\\nburns = np.array([1200,850,300], dtype=float)\\nmargin = 10/100\\navailable = 320*9.80665*np.log(10000/4000)\\nrequired = burns.sum()*(1+margin)\\npropellant = 10000*(1-np.exp(-required/(320*9.80665)))\\nassert np.all(burns >= 0) and available >= 0\\nresult_rows = [{'required_m_s':float(required),'available_m_s':float(available),'reserve_m_s':float(available-required),'propellant_kg':float(propellant)}]\\nprint(result_rows[0])\\nprint('Feasible under these assumptions:', bool(available >= required))\\nprint('Add gravity, drag and steering losses to the burn list if applicable.')\\n\"\n      ],\n      \"execution_count\": 1,\n      \"outputs\": [\n        {\n          \"output_type\": \"stream\",\n          \"name\": \"stdout\",\n          \"text\": [\n            \"Loading Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\\nLoaded Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\\n{'required_m_s': 2585.0, 'available_m_s': 2875.4376018347784, 'reserve_m_s': 290.43760183477843, 'propellant_kg': 5612.122654799894}\\nFeasible under these assumptions: True\\nAdd gravity, drag and steering losses to the burn list if applicable.\\n\"\n          ]\n        }\n      ]\n    }\n  ]\n}"
+  },
+  "checksums": {
+    "calculation.py": "e4b2820c0d741d2cd2729a196576d54266cb1f6829e3f553948e44bfe667af62",
+    "stdout.txt": "36f18b602643cfcace4e921e3bfe76a913706cad25bc9c3601ee0320c45dea1a",
+    "results.csv": "7e0aa762594eac1392ec4ca93d0026bcfac42b0fae195b9fb55af6a6e1f4a79b",
+    "notebook.ipynb": "fc94ea02ec46a525a9382b98a3afb84ad3caac52a78309b75f83e01d2b105aa0"
+  },
+  "instructions": "Inspect calculation.py before running. Install the recorded package versions in an isolated Python environment. Restore the listed inputs under /work (or adjust those explicit paths in a copy). Verify SHA256 checksums before use. Original output is recorded, not a promise of bitwise reproduction across platforms.",
+  "limits": [
+    "Client-side execution; not independently verified.",
+    "External services and browser/runtime differences may affect reproduction.",
+    "Inputs without embedded bytes must be supplied separately using their recorded checksums."
+  ]
+}

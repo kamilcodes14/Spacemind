@@ -1,0 +1,12 @@
+{
+  "provider": "NASA Exoplanet Archive",
+  "source": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY=SELECT+TOP+50+pl_name%2Chostname%2Cdiscoverymethod%2Cdisc_year%2Cpl_orbper%2Cpl_rade%2Cpl_bmasse%2Csy_dist+FROM+pscomppars+WHERE+LOWER%28pl_name%29+LIKE+%27%25kepler-22%25%27&query=SELECT+TOP+50+pl_name%2Chostname%2Cdiscoverymethod%2Cdisc_year%2Cpl_orbper%2Cpl_rade%2Cpl_bmasse%2Csy_dist+FROM+pscomppars+WHERE+LOWER%28pl_name%29+LIKE+%27%25kepler-22%25%27&format=json",
+  "retrieved_at": "2026-10-29T08:14:47.177Z",
+  "request": {
+    "query": "Kepler-22"
+  },
+  "note": "Bounded catalogue sample, not exhaustive. Coordinates are ICRS degrees; Gaia parallax is mas, magnitudes are mag. Null values are missing measurements. Gaia HR samples require positive parallax and parallax/error > 10; extinction is not corrected.",
+  "row_count": 33,
+  "download_sha256": "05f8a762ad6356098b19a4342e42c3fb8028b165c4342409accff4aa976e21a0",
+  "scope": "Observed deployed Mission Lab catalogue fetch; not the research claim-verifier path or a catalogue accuracy measurement."
+}

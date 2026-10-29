@@ -1,0 +1,45 @@
+{
+  "code": "# Ideal rocket performance; user-specified burn budget. No automatic loss model.\nimport numpy as np\nburns = np.array([1200,850,300], dtype=float)\nmargin = 10/100\navailable = 320*9.80665*np.log(10000/4000)\nrequired = burns.sum()*(1+margin)\npropellant = 10000*(1-np.exp(-required/(320*9.80665)))\nassert np.all(burns >= 0) and available >= 0\nresult_rows = [{'required_m_s':float(required),'available_m_s':float(available),'reserve_m_s':float(available-required),'propellant_kg':float(propellant)}]\nprint(result_rows[0])\nprint('Feasible under these assumptions:', bool(available >= required))\nprint('Add gravity, drag and steering losses to the burn list if applicable.')\n",
+  "inputs": [],
+  "limits": {
+    "plots_limit": 4,
+    "stdout_truncated": false,
+    "table_limit_rows": 20000
+  },
+  "output": "Loading Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\nLoaded Pillow, astropy, astropy_iers_data, contourpy, cycler, fonttools, kiwisolver, matplotlib, micropip, numpy, packaging, pyerfa, pyparsing, python-dateutil, pytz, pyyaml, scipy, six\n{'required_m_s': 2585.0, 'available_m_s': 2875.4376018347784, 'reserve_m_s': 290.43760183477843, 'propellant_kg': 5612.122654799894}\nFeasible under these assumptions: True\nAdd gravity, drag and steering losses to the burn list if applicable.\n",
+  "context": {
+    "kind": "budget",
+    "params": {
+      "dry": 4000,
+      "isp": 320,
+      "wet": 10000,
+      "burns": "1200, 850, 300",
+      "margin": 10
+    }
+  },
+  "runtime": "Pyodide 314.0.7",
+  "environment": {
+    "python": "3.14.2 (main, Sep 14 2026, 03:03:51) [Clang 23.0.0git (https:/github.com/llvm/llvm-project e5927fecf8a6ce89e1a4eac5b8",
+    "packages": {
+      "six": "1.17.0",
+      "pytz": "2026.1.post1",
+      "numpy": "2.4.6",
+      "scipy": "1.18.0",
+      "PyYAML": "6.0.3",
+      "cycler": "0.12.1",
+      "pillow": "12.2.0",
+      "pyerfa": "2.0.1.5",
+      "astropy": "7.2.0",
+      "micropip": "0.11.1",
+      "contourpy": "1.3.3",
+      "fonttools": "4.62.1",
+      "packaging": "26.1",
+      "pyparsing": "3.3.2",
+      "kiwisolver": "1.5.0",
+      "matplotlib": "3.10.8",
+      "python-dateutil": "2.9.0.post0",
+      "astropy-iers-data": "0.2026.4.1.15.5.49"
+    }
+  },
+  "completed_at": "2026-10-29T08:08:53.014Z"
+}
