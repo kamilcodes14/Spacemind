@@ -71,6 +71,18 @@ export function validateTool(value) {
     if (!/^\d+$/.test(params.obsid)) throw Error('Invalid observation ID.');
   } else if (kind === 'pds') {
     params.query = string(p, 'query', 120);
+  } else if (kind === 'asteroids') {
+    params.start_date = string(p, 'start_date', 10);
+    params.end_date = string(p, 'end_date', 10);
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    const start = Date.parse(params.start_date + 'T00:00:00Z');
+    const end = Date.parse(params.end_date + 'T00:00:00Z');
+    if (!datePattern.test(params.start_date) || !datePattern.test(params.end_date) ||
+        !Number.isFinite(start) || !Number.isFinite(end) ||
+        new Date(start).toISOString().slice(0,10) !== params.start_date ||
+        new Date(end).toISOString().slice(0,10) !== params.end_date ||
+        end < start || end - start > 6 * 86400000)
+      throw Error('Choose a valid UTC date range of up to seven calendar days.');
   } else if (kind === 'weather' || kind === 'launches') {
     params = {};
   } else if (kind === 'lagrange') {
@@ -131,7 +143,7 @@ rocket: {isp:number,wet:number,dry:number}. Isp seconds, masses kg. Requires all
 spice or horizons: {target:"numeric NAIF ID",observer:"numeric NAIF ID",epoch:"YYYY-MM-DDTHH:mm:ssZ"}. SPICE requires user-uploaded kernels. Horizons fetches state vectors in equatorial J2000, geometric, km/s and km. Planet centers: Earth 399, Moon 301, Mars 499, Sun 10. Must clarify target, observer and epoch if not clear. Use date context for "now".
 mast: {ra:number,dec:number,radius:number}. ICRS degrees; cone radius .001–1 deg. Requires sky coordinates; do not invent target coordinates.
 pds: {query:"short dataset or target keywords"}.
-weather: {}. NOAA solar flares, Kp and alerts plus NASA DONKI CME records; NOT a prediction of personal risk.
+asteroids: {start_date:"YYYY-MM-DD",end_date:"YYYY-MM-DD"}. NASA NeoWs asteroid close approaches; maximum seven calendar days. Do not call NASA hazardous classification an impact prediction.\nweather: {}. NOAA solar flares, Kp and alerts plus NASA DONKI CME records; NOT a prediction of personal risk.
 launches: {}. Upcoming launch schedules; dates may change.
 lagrange: {system:"Sun–Earth"|"Earth–Moon"}. Circular restricted three-body illustration.
 python: {code:"Python script"}. Use for custom calculations unsupported above, only if requested. Available imports numpy, scipy, astropy, matplotlib, spiceypy; skyfield may need optional installation. No poliastro. Scripts run only after the user reviews and clicks Run. Avoid networking, shell/subprocess, package installs or filesystem writes outside /work. Include units, assumptions and numerical checks. No pretense that code has already run.`;
