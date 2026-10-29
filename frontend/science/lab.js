@@ -3,6 +3,7 @@ import { csv } from './notebook.js';
 import { mountPython } from './python-client.js';
 import { mountViewer, mountLagrange } from './viewer.js';
 import { recipe } from './recipes.js';
+import { asteroidDates, renderNASA } from './nasa-data.js';
 import {
   validateTool,
   TOOL_ORIGIN,
@@ -22,7 +23,8 @@ const titles = {
   horizons: 'JPL Horizons',
   mast: 'MAST archive',
   pds: 'Planetary Data System',
-  weather: 'Space weather',
+  asteroids: 'NASA Live Data · Asteroid approaches',
+  weather: 'NASA / NOAA · Solar activity',
   launches: 'Launch schedule',
   lagrange: 'Lagrange points',
   python: 'Python workspace',
@@ -50,6 +52,8 @@ const defaults = {
   },
 };
 const labels = {
+  start_date: 'Start date · UTC',
+  end_date: 'End date · UTC',
   filename: 'Uploaded CSV filename',
   burns: 'Burns · m/s, comma separated',
   margin: 'Delta-v margin · %',
@@ -124,10 +128,15 @@ function renderData(host, data) {
     ),
     el('p', 'science-note', data.note),
   );
-  const source = link(data.source, 'Open source ↗');
+  const source = link(
+    data.kind === 'asteroids' ? 'https://api.nasa.gov/' : data.source,
+    data.kind === 'asteroids' ? 'NASA NeoWs source ↗' : 'Open source ↗',
+  );
   if (source) host.append(source);
   if (data.sources?.cmes)
-    host.append(link(data.sources.cmes, 'NASA CME source ↗'));
+    host.append(
+      link('https://ccmc.gsfc.nasa.gov/tools/DONKI/', 'NASA DONKI source ↗'),
+    );
   if (data.warnings?.length)
     host.append(el('p', 'notice', data.warnings.join(' ')));
   host.append(
@@ -135,6 +144,16 @@ function renderData(host, data) {
       download(data, 'spacemind-' + data.kind + '.json'),
     ),
   );
+  if (['asteroids', 'weather'].includes(data.kind)) {
+    if (Array.isArray(data.rows))
+      host.append(
+        button('Download CSV', () =>
+          download(csv(data.rows), 'spacemind-asteroids.csv', 'text/csv'),
+        ),
+      );
+    renderNASA(host, data, { el, link });
+    return;
+  }
   if (Array.isArray(data.rows)) {
     host.append(
       button('Download CSV', () =>
@@ -232,7 +251,11 @@ function renderData(host, data) {
     host.append(d);
   }
 }
-async function fetchData(host, tool) {
+async function fetchData(host, tool, trigger) {
+  if (host.getAttribute('aria-busy') === 'true') return;
+  host.setAttribute('aria-live', 'polite');
+  host.setAttribute('aria-busy', 'true');
+  if (trigger) trigger.disabled = true;
   host.replaceChildren(
     el('p', 'pending', 'Querying the scientific data source…'),
   );
@@ -245,8 +268,11 @@ async function fetchData(host, tool) {
   } catch (e) {
     host.replaceChildren(
       el('p', 'error', e.message),
-      button('Retry', () => fetchData(host, tool)),
+      button('Retry', () => fetchData(host, tool, trigger)),
     );
+  } finally {
+    host.setAttribute('aria-busy', 'false');
+    if (trigger) trigger.disabled = false;
   }
 }
 export function mountTool(host, input, { live = false, saved = true } = {}) {
@@ -345,12 +371,14 @@ export function mountTool(host, input, { live = false, saved = true } = {}) {
       ),
     );
   } else {
-    const result = el('div');
-    card.append(
-      button('Fetch data', () => fetchData(result, tool), true),
-      result,
+    const result = el('div', 'science-results');
+    const fetchButton = button(
+      'Fetch data',
+      () => fetchData(result, tool, fetchButton),
+      true,
     );
-    if (live) fetchData(result, tool);
+    card.append(fetchButton, result);
+    if (live) fetchData(result, tool, fetchButton);
   }
   cleanups.set(card, () => disposers.forEach((fn) => fn?.()));
 }
@@ -361,9 +389,14 @@ new MutationObserver(() => {
       cleanups.delete(card);
     }
 }).observe(document.documentElement, { childList: true, subtree: true });
-function openLab() {
+function openLab(initialKind) {
   let dialog = document.getElementById('scienceDialog');
   if (dialog) {
+    if (titles[initialKind]) {
+      const select = dialog.querySelector('select[aria-label="Research tool"]');
+      select.value = initialKind;
+      select.onchange();
+    }
     dialog.showModal();
     return;
   }
@@ -394,8 +427,21 @@ function openLab() {
     );
   let values = {};
   function update() {
+    output.replaceChildren();
     fields.replaceChildren();
-    values = { ...defaults[select.value] };
+    values =
+      select.value === 'asteroids'
+        ? asteroidDates()
+        : { ...defaults[select.value] };
+    notice.textContent =
+      select.value === 'asteroids'
+        ? 'NASA Live Data · Select up to seven calendar days, including both dates. Dates are UTC. These are catalogue forecasts, not live tracking.'
+        : select.value === 'weather'
+          ? 'NASA DONKI coronal mass ejections and NOAA solar flares, Kp and alerts. Source observations may lag; this is research data.'
+          : 'Editable examples. Set the inputs for your own research before running.';
+    open.textContent = ['asteroids', 'weather'].includes(select.value)
+      ? 'Fetch NASA / NOAA data'
+      : 'Open tool';
     if (['orbit', 'python'].includes(select.value)) return;
     for (const [key, value] of Object.entries(values)) {
       const label = el('label', null, labels[key] || key);
@@ -412,7 +458,11 @@ function openLab() {
         });
       } else {
         input = el('input');
-        input.type = typeof value === 'number' ? 'number' : 'text';
+        input.type = key.endsWith('_date')
+          ? 'date'
+          : typeof value === 'number'
+            ? 'number'
+            : 'text';
         if (typeof value === 'number') input.step = 'any';
       }
       input.value = value;
@@ -426,7 +476,19 @@ function openLab() {
   }
   const open = el('button', 'primary', 'Open tool');
   open.type = 'submit';
-  form.append(select, notice, fields, open);
+  const shortcuts = el('div', 'science-actions');
+  for (const [kind, title] of [
+    ['asteroids', 'NASA Live Data'],
+    ['weather', 'Solar activity'],
+  ]) {
+    shortcuts.append(
+      button(title, () => {
+        select.value = kind;
+        update();
+      }),
+    );
+  }
+  form.append(shortcuts, select, notice, fields, open);
   body.append(form, output);
   dialog.append(heading, body);
   document.body.append(dialog);
@@ -437,6 +499,7 @@ function openLab() {
     try {
       mountTool(output, validateTool({ kind: select.value, params: values }), {
         saved: false,
+        live: ['asteroids', 'weather'].includes(select.value),
       });
     } catch (err) {
       output.append(el('p', 'error', err.message));
@@ -446,6 +509,7 @@ function openLab() {
     output.replaceChildren();
     dialog.remove();
   });
+  if (titles[initialKind]) select.value = initialKind;
   update();
   dialog.showModal();
 }

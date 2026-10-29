@@ -30,6 +30,8 @@ Deploy `dist/`. On Vercel use the **repository root**, framework **Other**, buil
 
 ## Workspace
 
+- [NASA Live Data](docs/NASA_LIVE_DATA.md): asteroid approaches and NASA/NOAA solar activity with source attribution, UTC dates and exports; authenticated key acceptance remains to be verified.
+
 - Sign up, email confirmation, sign in, password reset/change, sign out, account deletion.
 - New chat, saved history, search, rename, pin, deletion, JSON export.
 - Account, appearance, research, and privacy settings stored per account.
