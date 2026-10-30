@@ -12,7 +12,7 @@ import {
   canonicalKey,
 } from './evidence-quality.js';
 import { streamCompletion } from './stream.js';
-import { scienceInstructions, toolResult } from './science-tools.js';
+import { scienceInstructions, toolResult, explicitAsteroidRequest } from './science-tools.js';
 import { HttpError, fetchJSON, safeURL } from './http.js';
 /**
  * Validate and normalize a research request, including selected-paper/execution data.
@@ -257,6 +257,14 @@ function quickReply(question) {
   return null;
 }
 async function routeConversation(question, history, env, fetcher) {
+  const asteroidTool = explicitAsteroidRequest(question);
+  if (asteroidTool) {
+    try {
+      return { science: toolResult({ tool: asteroidTool, answer: 'Fetching NASA NeoWs close approaches for the specified UTC dates. Distances are in km, relative speeds in km/s, and estimated diameters in metres. A hazardous designation is not an impact prediction.' }) };
+    } catch {
+      return { answer: 'Choose a valid UTC date range of up to seven calendar days, including both dates. You can also set the dates in NASA Live Data.' };
+    }
+  }
   const output = await groq(
     [
       {

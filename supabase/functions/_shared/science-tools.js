@@ -147,6 +147,16 @@ asteroids: {start_date:"YYYY-MM-DD",end_date:"YYYY-MM-DD"}. NASA NeoWs asteroid 
 launches: {}. Upcoming launch schedules; dates may change.
 lagrange: {system:"Sun–Earth"|"Earth–Moon"}. Circular restricted three-body illustration.
 python: {code:"Python script"}. Use for custom calculations unsupported above, only if requested. Available imports numpy, scipy, astropy, matplotlib, spiceypy; skyfield may need optional installation. No poliastro. Scripts run only after the user reviews and clicks Run. Avoid networking, shell/subprocess, package installs or filesystem writes outside /work. Include units, assumptions and numerical checks. No pretense that code has already run.`;
+// Explicit date-bound catalogue requests do not need a model to invent inputs.
+export function explicitAsteroidRequest(question) {
+  if (!/\b(?:fetch|show|list|query|retrieve)\b/i.test(question) ||
+      !/(?:\bneows\b|\basteroids?\b.*\bapproach(?:es)?\b)/i.test(question) ||
+      /\b(?:not|never|without|don't)\b/i.test(question.split(/[.;]/)[0]) ||
+      /^\s*(?:how|why|what)\b/i.test(question)) return null;
+  const dates = question.match(/\b\d{4}-\d{2}-\d{2}\b/g) || [];
+  if (dates.length < 1 || dates.length > 2) return null;
+  return { kind: 'asteroids', params: { start_date: dates[0], end_date: dates[1] || dates[0] } };
+}
 export function toolResult(route) {
   const tool = validateTool(route.tool);
   return {

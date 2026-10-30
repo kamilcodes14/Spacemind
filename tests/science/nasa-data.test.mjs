@@ -6,8 +6,47 @@ import {
   measurement,
   weatherSections,
 } from '../../frontend/science/nasa-data.js';
-import { validateTool } from '../../supabase/functions/_shared/science-tools.js';
+import { validateTool, explicitAsteroidRequest } from '../../supabase/functions/_shared/science-tools.js';
 import { queryProvider } from '../../supabase/functions/space-data/providers.js';
+test('explicit asteroid routing leaves explanatory and negated questions to the router', () => {
+  for (const q of ['What does asteroid close approach mean on 2026-10-30?', 'How do I query NASA NeoWs on 2026-10-30?', 'Do not fetch asteroid close approaches for 2026-10-30.']) assert.equal(explicitAsteroidRequest(q),null);
+});
+
+test('DONKI gateway failure falls back to official public NASA endpoint without forwarding key', async () => {
+  const calls = [];
+  const result = await queryProvider(
+    { kind: 'weather', params: {} },
+    async (url) => {
+      calls.push(new URL(url));
+      if (url.startsWith('https://api.nasa.gov/'))
+        return new Response('', { status: 503 });
+      if (url.startsWith('https://ccmc.gsfc.nasa.gov/'))
+        return Response.json([{ activityID: 'fallback-CME', cmeAnalyses: [] }]);
+      return Response.json([]);
+    },
+    { NASA_API_KEY: 'test-private-key' },
+  );
+  const fallback = calls.find((u) => u.hostname === 'ccmc.gsfc.nasa.gov');
+  assert.equal(fallback.searchParams.has('api_key'), false);
+  assert.equal(result.rows.cmes[0].activityID, 'fallback-CME');
+  assert.match(result.sources.cmes, /ccmc.gsfc.nasa.gov/);
+  assert.match(result.warnings[0], /public endpoint/);
+  assert.equal(JSON.stringify(result).includes('test-private-key'), false);
+});
+
+test('DONKI failure on both routes preserves NOAA and reports unavailable CME records', async () => {
+  const result = await queryProvider(
+    { kind: 'weather', params: {} },
+    async (url) =>
+      url.includes('noaa.gov')
+        ? Response.json([])
+        : new Response('', { status: 503 }),
+    { NASA_API_KEY: 'test-private-key' },
+  );
+  assert.equal(result.rows.cmes, undefined);
+  assert.ok(result.rows.flares);
+  assert.deepEqual(result.warnings, ['NASA CME catalog is unavailable.']);
+});
 
 test('NOAA Kp renders both header tables and object records without dropping other feeds', () => {
   const table = weatherSections({

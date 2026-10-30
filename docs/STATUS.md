@@ -24,3 +24,15 @@ This work completed readability, supported-stack documentation, retrieval benchm
 PR #6 was merged into main as `e5492092c011329bd6cb01f24efc198cc67ee7b6`. The research Edge Function was deployed as v15 with JWT verification enabled. Vercel production deployment `dpl_C7Cok35HiMXkAooLk7DV7j4UrfRZ` was confirmed READY and assigned to spacemind-frontend.vercel.app. These release observations do not establish scientific accuracy. No migration, new secret, paid service or ingestion is required. Do not deploy the local test-configuration build. Formatting-only shared files can be included in future routine function releases; no behavior change is intended there.
 
 Open: project/corpus/dataset licensing and redistribution permission; astronomer-reviewed relevance labels and reviewer provenance; compatible embedding provenance and reranker choice; live provider and browser acceptance. SIMBAD, general aliases and broader numeric grammar are future work. The readability byte-identical build condition was not met: four formatted source-derived assets changed bytes, though parsed logic and the 212-file output set were unchanged. [Workstream evidence](WORKSTREAM_REPORT.md).
+
+## NASA integration acceptance — 30 October 2026
+
+NASA Live Data is deployed and the saved key is verified through an authenticated,
+uncached NeoWs response. One-day and seven-day queries, eight-day rejection,
+JSON/CSV exports, source attribution, explicit-date chat routing and solar-feed
+rendering were observed on production. Live testing found and fixed NOAA Kp
+object-record rendering and invalid model-generated asteroid arguments. DONKI's
+API gateway returned 503; the official public NASA CCMC fallback returned CME
+records and is explicitly labelled. Regression suite: 149 passing tests.
+See [NASA usage, limits and dated evidence](NASA_LIVE_DATA.md). This does not
+complete the separate scientific-validation or 50-answer evaluation programme.

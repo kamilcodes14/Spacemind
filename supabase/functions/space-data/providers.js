@@ -65,9 +65,16 @@ export async function queryProvider(input,fetcher=fetch,env={}){
   // Independent NOAA datasets; one missing feed must not hide the others.
   for(const [name,path] of Object.entries(feeds)){try{const d=await get(endpoints.weather+path,fetcher);rows[name]=name==='kp'?[d[0],...d.slice(-12)]:d.slice(name==='alerts'?0:-20,name==='alerts'?10:undefined);}catch{warnings.push(`${name} data is unavailable.`);}}
   const start=new Date(Date.now()-7*86400000).toISOString().slice(0,10),end=new Date().toISOString().slice(0,10),cmeSource='https://ccmc.gsfc.nasa.gov/DONKI-API/get/CME?'+new URLSearchParams({startDate:start,endDate:end});
-  try{const nasaKey=env.NASA_API_KEY;const nasaUrl=new URL('https://api.nasa.gov/DONKI/CME');nasaUrl.search=new URLSearchParams({startDate:start,endDate:end,...(nasaKey?{api_key:nasaKey}:{api_key:'DEMO_KEY'})}).toString();rows.cmes=await get(nasaUrl.href,fetcher);}catch{warnings.push('NASA CME catalog is unavailable.');}
+  let cmeEndpoint='https://api.nasa.gov/DONKI/CME';
+  const cmeRecords=async url=>{const data=await get(url,fetcher);if(!Array.isArray(data))throw new HttpError(503,'NASA CME catalog returned an invalid response.');return data;};
+  try{const nasaKey=env.NASA_API_KEY;const nasaUrl=new URL(cmeEndpoint);nasaUrl.search=new URLSearchParams({startDate:start,endDate:end,...(nasaKey?{api_key:nasaKey}:{api_key:'DEMO_KEY'})}).toString();rows.cmes=await cmeRecords(nasaUrl.href);}
+  catch{
+   // Official public NASA endpoint; never forward the API key to the fallback.
+   try{rows.cmes=await cmeRecords(cmeSource);cmeEndpoint=cmeSource;warnings.push('NASA API gateway unavailable; using the NASA CCMC DONKI public endpoint.');}
+   catch{warnings.push('NASA CME catalog is unavailable.');}
+  }
   if(!Object.keys(rows).length)throw new HttpError(503,'Space-weather data is temporarily unavailable.');
-  return {kind,provider:'NOAA SWPC + NASA CCMC DONKI',source:endpoints.weather,sources:{noaa:endpoints.weather,cmes:'https://api.nasa.gov/DONKI/CME'},retrieved_at,rows,warnings,note:'Observation/issue timestamps are in each record. Retrieval time does not guarantee fresh observations. CME records cover the past seven days and contain analyst measurements; updates may lag events. An empty catalog is not an all-clear.'};
+  return {kind,provider:'NOAA SWPC + NASA CCMC DONKI',source:endpoints.weather,sources:{noaa:endpoints.weather,cmes:cmeEndpoint},retrieved_at,rows,warnings,note:'Observation/issue timestamps are in each record. Retrieval time does not guarantee fresh observations. CME records cover the past seven days and contain analyst measurements; updates may lag events. An empty catalog is not an all-clear.'};
  }
  if(kind==='launches'){
   const u=endpoints.launches+'?limit=10&mode=list&hide_recent_previous=true';const data=await get(u,fetcher);
