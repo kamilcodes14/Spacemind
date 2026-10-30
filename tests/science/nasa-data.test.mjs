@@ -9,6 +9,26 @@ import {
 import { validateTool } from '../../supabase/functions/_shared/science-tools.js';
 import { queryProvider } from '../../supabase/functions/space-data/providers.js';
 
+test('NOAA Kp renders both header tables and object records without dropping other feeds', () => {
+  const table = weatherSections({
+    kp: [
+      ['time_tag', 'Kp'],
+      ['2026-10-29 18:00:00', '3.33'],
+    ],
+    cmes: [],
+  });
+  assert.deepEqual(table[2].rows, [
+    { time_tag: '2026-10-29 18:00:00', Kp: '3.33' },
+  ]);
+  const objects = weatherSections({
+    kp: [{ time_tag: '2026-10-29 18:00:00', kp_index: 3.33 }],
+    cmes: [],
+  });
+  assert.equal(objects[2].rows[0].kp_index, 3.33);
+  assert.equal(objects[0].available, true);
+  assert.deepEqual(weatherSections({ kp: [] })[2].rows, []);
+});
+
 test('NASA defaults use seven inclusive UTC days across month/year boundaries', () => {
   const params = asteroidDates(new Date('2026-12-31T23:30:00-05:00'));
   assert.deepEqual(params, {

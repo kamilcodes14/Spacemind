@@ -64,13 +64,20 @@ export function weatherSections(feeds = {}) {
     {
       key: 'kp',
       title: 'Planetary Kp index · NOAA',
-      rows: array(feeds.kp)
-        .slice(1)
-        .map((r) =>
-          Object.fromEntries(
-            array(feeds.kp)[0].map((key, i) => [key, r[i] ?? '—']),
-          ),
-        ),
+      // NOAA may return a header-plus-rows table or records keyed by field.
+      // The legacy provider prepends the first item; keep only recent records.
+      rows: Array.isArray(feeds.kp?.[0])
+        ? array(feeds.kp)
+            .slice(1)
+            .filter(Array.isArray)
+            .map((r) =>
+              Object.fromEntries(
+                feeds.kp[0].map((key, i) => [key, r[i] ?? '—']),
+              ),
+            )
+        : array(feeds.kp)
+            .filter((r) => r && typeof r === 'object')
+            .slice(-12),
     },
     {
       key: 'alerts',
