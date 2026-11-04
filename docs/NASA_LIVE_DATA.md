@@ -78,3 +78,17 @@ The initial model-routed asteroid request asked for unrelated central-body
 inputs; explicit ISO-date catalogue requests now bypass model argument creation.
 
 NASA endpoint documentation: https://ccmc.gsfc.nasa.gov/DONKI/api/
+
+## Mobile date controls
+
+The asteroid date fields now stack below 600 px, with constrained input widths
+and 16 px date text on phones. Today, Next 3 days and Next 7 days presets all
+start on the current UTC date and include both endpoints. The selected day
+count updates immediately; invalid ranges disable Fetch and show the exact
+latest allowed end date. The end-date picker also receives matching minimum
+and maximum dates. Editing dates clears results for the previous range.
+
+Validation: 152 automated tests passed, including the reported 30 October to
+6 November eight-day range, leap days, year boundaries and invalid input.
+JavaScript syntax checks and the static build passed. These changes have not
+been visually verified on an iPhone/Safari device.

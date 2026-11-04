@@ -3,7 +3,7 @@ import { csv } from './notebook.js';
 import { mountPython } from './python-client.js';
 import { mountViewer, mountLagrange } from './viewer.js';
 import { recipe } from './recipes.js';
-import { asteroidDates, renderNASA } from './nasa-data.js';
+import { asteroidDates, asteroidDateRange, renderNASA } from './nasa-data.js';
 import {
   validateTool,
   TOOL_ORIGIN,
@@ -425,10 +425,52 @@ function openLab(initialKind) {
       'science-note',
       'Editable examples. Set the inputs for your own research before running.',
     );
-  let values = {};
+  const datePresets = el('div', 'science-actions science-date-presets'),
+    dateStatus = el('p', 'science-status');
+  datePresets.setAttribute('role', 'group');
+  datePresets.setAttribute('aria-label', 'Asteroid date presets, starting today UTC');
+  dateStatus.id = 'science-date-status';
+  dateStatus.setAttribute('role', 'status');
+  dateStatus.setAttribute('aria-live', 'polite');
+  dateStatus.setAttribute('aria-atomic', 'true');
+  let values = {}, dateInputs = {};
+  const presetButtons = new Map();
+  function syncDates() {
+    const range = asteroidDateRange(values);
+    const start = dateInputs.start_date, end = dateInputs.end_date;
+    end.min = range.max_end_date ? values.start_date : '';
+    end.max = range.max_end_date;
+    start.setAttribute('aria-invalid', String(!range.max_end_date));
+    end.setAttribute('aria-invalid', String(!range.valid));
+    end.setCustomValidity(range.valid ? '' : range.message);
+    dateStatus.textContent = range.message;
+    dateStatus.className = 'science-status' + (range.valid ? '' : ' error');
+    open.disabled = !range.valid;
+    for (const [days, b] of presetButtons) {
+      const preset = asteroidDates(new Date(), days);
+      b.setAttribute('aria-pressed', String(
+        values.start_date === preset.start_date && values.end_date === preset.end_date,
+      ));
+    }
+  }
+  for (const [days, title] of [[1, 'Today'], [3, 'Next 3 days'], [7, 'Next 7 days']]) {
+    const b = button(title, () => {
+      values = asteroidDates(new Date(), days);
+      for (const [key, input] of Object.entries(dateInputs)) input.value = values[key];
+      output.replaceChildren();
+      syncDates();
+    });
+    presetButtons.set(days, b);
+    datePresets.append(b);
+  }
   function update() {
     output.replaceChildren();
     fields.replaceChildren();
+    dateInputs = {};
+    const isAsteroids = select.value === 'asteroids';
+    fields.classList.toggle('science-date-fields', isAsteroids);
+    datePresets.hidden = dateStatus.hidden = !isAsteroids;
+    open.disabled = false;
     values =
       select.value === 'asteroids'
         ? asteroidDates()
@@ -467,12 +509,21 @@ function openLab(initialKind) {
       }
       input.value = value;
       input.required = true;
-      input.oninput = () =>
-        (values[key] =
-          typeof value === 'number' ? Number(input.value) : input.value);
+      input.oninput = () => {
+        values[key] = typeof value === 'number' ? Number(input.value) : input.value;
+        if (isAsteroids) {
+          output.replaceChildren();
+          syncDates();
+        }
+      };
+      if (isAsteroids) {
+        dateInputs[key] = input;
+        input.setAttribute('aria-describedby', dateStatus.id);
+      }
       label.append(input);
       fields.append(label);
     }
+    if (isAsteroids) syncDates();
   }
   const open = el('button', 'primary', 'Open tool');
   open.type = 'submit';
@@ -488,13 +539,18 @@ function openLab(initialKind) {
       }),
     );
   }
-  form.append(shortcuts, select, notice, fields, open);
+  open.classList.add('science-open-tool');
+  form.append(shortcuts, select, notice, datePresets, fields, dateStatus, open);
   body.append(form, output);
   dialog.append(heading, body);
   document.body.append(dialog);
   select.onchange = update;
   form.onsubmit = (e) => {
     e.preventDefault();
+    if (select.value === 'asteroids' && !asteroidDateRange(values).valid) {
+      syncDates();
+      return;
+    }
     output.replaceChildren();
     try {
       mountTool(output, validateTool({ kind: select.value, params: values }), {

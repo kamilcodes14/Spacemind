@@ -1,12 +1,34 @@
 // Presentation only: all provider requests and credentials stay in space-data.
-export function asteroidDates(now = new Date()) {
+export function asteroidDates(now = new Date(), days = 7) {
+  if (!Number.isInteger(days) || days < 1 || days > 7)
+    throw new RangeError('Choose between one and seven calendar days.');
   const start = new Date(now.toISOString().slice(0, 10) + 'T00:00:00Z');
   return {
     start_date: start.toISOString().slice(0, 10),
-    end_date: new Date(start.getTime() + 6 * 86400000)
+    end_date: new Date(start.getTime() + (days - 1) * 86400000)
       .toISOString()
       .slice(0, 10),
   };
+}
+
+export function asteroidDateRange({ start_date, end_date }) {
+  const parse = (value) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return NaN;
+    const time = Date.parse(value + 'T00:00:00Z');
+    return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value
+      ? time : NaN;
+  };
+  const start = parse(start_date), end = parse(end_date);
+  const max_end_date = Number.isFinite(start)
+    ? new Date(start + 6 * 86400000).toISOString().slice(0, 10) : '';
+  if (!Number.isFinite(start) || !Number.isFinite(end))
+    return { valid: false, days: null, max_end_date, message: 'Choose a valid start date and end date. Dates are UTC.' };
+  const days = (end - start) / 86400000 + 1;
+  if (days < 1)
+    return { valid: false, days, max_end_date, message: `Choose an end date on or after ${start_date}. Dates are UTC.` };
+  if (days > 7)
+    return { valid: false, days, max_end_date, message: `${days} calendar days selected. Choose ${max_end_date} or earlier (maximum 7 days, including both dates).` };
+  return { valid: true, days, max_end_date, message: `${days} of 7 calendar days selected · UTC · Both dates included.` };
 }
 
 export function measurement(value, digits = 2) {

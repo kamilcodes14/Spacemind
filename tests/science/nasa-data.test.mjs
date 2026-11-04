@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   asteroidDates,
+  asteroidDateRange,
   asteroidRows,
   measurement,
   weatherSections,
@@ -75,6 +76,43 @@ test('NASA defaults use seven inclusive UTC days across month/year boundaries', 
     end_date: '2027-01-07',
   });
   assert.deepEqual(validateTool({ kind: 'asteroids', params }).params, params);
+});
+
+test('NASA presets include today UTC across leap days and year boundaries', () => {
+  for (const instant of ['2028-02-28T23:30:00-05:00', '2026-12-31T23:30:00Z']) {
+    for (const days of [1, 3, 7]) {
+      const params = asteroidDates(new Date(instant), days);
+      assert.equal(params.start_date, new Date(instant).toISOString().slice(0, 10));
+      assert.equal(asteroidDateRange(params).days, days);
+      assert.equal(asteroidDateRange(params).valid, true);
+      assert.doesNotThrow(() => validateTool({ kind: 'asteroids', params }));
+    }
+  }
+  for (const days of [0, 8, 1.5]) assert.throws(() => asteroidDates(new Date(), days));
+});
+
+test('date feedback explains the screenshot eight-day range and the exact allowed end date', () => {
+  const params = { start_date: '2026-10-30', end_date: '2026-11-06' };
+  const range = asteroidDateRange(params);
+  assert.equal(range.valid, false);
+  assert.equal(range.days, 8);
+  assert.equal(range.max_end_date, '2026-11-05');
+  assert.match(range.message, /8 calendar days selected.*2026-11-05/);
+  assert.equal(asteroidDateRange({ ...params, end_date: range.max_end_date }).valid, true);
+});
+
+test('date feedback rejects missing, impossible and reversed dates without stale limits', () => {
+  for (const params of [
+    { start_date: '', end_date: '2026-11-01' },
+    { start_date: '2026-02-29', end_date: '2026-03-01' },
+    { start_date: '2026-10-30', end_date: '' },
+    { start_date: '2026-10-30', end_date: '2026-10-29' },
+  ]) {
+    assert.equal(asteroidDateRange(params).valid, false);
+    assert.throws(() => validateTool({ kind: 'asteroids', params }));
+  }
+  assert.equal(asteroidDateRange({ start_date: '', end_date: '' }).max_end_date, '');
+  assert.equal(asteroidDateRange({ start_date: '2028-02-29', end_date: '2028-03-06' }).days, 7);
 });
 
 test('NASA dates reject impossible dates, reversed ranges and eight calendar days', () => {
