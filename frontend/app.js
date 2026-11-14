@@ -170,12 +170,25 @@ const hostedAuth = window.SpaceMindBackend?.provider === 'supabase';
 $('socialAuth').hidden = !hostedAuth;
 $('resendConfirmation').hidden = !hostedAuth;
 $('googleSignIn').onclick = async () => {
+  // Open synchronously during the click gesture so iframe popup blockers
+  // allow Google OAuth to continue in a top-level browsing context.
+  const authPopup = window.open('about:blank', '_blank');
+  if (!authPopup) {
+    $('authError').textContent =
+      'Your browser blocked the sign-in window. Allow pop-ups for Planet X or open SpaceMind separately, then try again.';
+    return;
+  }
   authBusy(true);
   $('authError').textContent = '';
-  $('authNotice').textContent = 'Opening Google sign-in…';
+  $('authNotice').textContent = 'Opening Google sign-in in a new tab…';
   try {
-    await post('/auth/oauth', { provider: 'google' });
+    const result = await post('/auth/oauth', { provider: 'google' });
+    if (!result?.url) throw new Error('Google sign-in could not be started. Please try again.');
+    authPopup.location.replace(result.url);
+    $('authNotice').textContent =
+      'Complete Google sign-in in the new tab. This SpaceMind panel will update automatically.';
   } catch (error) {
+    authPopup.close();
     $('authNotice').textContent = '';
     $('authError').textContent = error.message;
     authBusy(false);
@@ -1145,6 +1158,14 @@ function showRecovery() {
 window.addEventListener('spacemind-recovery', showRecovery);
 window.addEventListener('spacemind-signed-out', () => {
   if (state.user) showAuth();
+});
+window.addEventListener('spacemind-signed-in', async () => {
+  if (state.user) return;
+  try {
+    await enterWorkspace(await api('/auth/me'));
+  } catch (error) {
+    toast(error.message);
+  }
 });
 $('recoveryForm').onsubmit = async (e) => {
   e.preventDefault();
