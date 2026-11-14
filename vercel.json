@@ -16,7 +16,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://kamilcodes14.github.io https://planet-x-sphere-x-git-integration-spacemind-universe-syed-kamil.vercel.app"
+          "value": "frame-ancestors 'self' https://kamilcodes14.github.io https://planet-x-sphere-x-git-integration-spacemind-universe-syed-kamil.vercel.app https://planet-x-sphere-ndyaqaksz-syed-kamil.vercel.app https://planet-x-sphere-x.vercel.app https://planet-x-sphere-x-syed-kamil.vercel.app https://planet-x-sphere-x-git-main-syed-kamil.vercel.app"
         }
       ]
     }
