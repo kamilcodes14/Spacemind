@@ -217,16 +217,18 @@ async function request(path, options = {}) {
         'Your browser is blocking sign-in storage. Allow website data for SpaceMind, then try again. [AUTH: storage_unavailable]',
       );
     }
-    checked(
+    const result = checked(
       await client.auth.signInWithOAuth({
         provider: body.provider,
         options: {
           redirectTo: location.origin + '/',
           queryParams: { prompt: 'select_account' },
+          skipBrowserRedirect: true,
         },
       }),
     );
-    return { redirecting: true };
+    if (!result?.url) fail('Google sign-in could not be started. Please try again.', 502);
+    return { url: result.url };
   }
   if (path === '/auth/resend') {
     checked(
@@ -675,6 +677,8 @@ async function request(path, options = {}) {
 }
 client.auth.onAuthStateChange((event) => {
   // Never await an auth method inside this callback (SDK locks can deadlock).
+  if (event === 'SIGNED_IN')
+    setTimeout(() => window.dispatchEvent(new Event('spacemind-signed-in')), 0);
   if (event === 'PASSWORD_RECOVERY') {
     window.SpaceMindRecoveryPending = true;
     setTimeout(() => window.dispatchEvent(new Event('spacemind-recovery')), 0);
