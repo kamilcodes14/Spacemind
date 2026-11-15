@@ -1,5 +1,7 @@
 # Observational benchmarks — 25 October 2026
 
+**Full research write-up:** [SpaceMind astronomy research case study](../../docs/ASTRONOMY_RESEARCH_CASE_STUDY.md) — research questions, data provenance, methods, measured results, limitations and reproduction steps.
+
 These records are genuine local executions of the same recipe generator and orbital
 solver used by Mission Lab. They are **not** signed-in browser/deployed-stack acceptance.
 `results.json` records thresholds, results, units, time systems, assumptions and limits.
