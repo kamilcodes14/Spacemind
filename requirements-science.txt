@@ -4,3 +4,5 @@ numpy==2.3.5
 scipy==1.17.0
 astropy==8.0.2
 matplotlib==3.10.8
+batman-package==2.5.3
+emcee==3.1.6
