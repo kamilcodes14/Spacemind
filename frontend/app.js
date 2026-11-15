@@ -82,8 +82,9 @@ function showAuth() {
   state.chats = [];
   state.prefs = null;
   $('workspace').hidden = true;
-  $('auth').hidden = false;
-  $('loading').hidden = true;
+  $('auth').hidden = true;
+  $('loading').hidden = false;
+  $('loading').lastElementChild.textContent = 'Connecting to SpaceMind…';
   $('messages').replaceChildren();
   $('chatList').replaceChildren();
   $('question').value = '';
@@ -167,6 +168,12 @@ $('authForm').onsubmit = async (event) => {
   }
 };
 const hostedAuth = window.SpaceMindBackend?.provider === 'supabase';
+$('auth').hidden = true;
+$('signOut').hidden = true;
+$('changePassword').hidden = true;
+$('deleteAccount').hidden = true;
+$('settingEmail').closest('label').hidden = true;
+$('settingEmail').parentElement.nextElementSibling.hidden = true;
 $('socialAuth').hidden = !hostedAuth;
 $('resendConfirmation').hidden = !hostedAuth;
 $('googleSignIn').onclick = async () => {
@@ -1171,11 +1178,10 @@ $('recoveryForm').onsubmit = async (e) => {
   try {
     await enterWorkspace(await api('/auth/me'));
   } catch (error) {
-    showAuth();
-    if (window.SpaceMindAuthError) {
-      $('authError').textContent = window.SpaceMindAuthError;
-      window.SpaceMindAuthError = null;
-    } else if (error.status !== 401) $('authError').textContent = error.message;
+    $('loading').hidden = false;
+    $('loading').lastElementChild.textContent = 'Unable to connect. Please refresh and try again.';
+    $('auth').hidden = true;
+    console.error('SpaceMind startup failed:', error);
   }
   showRecovery();
 })();
