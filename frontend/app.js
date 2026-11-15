@@ -1179,7 +1179,7 @@ $('recoveryForm').onsubmit = async (e) => {
     await enterWorkspace(await api('/auth/me'));
   } catch (error) {
     $('loading').hidden = false;
-    $('loading').lastElementChild.textContent = 'Unable to connect. Please refresh and try again.';
+    $('loading').lastElementChild.textContent = 'Unable to connect: ' + (error?.message || 'Unknown error') + '. Please refresh and try again.';
     $('auth').hidden = true;
     console.error('SpaceMind startup failed:', error);
   }
