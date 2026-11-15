@@ -25,7 +25,7 @@ FIT = DATA / "transit-fit"
 FIT.mkdir(parents=True, exist_ok=True)
 RNG = np.random.default_rng(20261116)
 N_WALKERS = 40
-N_STEPS = 60000
+N_STEPS = 110000
 BURN_IN = 10000
 THIN = 10
 LONG_CADENCE_DAYS = 29.4244 / 1440.0
