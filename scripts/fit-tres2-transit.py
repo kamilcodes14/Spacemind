@@ -236,7 +236,7 @@ def main():
     params.t0, params.per, params.rp, params.a = t0, period, rp, a_rs
     params.inc, params.u = float(inclination), [float(u1), float(u2)]
     dense_time = np.linspace(t0 - 0.12, t0 + 0.12, 1500)
-    dense_model = batman.TransitModel(params, dense_time)
+    dense_model = batman.TransitModel(params, dense_time, supersample_factor=SUPERSAMPLE, exp_time=LONG_CADENCE_DAYS)
     dense_flux = dense_model.light_curve(params)
     fitted_depth_percent = float((1.0 - np.min(dense_flux)) * 100.0)
     duration_days = (period / np.pi) * np.arcsin(
@@ -362,7 +362,7 @@ def main():
     folded_params.inc = float(inclination)
     folded_params.ecc, folded_params.w = 0.0, 90.0
     folded_params.u, folded_params.limb_dark = [float(u1), float(u2)], "quadratic"
-    folded_model = batman.TransitModel(folded_params, phase_grid)
+    folded_model = batman.TransitModel(folded_params, phase_grid, supersample_factor=SUPERSAMPLE, exp_time=LONG_CADENCE_DAYS)
     curve = folded_model.light_curve(folded_params)
 
     fig, (ax, residual_ax) = plt.subplots(
