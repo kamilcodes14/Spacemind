@@ -25,9 +25,9 @@ FIT = DATA / "transit-fit"
 FIT.mkdir(parents=True, exist_ok=True)
 RNG = np.random.default_rng(20261116)
 N_WALKERS = 40
-N_STEPS = 2400
-BURN_IN = 800
-THIN = 8
+N_STEPS = 20000
+BURN_IN = 4000
+THIN = 10
 LONG_CADENCE_DAYS = 29.4244 / 1440.0
 SUPERSAMPLE = 7
 
@@ -245,11 +245,34 @@ def main():
     )
     duration_hours = duration_days * 24.0
 
+    # Estimate autocorrelation only on the post-burn-in chain.  emcee's
+    # tol=50 check raises AutocorrError when the chain is shorter than
+    # roughly 50 integrated autocorrelation times; do not force an estimate.
+    post_burn_chain = sampler.get_chain(discard=BURN_IN)
+    post_burn_steps = int(post_burn_chain.shape[0])
     try:
-        autocorr = sampler.get_autocorr_time(tol=0)
+        autocorr = sampler.get_autocorr_time(discard=BURN_IN, tol=50)
         autocorr_values = [float(x) for x in autocorr]
-    except Exception:
+        max_tau = float(np.max(autocorr))
+        required_steps = int(np.ceil(50.0 * max_tau))
+        meets_50_tau = post_burn_steps >= required_steps
+        effective_samples = [
+            float(N_WALKERS * post_burn_steps / tau) for tau in autocorr
+        ]
+        convergence_status = "meets_50_tau_heuristic" if meets_50_tau else "chain_too_short"
+    except emcee.autocorr.AutocorrError as exc:
         autocorr_values = None
+        max_tau = None
+        required_steps = None
+        meets_50_tau = False
+        effective_samples = None
+        convergence_status = "autocorrelation_time_unreliable"
+        convergence_message = str(exc)
+    else:
+        convergence_message = (
+            "The 50-times-autocorrelation criterion is a sampling-length heuristic, "
+            "not proof of stationarity or convergence."
+        )
 
     acceptance = float(np.mean(sampler.acceptance_fraction))
     report = {
@@ -284,6 +307,14 @@ def main():
             "posterior_samples": int(len(samples)),
             "mean_acceptance_fraction": acceptance,
             "autocorrelation_time_steps": autocorr_values,
+            "convergence_diagnostics": {
+                "post_burn_in_steps_per_walker": post_burn_steps,
+                "required_steps_per_walker_at_50_tau": required_steps,
+                "meets_50_tau_heuristic": meets_50_tau,
+                "status": convergence_status,
+                "effective_samples_estimate_by_parameter": effective_samples,
+                "message": convergence_message
+            },
             "random_seed": 20261116
         },
         "posterior": summary,
