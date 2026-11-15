@@ -283,7 +283,11 @@ async function request(path, options = {}) {
     return { ok: true };
   }
   if (path === '/auth/me') {
-    if (method === 'GET') return profile();
+    if (method === 'GET') {
+      const session = checked(await client.auth.getSession())?.session;
+      if (!session) checked(await client.auth.signInAnonymously());
+      return profile();
+    }
     if (method === 'PATCH') {
       const u = await user();
       checked(
