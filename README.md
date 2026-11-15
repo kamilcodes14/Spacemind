@@ -37,7 +37,7 @@ The repository contains a reproducible observational case study using real publi
 - **Gaia DR3 colour–magnitude analysis:** bounded Gaia catalogue query, parallax signal-to-noise and RUWE quality cuts, absolute-magnitude calculation and an independent Astropy distance-modulus check.
 - **Orbital mechanics validation:** same-epoch lunar osculating-element conversion compared with JPL Horizons DE441 vectors and period.
 
-The recorded reference run uses Python 3.12.14, NumPy, SciPy, Astropy and Matplotlib. Exact measurements, source URLs, retrieval timestamps, checksums, methods and scientific limitations are documented in the [Astronomy Research Case Study](docs/ASTRONOMY_RESEARCH_CASE_STUDY.md) and [observational validation record](validation/observational/README.md).
+The recorded reference run uses Python 3.12.14, NumPy, SciPy, Astropy and Matplotlib. A separate TrES-2 b physical transit fit uses batman-package and emcee; see the [transit-fit method](docs/TRES2_TRANSIT_FIT.md). Exact measurements, source URLs, retrieval timestamps, checksums, methods and scientific limitations are documented in the [Astronomy Research Case Study](docs/ASTRONOMY_RESEARCH_CASE_STUDY.md) and [observational validation record](validation/observational/README.md).
 
 Reproduce the reference workflow from the repository root:
 
