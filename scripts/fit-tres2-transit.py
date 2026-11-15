@@ -239,6 +239,11 @@ def main():
     dense_model = batman.TransitModel(params, dense_time)
     dense_flux = dense_model.light_curve(params)
     fitted_depth_percent = float((1.0 - np.min(dense_flux)) * 100.0)
+    duration_days = (period / np.pi) * np.arcsin(
+        np.sqrt(np.maximum((1.0 + samples[:, 2])**2 - samples[:, 4]**2, 0.0))
+        / (samples[:, 3] * np.sqrt(1.0 - np.square(samples[:, 4] / samples[:, 3])))
+    )
+    duration_hours = duration_days * 24.0
 
     try:
         autocorr = sampler.get_autocorr_time(tol=0)
@@ -290,7 +295,12 @@ def main():
             },
             "fitted_model_depth_percent": fitted_depth_percent,
             "fitted_limb_darkening_u1": float(u1),
-            "fitted_limb_darkening_u2": float(u2)
+            "fitted_limb_darkening_u2": float(u2),
+            "total_transit_duration_hours": {
+                "median": float(np.median(duration_hours)),
+                "q16": float(np.quantile(duration_hours, 0.16)),
+                "q84": float(np.quantile(duration_hours, 0.84))
+            }
         },
         "literature_comparison": {
             "archive": "NASA Exoplanet Archive default planet solution included in the fetched reference record",
@@ -299,11 +309,29 @@ def main():
             "period_difference_days": float(summary["period_days"]["median"] - period_ref),
             "reference_transit_depth_percent": float(depth_ref) if depth_ref is not None else None,
             "fitted_model_depth_percent": fitted_depth_percent,
+            "fitted_radius_ratio": summary["rp_over_rstar"]["median"],
+            "published_radius_ratio": reference.get("pl_ratror"),
+            "radius_ratio_difference": (
+                float(summary["rp_over_rstar"]["median"] - float(reference["pl_ratror"]))
+                if reference.get("pl_ratror") is not None else None
+            ),
+            "fitted_impact_parameter": summary["impact_parameter"]["median"],
+            "published_impact_parameter": reference.get("pl_imppar"),
+            "impact_parameter_difference": (
+                float(summary["impact_parameter"]["median"] - float(reference["pl_imppar"]))
+                if reference.get("pl_imppar") is not None else None
+            ),
+            "fitted_duration_hours": float(np.median(duration_hours)),
+            "published_duration_hours": reference.get("pl_trandur"),
+            "duration_difference_hours": (
+                float(np.median(duration_hours) - float(reference["pl_trandur"]))
+                if reference.get("pl_trandur") is not None else None
+            ),
             "depth_difference_percentage_points": (
                 float(fitted_depth_percent - float(depth_ref))
                 if depth_ref is not None else None
             ),
-            "note": "Archive depth is a catalogue value and may combine different data/assumptions; compare as context, not as a same-instrument repeat measurement."
+            "note": "Archive parameters are a catalogue default solution and may combine different data/assumptions; compare as context, not as a same-instrument repeat measurement. pl_trandep is interpreted in percent and pl_trandur in hours per Exoplanet Archive column units."
         },
         "limitations": [
             "Only one Kepler Q1 long-cadence quarter is fitted.",
