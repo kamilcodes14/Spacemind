@@ -715,6 +715,20 @@ $('chatForm').onsubmit = async (event) => {
       },
     });
     if (state.user !== requestUser) return;
+    if (state.bodyContext?.key) {
+      try {
+        const compact = {
+          answer: result.answer, citations: result.citations || [],
+          warnings: result.warnings || [], used_web: !!result.used_web,
+          confident: result.confident, follow_up_questions: result.follow_up_questions || [],
+          evidence_summary: result.evidence_summary || null, claim_checks: result.claim_checks || [],
+        };
+        localStorage.setItem('spacemind:planet-cache:' + state.bodyContext.key, JSON.stringify({
+          question, result: compact, saved_at: Date.now(),
+        }));
+      } catch {}
+      state.bodyContext = null;
+    }
     state.execution = null;
     fillAnswer(body, result, { live: true });
     await refreshChats();
@@ -755,6 +769,43 @@ $('chatForm').onsubmit = async (event) => {
     if (state.user) $('question').focus();
   }
 };
+/* Planet X bridge: only accept context messages from the page embedding this app. */
+window.addEventListener('message', (event) => {
+  if (event.source !== window.parent || window.parent === window) return;
+  let parentOrigin;
+  try { parentOrigin = new URL(document.referrer).origin; } catch { return; }
+  if (!parentOrigin || event.origin !== parentOrigin) return;
+  const data = event.data;
+  if (!data || data.type !== 'SPACEMIND_PLANET_CONTEXT' || !data.body ||
+      typeof data.body.id !== 'string' || typeof data.body.name !== 'string' ||
+      typeof data.prompt !== 'string') return;
+  const key = data.body.id.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 48);
+  if (!key) return;
+  const applyContext = () => {
+    if (!state.user || state.busy) { setTimeout(applyContext, 100); return; }
+    resetChat();
+    $('chatTitle').textContent = data.body.name + ' · Planet X';
+    const cacheKey = 'spacemind:planet-cache:' + key;
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch {}
+    if (cached?.result?.answer) {
+      $('empty').hidden = true;
+      renderTurn(cached.question || data.prompt, cached.result);
+      const note = document.createElement('p');
+      note.className = 'notice';
+      note.textContent = 'Cached research · ' + new Date(cached.saved_at || Date.now()).toLocaleDateString();
+      $('messages').append(note);
+      scrollBottom();
+      state.bodyContext = null;
+      return;
+    }
+    state.bodyContext = { key, name: data.body.name };
+    $('question').value = data.prompt;
+    $('chatForm').requestSubmit();
+  };
+  if (state.busy) researchController?.abort();
+  applyContext();
+});
 $('researchMode').onchange = updateCapabilityNote;
 function askAction({
   title,
