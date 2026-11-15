@@ -23,7 +23,7 @@
 
 
 /* Floating bottom-right launcher for Spacemind chat. */
-.spacemind-launcher{position:fixed;right:24px;bottom:24px;z-index:120;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:linear-gradient(135deg,#7564e8,#4b58b8);color:#fff;font:600 14px/1 inherit;letter-spacing:.01em;box-shadow:0 10px 30px rgba(34,28,92,.4),0 2px 8px rgba(0,0,0,.25);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+.spacemind-launcher{position:fixed;right:24px;bottom:24px;z-index:120;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:#000;color:#fff;font:600 14px/1 inherit;letter-spacing:.01em;box-shadow:0 10px 30px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
 .spacemind-launcher:hover{transform:translateY(-3px);filter:brightness(1.1);box-shadow:0 14px 34px rgba(34,28,92,.5),0 3px 10px rgba(0,0,0,.3)}
 .spacemind-launcher:focus-visible{outline:3px solid #c8c2ff;outline-offset:3px}
 @media(max-width:700px){.spacemind-launcher{right:16px;bottom:calc(16px + env(safe-area-inset-bottom));min-height:46px;padding:0 19px}}
