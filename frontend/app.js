@@ -1316,3 +1316,9 @@ notesButton.onclick = async () => {
     toast(e.message);
   }
 };
+
+try {
+  const parentOrigin = new URL(document.referrer).origin;
+  if (parentOrigin !== location.origin)
+    window.parent.postMessage({ type: 'SPACEMIND_READY' }, parentOrigin);
+} catch {}
