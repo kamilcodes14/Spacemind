@@ -10,7 +10,7 @@ export function makeHandler({createClient,env,embed,fetcher=fetch}){
     if(req.method==='OPTIONS')return new Response(null,{status:204,headers});
     if(!['GET','POST'].includes(req.method))throw new HttpError(405,'Method not allowed.');
     const {client,user}=await authenticate(req,createClient,env);
-    if(req.method==='GET')return json({web_search:!!env.TAVILY_API_KEY,semantic_scholar:!!env.SEMANTIC_SCHOLAR_API_KEY},200,headers);
+    if(req.method==='GET')return json({web_search:true,web_search_provider:env.TAVILY_API_KEY?'tavily_with_wikipedia_fallback':'wikipedia_fallback',semantic_scholar:!!env.SEMANTIC_SCHOLAR_API_KEY},200,headers);
     const body=await bodyJSON(req,50000);const input=validateQuestion(body);
     const streaming=body.stream===true&&req.headers.get('accept')?.includes('text/event-stream');
     const {data:chat,error:chatError}=await client.from('chats').select('id').eq('id',input.chatId).eq('user_id',user.id).maybeSingle();
