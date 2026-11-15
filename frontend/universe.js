@@ -211,6 +211,22 @@ import * as THREE from 'three';
     ctx.ellipse(350, 260, 90, 45, 0.1, 0, Math.PI * 2);
     ctx.fill();
 
+    // Surface branding: keep the label painted into the planet texture.
+    // This leaves frontend/index.html untouched.
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '600 52px Inter, Arial, sans-serif';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(229, 188, 120, 0.85)';
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = 'rgba(5, 15, 28, 0.72)';
+    ctx.lineWidth = 5;
+    ctx.strokeText('Spacemind', 512, 260);
+    ctx.fillStyle = 'rgba(245, 239, 222, 0.96)';
+    ctx.fillText('Spacemind', 512, 260);
+    ctx.restore();
+
     return new THREE.CanvasTexture(cv);
   }
 
