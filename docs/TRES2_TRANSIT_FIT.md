@@ -34,7 +34,7 @@ The fit writes:
   formal uncertainty is propagated into normalized point errors.
 - Transit: `batman-package`, quadratic limb darkening, exposure integration
   with 7 sub-samples over the 29.4244-minute Kepler long cadence.
-- Orbit: circular (`e=0)) is fixed; epoch and period are fitted freely.
+- Orbit: circular (`e=0`) is fixed; epoch and period are fitted freely.
 - Limb darkening: q1/q2 parameterization with uniform [0,1] priors, mapping
   into physically allowed quadratic coefficients.
 - Noise: Gaussian likelihood using supplied photometric errors plus fitted
