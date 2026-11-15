@@ -79,7 +79,7 @@ export async function authenticate(req, createClient, env) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data, error } = await client.auth.getUser(token);
-  if (error || !data?.user || data.user.is_anonymous)
+  if (error || !data?.user)
     throw new HttpError(401, 'Please sign in to continue.');
   return { client, user: data.user };
 }
