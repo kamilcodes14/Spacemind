@@ -54,6 +54,26 @@ The fetch step requires network access to MAST, Gaia ESA TAP, the NASA Exoplanet
 
 **Scientific integrity:** these are three targeted software/data checks, not peer-reviewed discoveries or a general astronomy accuracy score. The TrES-2 b recovered period passes a deliberately broad 0.005-day check but differs from the catalogue period by more than its quoted uncertainty. Gaia magnitude agreement validates formula implementation, not catalogue accuracy. The lunar comparison validates same-epoch element conversion, not future two-body propagation. The separate 50-question deployed AI research evaluation remains unfinished.
 
+## Architecture
+
+```mermaid
+flowchart TD
+    U[Browser user] --> FE[SpaceMind web frontend]
+    FE --> AUTH[Supabase Auth]
+    FE --> DB[(Supabase Postgres / RLS)]
+    FE --> EDGE[Supabase Edge Functions]
+    EDGE --> LLM[Groq language model]
+    EDGE --> SEARCH[Tavily web search]
+    EDGE --> PAPERS[Semantic Scholar and paper corpus]
+    FE --> LAB[Mission Lab]
+    LAB --> PY[Isolated in-browser Python runtime]
+    PY --> SCI[NumPy · Astropy · Matplotlib workflows]
+    EDGE --> DATA[NASA and astronomy data providers]
+    LEGACY[Optional local Python / Chroma research engine] -. separate legacy path .-> PAPERS
+```
+
+The hosted conversation/research API is Supabase-based. Mission Lab's Python code runs in an isolated browser runtime on the user's device; it is not executed by the hosted chat Edge Functions. The retained local Python/Chroma research engine is a separate legacy workflow and does not share Supabase accounts automatically.
+
 ## Workspace
 
 - [NASA Live Data](docs/NASA_LIVE_DATA.md): asteroid approaches and NASA/NOAA solar activity with source attribution, UTC dates and exports; authenticated key, asteroid exports, explicit-date chat routing and solar-feed rendering verified on 30 October 2026.
