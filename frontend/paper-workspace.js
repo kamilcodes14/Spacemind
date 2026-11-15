@@ -583,6 +583,7 @@ async function open() {
         q.maxLength = 100;
         q.setAttribute('aria-label', 'Paper search');
         for (const [v, t] of [
+          ['arxiv', 'arXiv'],
           ['scholar', 'Semantic Scholar'],
           ['ads', 'NASA ADS'],
         ]) {
