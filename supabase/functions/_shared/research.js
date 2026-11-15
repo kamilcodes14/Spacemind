@@ -142,44 +142,47 @@ export async function groq(
  * @returns {Promise<Object[]>} Web source records; not independently verified evidence.
  * @throws {Error} If configuration is missing or the provider request fails.
  */
-export async function searchWeb(query, env, fetcher = fetch) {
-  if (!env.TAVILY_API_KEY) {
-    console.error(
-      JSON.stringify({
-        event: 'research_configuration_missing',
-        service: 'tavily',
-      }),
-    );
-    throw new HttpError(
-      503,
-      'Web research is currently unavailable. Please try again later.',
-    );
-  }
-  const result = await fetchJSON(
-    'https://api.tavily.com/search',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.TAVILY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: query.slice(0, 600),
-        search_depth: 'basic',
-        max_results: 5,
-        include_answer: false,
-      }),
-    },
-    fetcher,
-  );
-  return (result.results || [])
-    .filter((r) => r.content && safeURL(r.url))
-    .map((r) => ({
-      source_file: r.title || 'Web source',
-      origin: 'web',
-      url: safeURL(r.url),
-      snippet: r.content.slice(0, 2500),
+async function searchWikipedia(query, fetcher = fetch) {
+  const url = new URL('https://en.wikipedia.org/w/api.php');
+  url.search = new URLSearchParams({
+    action: 'query', generator: 'search', gsrsearch: query.slice(0, 300),
+    gsrnamespace: '0', gsrlimit: '5', prop: 'extracts', exintro: '1',
+    explaintext: '1', exchars: '2400', format: 'json', origin: '*',
+  }).toString();
+  const result = await fetchJSON(url.toString(), {}, fetcher, 12000);
+  return Object.values(result.query?.pages || {})
+    .filter((page) => page.extract && Number.isInteger(page.pageid))
+    .sort((x, y) => x.index - y.index)
+    .map((page) => ({
+      source_file: 'Wikipedia · ' + page.title, title: page.title,
+      origin: 'web', url: 'https://en.wikipedia.org/?curid=' + page.pageid,
+      snippet: page.extract.slice(0, 2400),
     }));
+}
+/** Live web search: Tavily first, public Wikipedia search as a no-key fallback. */
+export async function searchWeb(query, env, fetcher = fetch) {
+  if (env.TAVILY_API_KEY) {
+    try {
+      const result = await fetchJSON('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${env.TAVILY_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query.slice(0, 600), search_depth: 'basic', max_results: 5, include_answer: false }),
+      }, fetcher);
+      const results = (result.results || [])
+        .filter((r) => r.content && safeURL(r.url))
+        .map((r) => ({ source_file: r.title || 'Web source', origin: 'web', url: safeURL(r.url), snippet: r.content.slice(0, 2500) }));
+      if (results.length) return results;
+    } catch (error) {
+      console.warn(JSON.stringify({ event: 'research_source_fallback', source: 'tavily', status: error?.status || 503 }));
+    }
+  }
+  try {
+    const fallback = await searchWikipedia(query, fetcher);
+    if (fallback.length) return fallback;
+  } catch {
+    console.warn(JSON.stringify({ event: 'research_source_unavailable', source: 'wikipedia_fallback' }));
+  }
+  throw new HttpError(503, 'Live web research could not reach a search provider. Please try again shortly.');
 }
 /**
  * Search Semantic Scholar for up to five explicitly labelled abstract records.
@@ -255,6 +258,11 @@ function quickReply(question) {
   if (/^(who are you|what can you do)$/.test(q))
     return 'I’m SpaceMind, an AI assistant focused on space and astronomy. I can help with research, explain ideas, or just have a normal conversation.';
   return null;
+}
+const ASTRONOMY_TERMS = /\\b(?:sun|solar system|moon|earth|mercury|venus|mars|jupiter|saturn|uranus|neptune|pluto|planet|exoplanet|star|stars|galaxy|galaxies|milky way|nebula|black hole|white dwarf|neutron star|pulsar|supernova|asteroid|comet|meteor|meteorite|orbit|eclipse|gravity|cosmology|astronomy|astrophysics|universe|telescope|nasa|jwst|webb telescope|hubble|spacecraft|space station|rocket|constellation|dark matter|dark energy)\\b/i;
+function isDirectAstronomyQuestion(question) {
+  return ASTRONOMY_TERMS.test(question) ||
+    /^\\s*(?:what|who|where|when|why|how)\\b.{0,80}\\b(?:planet|star|sun|moon|galaxy|universe|black hole|nebula|comet|asteroid)\\b/i.test(question);
 }
 async function routeConversation(question, history, env, fetcher) {
   const asteroidTool = explicitAsteroidRequest(question);
@@ -380,13 +388,11 @@ export async function research(input, history, deps) {
   const quick = !scoped && quickReply(input.question);
   if (quick) return chatResult(quick);
   let query = input.question.slice(0, 600);
-  if (!scoped && input.useWeb === null) {
-    const route = await routeConversation(
-      input.question,
-      history,
-      env,
-      fetcher,
-    );
+  if (!scoped && input.useWeb === null && isDirectAstronomyQuestion(input.question)) {
+    // Basic astronomy questions must enter evidence retrieval, not casual chat routing.
+    query = input.question.slice(0, 600);
+  } else if (!scoped && input.useWeb === null) {
+    const route = await routeConversation(input.question, history, env, fetcher);
     if (route.science) return route.science;
     if (route.answer) return chatResult(route.answer);
     query = route.query;
@@ -458,38 +464,18 @@ export async function research(input, history, deps) {
       warnings.push('Some research sources were unavailable.');
     }
     const fresh =
-      /\b(latest|today|recent|this week|new discovery|current)\b/i.test(
-        input.question,
-      );
-    if (input.useWeb === null && (!sources.length || fresh)) {
-      if (env.TAVILY_API_KEY) {
-        try {
-          const web = await searchWeb(query, env, fetcher);
-          sources = [...web, ...sources];
-          usedWeb = web.length > 0;
-          if (!web.length)
-            warnings.push('Web search returned no usable sources.');
-        } catch {
-          console.warn(
-            JSON.stringify({
-              event: 'research_source_unavailable',
-              source: 'tavily',
-            }),
-          );
-          warnings.push(
-            'Live web search was unavailable. This answer uses the other sources I could access.',
-          );
-        }
-      } else {
-        console.warn(
-          JSON.stringify({
-            event: 'research_configuration_missing',
-            service: 'tavily',
-          }),
-        );
-        warnings.push(
-          'Live web search was unavailable. This answer uses the other sources I could access.',
-        );
+      /\\b(latest|today|recent|this week|new discovery|current)\\b/i.test(input.question);
+    const initialCoverage = evidenceCoverage(query, sources);
+    const weakEvidence = !sources.length || initialCoverage.coverage === null || initialCoverage.coverage < 0.55;
+    if (input.useWeb === null && (weakEvidence || fresh)) {
+      try {
+        const web = await searchWeb(query, env, fetcher);
+        sources = [...web, ...sources];
+        usedWeb = web.length > 0;
+        if (!web.length) warnings.push('Web search returned no usable sources.');
+      } catch {
+        console.warn(JSON.stringify({ event: 'research_source_unavailable', source: 'live_web' }));
+        warnings.push('Live web search was unavailable. This answer uses the other sources I could access.');
       }
     }
   }
@@ -504,8 +490,8 @@ export async function research(input, history, deps) {
     return {
       answer:
         input.useWeb === true
-          ? 'Web research returned no usable sources. Try a different question.'
-          : 'I could not find enough paper evidence for that question. Try rephrasing your question or choosing web research.',
+          ? 'I could not retrieve usable web sources for that question. Please try again shortly or rephrase it.'
+          : 'I could not retrieve enough reliable evidence to answer that yet. Live web search was attempted when available; please try again or rephrase the question.',
       citations: [],
       follow_up_questions: [],
       confident: false,
