@@ -11,7 +11,6 @@
 | Completed live 50-answer evaluation / before-after quality scores | not done | [Evaluation protocol](docs/EVALUATION_PROTOCOL.md), [historical blocker](docs/history/REMAINING_PHASES_2026-10-25.md) |
 | Signed-in/browser acceptance | measured for specific execution, export, persistence and provider paths; incomplete overall | [29 October evidence and remaining gates](validation/browser-2026-10-29/README.md) |
 
-
 A private space-research workspace with sign-in, saved chats, cited research, settings, and an animated universe. No premium tier.
 
 ## Supported stack: Vercel + Supabase
@@ -26,12 +25,38 @@ npm ci
 npm run build
 ```
 
-Deploy `dist/`. On Vercel use the **repository root**, framework **Other**, build command **npm run build**, and output **dist**. Do not deploy the unbuilt `frontend/` folder. Public Supabase configuration is bundled at build time; model/search keys belong only in Edge Function secrets.
+Deploy `dist/`. On Vercel use the **repository root**, framework **Other**, build command **npm run build**, and output `dist`. Do not deploy the unbuilt `frontend/` folder. Public Supabase configuration is bundled at build time; model/search keys belong only in Edge Function secrets.
+
+## Python astronomy research and Mission Lab
+
+Python is a major part of SpaceMind's scientific-computing workflow, even though the currently supported hosted chat/research backend runs on Supabase Edge Functions. Mission Lab generates Python calculations for local/browser research execution; the legacy local research engine also retains Python ingestion and retrieval code.
+
+The repository contains a reproducible observational case study using real public data:
+
+- **Exoplanet transit analysis:** Kepler Q1 PDCSAP light-curve data for TrES-2 b (KIC 11446443), BLS period recovery, quality filtering and comparison with the NASA Exoplanet Archive.
+- **Gaia DR3 colour–magnitude analysis:** bounded Gaia catalogue query, parallax signal-to-noise and RUWE quality cuts, absolute-magnitude calculation and an independent Astropy distance-modulus check.
+- **Orbital mechanics validation:** same-epoch lunar osculating-element conversion compared with JPL Horizons DE441 vectors and period.
+
+The recorded reference run uses Python 3.12.14, NumPy, SciPy, Astropy and Matplotlib. Exact measurements, source URLs, retrieval timestamps, checksums, methods and scientific limitations are documented in the [Astronomy Research Case Study](docs/ASTRONOMY_RESEARCH_CASE_STUDY.md) and [observational validation record](validation/observational/README.md).
+
+Reproduce the reference workflow from the repository root:
+
+```bash
+npm ci
+python -m venv .venv
+# Activate .venv, then:
+python -m pip install -r requirements-science.txt
+python scripts/fetch-observational.py
+python scripts/validate-observational.py
+```
+
+The fetch step requires network access to MAST, Gaia ESA TAP, the NASA Exoplanet Archive and JPL Horizons. The validation script checks SHA-256 hashes, invokes the current Mission Lab recipe/orbit code through Node.js, executes the generated Python recipes, and writes derived outputs under `validation/observational/`. See the case study for exact environment and reproducibility caveats.
+
+**Scientific integrity:** these are three targeted software/data checks, not peer-reviewed discoveries or a general astronomy accuracy score. The TrES-2 b recovered period passes a deliberately broad 0.005-day check but differs from the catalogue period by more than its quoted uncertainty. Gaia magnitude agreement validates formula implementation, not catalogue accuracy. The lunar comparison validates same-epoch element conversion, not future two-body propagation. The separate 50-question deployed AI research evaluation remains unfinished.
 
 ## Workspace
 
 - [NASA Live Data](docs/NASA_LIVE_DATA.md): asteroid approaches and NASA/NOAA solar activity with source attribution, UTC dates and exports; authenticated key, asteroid exports, explicit-date chat routing and solar-feed rendering verified on 30 October 2026.
-
 - Sign up, email confirmation, sign in, password reset/change, sign out, account deletion.
 - New chat, saved history, search, rename, pin, deletion, JSON export.
 - Account, appearance, research, and privacy settings stored per account.
@@ -60,7 +85,7 @@ npm run test:db
 
 The database suite applies the actual migrations in PGlite/Postgres with pgvector and checks ownership, permissions, quota and deletion. Provider calls in unit tests are mocked. See [historical validation log](docs/history/VALIDATION.md) for scope and deployment limits.
 
-The original Python/Chroma ingestion and local Ollama/Groq research workflow is retained. **[Local Python setup](docs/LOCAL_PYTHON_SETUP.md)** uses its own SQLite accounts and same-origin API; those accounts do not automatically migrate into Supabase Auth. **[Research engine reference](docs/RESEARCH_ENGINE_REFERENCE.md)** documents the original pipeline. `render.yaml` is legacy local-backend deployment configuration and is not used by the Supabase build.
+The original Python/Chroma ingestion and local Ollama/Groq research workflow is retained. **[Local Python setup](docs/LOCAL_PYTHON_SETUP.md)** uses its own SQLite accounts and same-origin API; those accounts do not automatically migrate to Supabase Auth. **[Research engine reference](docs/RESEARCH_ENGINE_REFERENCE.md)** documents the original pipeline. `render.yaml` is legacy local-backend deployment configuration and is not used by the Supabase build.
 
 ## Research-quality evaluation status
 
