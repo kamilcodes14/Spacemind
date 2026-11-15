@@ -1,0 +1,6 @@
+# Reproducible environment used by the observational validation run
+# Python 3.12.14; versions recorded in validation/observational/results.json
+numpy==2.3.5
+scipy==1.17.0
+astropy==8.0.2
+matplotlib==3.10.8
