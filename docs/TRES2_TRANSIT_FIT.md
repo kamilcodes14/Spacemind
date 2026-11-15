@@ -39,12 +39,11 @@ The fit writes:
   into physically allowed quadratic coefficients.
 - Noise: Gaussian likelihood using supplied photometric errors plus fitted
   extra white-noise jitter.
-- Uncertainties: 16th/50th/84th posterior percentiles from `emcee` MCMC.
+- Uncertainties: 16th/50th/84th posterior percentiles from `emcee` MCMC. Total duration is derived from each posterior sample for a circular orbit.
 
 The period prior is uniform from 2.45 to 2.49 days; this is deliberately broad
 enough to test the Q1 observations against the archive ephemeris rather than
-forcing the catalogue period. The reference archive period and transit depth
-are recorded in the comparison section of the output JSON. Catalogue depth is
+forcing the catalogue period. The reference archive period, transit depth, radius ratio, impact parameter and transit duration (when populated by the archive query) are recorded in the comparison section of the output JSON. Catalogue depth is
 contextual: it may represent a different data combination and model.
 
 ## Scientific cautions
