@@ -415,6 +415,7 @@ function fillAnswer(body, result, { live = false } = {}) {
   if (citations.length) {
     const sources = document.createElement('details');
     sources.className = 'sources';
+    sources.open = true;
     const summary = document.createElement('summary');
     summary.textContent = citations.length + ' sources';
     sources.append(summary);
