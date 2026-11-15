@@ -72,3 +72,27 @@ method and literature comparison.
   TrES-2 system: https://doi.org/10.1088/0004-637X/761/1/53
 - NASA Exoplanet Archive, TrES-2 b:
   https://exoplanetarchive.ipac.caltech.edu/overview/TrES-2
+
+
+## Posterior diagnostic audit
+
+After a fit has completed, run the separate audit without rerunning the sampler:
+
+```bash
+python scripts/diagnose-tres2-posterior.py
+```
+
+It reconstructs the saved walker trajectories from the flattened CSV and writes
+`posterior-diagnostics.json`. The report includes rank-normalized and folded
+split-\hat{R}, an approximate rank-normalized bulk effective sample size,
+selected posterior correlations and walker-median outliers. It is intended to
+make chain disagreement visible rather than relying on a single acceptance
+fraction or a single autocorrelation-time estimate.
+
+**Interpretation caveat:** walkers in an `emcee` ensemble are coupled and are
+not independent chains in the usual MCMC sense. Therefore the split-\hat{R}
+and ESS values produced here are screening diagnostics, not formally calibrated
+convergence guarantees. A strong follow-up is to run multiple independently
+initialized ensembles, compare their posterior distributions, inspect residuals
+and test sensitivity to plausible baseline/noise and orbital assumptions.
+Do not discard an outlying walker or narrow priors merely to improve a metric.
