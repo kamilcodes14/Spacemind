@@ -112,7 +112,7 @@ def main():
     report, names, samples, chains = read_samples()
     split = split_chains(chains)
     rows = {}
-    print("TR ES-2 b POSTERIOR DIAGNOSTICS")
+    print("TrES-2 b POSTERIOR DIAGNOSTICS")
     print(f"Walkers: {chains.shape[0]} | saved draws/walker: {chains.shape[1]}")
     print(f"Split chains: {split.shape[0]} | draws/split chain: {split.shape[1]}")
     print("\nParameter                 rank-Rhat   bulk-ESS   tau-est")
