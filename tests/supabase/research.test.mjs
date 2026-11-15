@@ -97,3 +97,39 @@ test('authenticated SSE delivers done only after successful persistence',async()
  const f=fixture();const req=new Request('https://test',{method:'POST',headers:{authorization:'Bearer test',origin:'https://app.test',accept:'text/event-stream'},body:JSON.stringify({question:'hello',chat_id:id,stream:true})});
  const response=await f.handler(req);assert.match(response.headers.get('content-type'),/text\/event-stream/);const text=await response.text();assert.match(text,/event: status/);assert.match(text,/event: done/);assert.equal(f.saved().p_question,'hello');
 });
+
+
+test('auto mode forces basic astronomy questions into research and uses live web fallback',async()=>{
+  let lookups=0,webCalls=0;
+  const r=await research({...input,question:'What is the Sun?',useWeb:null},[],{
+    env:{GROQ_API_KEY:'test'},
+    lookupPapers:async()=>{lookups++;return [];},
+    fetcher:async(url,opts)=>{
+      if(url.includes('wikipedia.org/w/api.php')){webCalls++;return response({query:{pages:{'1':{pageid:1,index:1,title:'Sun',extract:'The Sun is the star at the centre of the Solar System.'}}}});}
+      return model('The Sun is the star at the centre of the Solar System [1].')(url,opts);
+    }
+  });
+  assert.equal(lookups,1);assert.equal(webCalls,1);assert.equal(r.used_web,true);
+  assert.equal(r.citations[0].url,'https://en.wikipedia.org/?curid=1');
+  assert.match(r.answer,/star/);
+});
+test('auto mode searches the web when paper results exist but have weak query coverage',async()=>{
+  let webCalls=0;
+  const r=await research({...input,question:'What is the Sun?',useWeb:null},[],{
+    env:{GROQ_API_KEY:'test'},
+    lookupPapers:async()=>[{...paper,snippet:'This paper studies Martian polar geology and dust deposition.'}],
+    fetcher:async(url,opts)=>{
+      if(url.includes('wikipedia.org/w/api.php')){webCalls++;return response({query:{pages:{'1':{pageid:2,index:1,title:'Sun',extract:'The Sun is a star made mostly of hydrogen and helium.'}}}});}
+      return model('The Sun is a star [1].')(url,opts);
+    }
+  });
+  assert.equal(webCalls,1);assert.equal(r.used_web,true);assert(r.citations.some(c=>c.origin==='web'));
+});
+test('live web search has a no-key Wikipedia fallback',async()=>{
+  const {searchWeb}=await import('../../supabase/functions/_shared/research.js');
+  let url='';
+  const results=await searchWeb('What is the Sun?',{},async requestUrl=>{
+    url=requestUrl;return response({query:{pages:{'1':{pageid:3,index:1,title:'Sun',extract:'The Sun is a star.'}}}});
+  });
+  assert.match(url,/wikipedia\\.org/);assert.equal(results.length,1);assert.equal(results[0].origin,'web');
+});
