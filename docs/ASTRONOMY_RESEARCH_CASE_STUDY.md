@@ -117,8 +117,9 @@ The validation script verifies downloaded SHA-256 checksums before running. It w
 
 ## Software and tools
 
-- Python 3.12, NumPy and SciPy for numerical analysis and BLS-related computation.
-- Astropy for FITS, astronomical units, distances and coordinate-aware calculations.
+- Python 3.12 and NumPy for array-based data handling.
+- Astropy for FITS, BLS periodograms (BoxLeastSquares), astronomical units, distances and coordinate-aware calculations.
+- SciPy is pinned in the reproducible environment for the wider Mission Lab scientific-computing workflow; the three validation checks documented here do not directly call SciPy.
 - Matplotlib for diagnostic plots.
 - JavaScript/Node.js for the shared Mission Lab recipe and orbital-solver source.
 - Public MAST, Gaia, NASA Exoplanet Archive and JPL Horizons data services.
