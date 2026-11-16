@@ -93,13 +93,6 @@ function showAuth() {
   $('authError').textContent = '';
   $('authNotice').textContent = '';
   document.querySelectorAll('dialog[open]').forEach((d) => d.close());
-  window.SpaceUniverse?.configure({
-    scene: 'universe',
-    motion: true,
-    speed: 0.5,
-    brightness: 0.7,
-    quality: 'auto',
-  });
 }
 function authMode(signup) {
   state.signup = signup;
@@ -211,21 +204,12 @@ $('resendConfirmation').onclick = async () => {
 authMode(false);
 function applyPreferences(prefs) {
   state.prefs = { ...prefs };
-  window.SpaceUniverse?.configure(prefs);
   document.documentElement.style.setProperty(
     '--font',
     { small: '13px', medium: '15px', large: '17px' }[prefs.font_size],
   );
   $('researchMode').value = prefs.mode;
   $('answerDepth').value = prefs.depth;
-  $('motionToggle').textContent = prefs.motion ? 'Ⅱ' : '▷';
-  $('motionToggle').setAttribute(
-    'aria-label',
-    prefs.motion ? 'Pause background animation' : 'Resume background animation',
-  );
-  $('motionToggle').title = prefs.motion
-    ? 'Pause background animation'
-    : 'Resume background animation';
 }
 async function enterWorkspace(user) {
   state.user = user;
@@ -944,28 +928,18 @@ $('settingsBtn').onclick = () => {
 };
 function readSettings() {
   return {
-    scene: $('settingScene').value,
-    motion: $('settingMotion').checked,
-    speed: +$('settingSpeed').value,
-    brightness: +$('settingBrightness').value,
-    quality: $('settingQuality').value,
+    ...(state.user?.settings ?? {}),
     font_size: $('settingFont').value,
     mode: $('settingMode').value,
     depth: $('settingDepth').value,
   };
 }
 [
-  'settingScene',
-  'settingMotion',
-  'settingSpeed',
-  'settingBrightness',
-  'settingQuality',
   'settingFont',
 ].forEach(
   (id) =>
     ($(id).oninput = () => {
       const prefs = readSettings();
-      window.SpaceUniverse?.configure(prefs);
       document.documentElement.style.setProperty(
         '--font',
         { small: '13px', medium: '15px', large: '17px' }[prefs.font_size],
@@ -974,7 +948,6 @@ function readSettings() {
 );
 $('settingsDialog').addEventListener('close', () => {
   if (state.user) {
-    window.SpaceUniverse?.configure(state.user.settings);
     document.documentElement.style.setProperty(
       '--font',
       { small: '13px', medium: '15px', large: '17px' }[
@@ -1006,20 +979,6 @@ $('saveSettings').onclick = async () => {
     $('settingsStatus').textContent = e.message;
   } finally {
     $('saveSettings').disabled = false;
-  }
-};
-$('motionToggle').onclick = async () => {
-  if (!state.user) return;
-  const prefs = { ...state.user.settings, motion: !state.user.settings.motion };
-  if (prefs.motion && !(prefs.speed > 0)) prefs.speed = 0.5;
-  try {
-    state.user = await api('/auth/me', {
-      method: 'PATCH',
-      body: JSON.stringify({ name: state.user.name, settings: prefs }),
-    });
-    applyPreferences(prefs);
-  } catch (e) {
-    toast(e.message);
   }
 };
 $('changePassword').onclick = async () => {
