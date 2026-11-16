@@ -912,11 +912,6 @@ $('settingsBtn').onclick = () => {
   const s = state.user.settings;
   $('settingName').value = state.user.name;
   $('settingEmail').value = state.user.email;
-  $('settingScene').value = s.scene;
-  $('settingMotion').checked = s.motion;
-  $('settingSpeed').value = s.speed;
-  $('settingBrightness').value = s.brightness;
-  $('settingQuality').value = s.quality;
   $('settingFont').value = s.font_size;
   $('settingMode').value = s.mode;
   $('settingDepth').value = s.depth;
