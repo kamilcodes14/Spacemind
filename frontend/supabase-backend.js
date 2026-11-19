@@ -285,7 +285,7 @@ async function request(path, options = {}) {
   if (path === '/auth/me') {
     if (method === 'GET') {
       const session = checked(await client.auth.getSession())?.session;
-      if (!session) checked(await client.auth.signInAnonymously());
+      if (!session) fail('Please sign in to continue.', 401);
       return profile();
     }
     if (method === 'PATCH') {
