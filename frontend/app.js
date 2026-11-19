@@ -73,7 +73,7 @@ async function api(path, options = {}) {
 }
 const post = (path, body = {}) =>
   api(path, { method: 'POST', body: JSON.stringify(body) });
-function showAuth() {
+function showAuth(message = 'Please sign in to continue.') {
   researchController?.abort();
   window.SpaceMindPapers?.reset();
   state.execution = null;
@@ -82,15 +82,14 @@ function showAuth() {
   state.chats = [];
   state.prefs = null;
   $('workspace').hidden = true;
-  $('auth').hidden = true;
-  $('loading').hidden = false;
-  $('loading').lastElementChild.textContent = 'Connecting to SpaceMind…';
+  $('loading').hidden = true;
+  $('auth').hidden = false;
   $('messages').replaceChildren();
   $('chatList').replaceChildren();
   $('question').value = '';
   $('searchChats').value = '';
   $('authPassword').value = '';
-  $('authError').textContent = '';
+  $('authError').textContent = message;
   $('authNotice').textContent = '';
   document.querySelectorAll('dialog[open]').forEach((d) => d.close());
 }
@@ -1184,9 +1183,11 @@ $('recoveryForm').onsubmit = async (e) => {
   try {
     await enterWorkspace(await api('/auth/me'));
   } catch (error) {
-    $('loading').hidden = false;
-    $('loading').lastElementChild.textContent = 'Unable to connect: ' + (error?.message || 'Unknown error') + '. Please refresh and try again.';
-    $('auth').hidden = true;
+    showAuth(
+      error?.status === 401
+        ? 'Please sign in to continue.'
+        : 'SpaceMind could not restore your session. Please sign in again.',
+    );
     console.error('SpaceMind startup failed:', error);
   }
   showRecovery();
