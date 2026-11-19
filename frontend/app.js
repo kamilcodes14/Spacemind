@@ -1308,25 +1308,6 @@ notesButton.onclick = async () => {
 };
 
 
-// Floating Spacemind launcher: open a fresh chat without changing index.html.
-const spacemindLauncher = document.createElement('button');
-spacemindLauncher.type = 'button';
-spacemindLauncher.id = 'spacemindLauncher';
-spacemindLauncher.className = 'spacemind-launcher';
-spacemindLauncher.textContent = 'Spacemind';
-spacemindLauncher.setAttribute('aria-label', 'Open Spacemind chat');
-document.body.append(spacemindLauncher);
-spacemindLauncher.addEventListener('click', () => {
-  if (!$('workspace').hidden) {
-    $('newChat').click();
-    $('question').focus();
-  } else if (!$('auth').hidden) {
-    $('authEmail').focus();
-  } else if (!$('loading').hidden) {
-    $('loading').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-});
-
 try {
   const parentOrigin = new URL(document.referrer).origin;
   if (parentOrigin !== location.origin)
