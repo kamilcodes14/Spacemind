@@ -13,12 +13,3 @@
 .research-dialog{width:min(850px,94vw);max-height:90dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid #ffffff30;border-radius:16px}.research-body{padding:20px}.research-body input,.research-body select,.research-body textarea{max-width:100%;margin:8px 0}.research-body textarea{display:block;width:100%;min-height:80px}.research-body .resource-card{margin:16px 0;padding:16px;border:1px solid #ffffff20;border-radius:12px}.research-body button{margin:5px}.research-body input[type=checkbox]{width:auto;margin-right:12px}.research-body form{display:flex;gap:8px;flex-wrap:wrap}#paperSelection:empty{display:none}.answer-actions{flex-wrap:wrap}
 
 .paper-extracted-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:60vh;overflow:auto;font:inherit;line-height:1.6;padding:1rem;border:1px solid #394151;border-radius:10px}
-
-
-
-/* Floating bottom-right launcher for Spacemind chat. */
-.spacemind-launcher{position:fixed;right:24px;bottom:24px;z-index:120;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:#000;color:#fff;font:600 14px/1 inherit;letter-spacing:.01em;box-shadow:0 10px 30px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
-.spacemind-launcher:hover{transform:translateY(-3px);filter:brightness(1.1);box-shadow:0 14px 34px rgba(34,28,92,.5),0 3px 10px rgba(0,0,0,.3)}
-.spacemind-launcher:focus-visible{outline:3px solid #c8c2ff;outline-offset:3px}
-@media(max-width:700px){.spacemind-launcher{right:16px;bottom:calc(16px + env(safe-area-inset-bottom));min-height:46px;padding:0 19px}}
-@media(prefers-reduced-motion:reduce){.spacemind-launcher{transition:none}}
