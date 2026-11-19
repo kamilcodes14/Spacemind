@@ -203,12 +203,16 @@ $('resendConfirmation').onclick = async () => {
 authMode(false);
 function applyPreferences(prefs) {
   state.prefs = { ...prefs };
+  window.SpaceUniverse?.configure(prefs);
   document.documentElement.style.setProperty(
     '--font',
     { small: '13px', medium: '15px', large: '17px' }[prefs.font_size],
   );
   $('researchMode').value = prefs.mode;
   $('answerDepth').value = prefs.depth;
+  $('motionToggle').textContent = prefs.motion ? 'Ⅱ' : '▷';
+  $('motionToggle').setAttribute('aria-label', prefs.motion ? 'Pause background animation' : 'Resume background animation');
+  $('motionToggle').title = prefs.motion ? 'Pause background animation' : 'Resume background animation';
 }
 async function enterWorkspace(user) {
   state.user = user;
@@ -911,6 +915,11 @@ $('settingsBtn').onclick = () => {
   const s = state.user.settings;
   $('settingName').value = state.user.name;
   $('settingEmail').value = state.user.email;
+  $('settingScene').value = s.scene;
+  $('settingMotion').checked = s.motion;
+  $('settingSpeed').value = s.speed;
+  $('settingBrightness').value = s.brightness;
+  $('settingQuality').value = s.quality;
   $('settingFont').value = s.font_size;
   $('settingMode').value = s.mode;
   $('settingDepth').value = s.depth;
@@ -923,17 +932,28 @@ $('settingsBtn').onclick = () => {
 function readSettings() {
   return {
     ...(state.user?.settings ?? {}),
+    scene: $('settingScene').value,
+    motion: $('settingMotion').checked,
+    speed: +$('settingSpeed').value,
+    brightness: +$('settingBrightness').value,
+    quality: $('settingQuality').value,
     font_size: $('settingFont').value,
     mode: $('settingMode').value,
     depth: $('settingDepth').value,
   };
 }
 [
+  'settingScene',
+  'settingMotion',
+  'settingSpeed',
+  'settingBrightness',
+  'settingQuality',
   'settingFont',
 ].forEach(
   (id) =>
     ($(id).oninput = () => {
       const prefs = readSettings();
+      window.SpaceUniverse?.configure(prefs);
       document.documentElement.style.setProperty(
         '--font',
         { small: '13px', medium: '15px', large: '17px' }[prefs.font_size],
@@ -942,6 +962,7 @@ function readSettings() {
 );
 $('settingsDialog').addEventListener('close', () => {
   if (state.user) {
+    window.SpaceUniverse?.configure(state.user.settings);
     document.documentElement.style.setProperty(
       '--font',
       { small: '13px', medium: '15px', large: '17px' }[
@@ -973,6 +994,20 @@ $('saveSettings').onclick = async () => {
     $('settingsStatus').textContent = e.message;
   } finally {
     $('saveSettings').disabled = false;
+  }
+};
+$('motionToggle').onclick = async () => {
+  if (!state.user) return;
+  const prefs = { ...state.user.settings, motion: !state.user.settings.motion };
+  if (prefs.motion && !(prefs.speed > 0)) prefs.speed = 0.5;
+  try {
+    state.user = await api('/auth/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ name: state.user.name, settings: prefs }),
+    });
+    applyPreferences(prefs);
+  } catch (e) {
+    toast(e.message);
   }
 };
 $('changePassword').onclick = async () => {
@@ -1272,25 +1307,6 @@ notesButton.onclick = async () => {
   }
 };
 
-
-// Floating Spacemind launcher: open a fresh chat without changing index.html.
-const spacemindLauncher = document.createElement('button');
-spacemindLauncher.type = 'button';
-spacemindLauncher.id = 'spacemindLauncher';
-spacemindLauncher.className = 'spacemind-launcher';
-spacemindLauncher.textContent = 'Spacemind';
-spacemindLauncher.setAttribute('aria-label', 'Open Spacemind chat');
-document.body.append(spacemindLauncher);
-spacemindLauncher.addEventListener('click', () => {
-  if (!$('workspace').hidden) {
-    $('newChat').click();
-    $('question').focus();
-  } else if (!$('auth').hidden) {
-    $('authEmail').focus();
-  } else if (!$('loading').hidden) {
-    $('loading').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-});
 
 try {
   const parentOrigin = new URL(document.referrer).origin;
