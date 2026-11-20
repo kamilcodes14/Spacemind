@@ -222,7 +222,7 @@ export async function searchScholar(query, env, fetcher = fetch) {
       paperId: p.paperId,
     }));
 }
-const SPACE_WEATHER_QUESTION = /\\b(solar\\s+storm|geomagnetic|space\\s+weather|solar\\s+flare|solar\\s+wind|\\bkp\\s*(?:index)?\\b|magnetic\\s+field|bz\\b|coronal\\s+mass\\s+ejection|satellite.{0,30}solar)\\b/i;
+const SPACE_WEATHER_QUESTION = /\b(solar\s+storm|geomagnetic|space\s+weather|solar\s+flare|solar\s+wind|\bkp\s*(?:index)?\b|magnetic\s+field|bz\b|coronal\s+mass\s+ejection|satellite.{0,30}solar)\b/i;
 function spaceWeatherSnapshot(data) {
   const rows=data.rows||{}, latest=data.latest||{};
   return {
