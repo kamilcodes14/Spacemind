@@ -131,6 +131,7 @@ function chart(host,title,rows,key,label,unit) {
  const points=values.map((v,i)=>[pad+i*(w-2*pad)/(values.length-1),hg-pad-(v-min)*(hg-2*pad)/span]);
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox',`0 0 ${w} ${hg}`);svg.setAttribute('role','img');svg.setAttribute('aria-label',`${title}, ${values.length} recent ${label} observations in ${unit}`);
  const path=document.createElementNS(ns,'polyline');path.setAttribute('points',points.map(p=>p.join(',')).join(' '));path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','2.5');path.setAttribute('vector-effect','non-scaling-stroke');svg.append(path);
+ points.forEach(([x,y],i)=>{const dot=document.createElementNS(ns,'circle');dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('r','3.5');dot.setAttribute('fill','currentColor');dot.setAttribute('tabindex','0');const tip=document.createElementNS(ns,'title');tip.textContent=`Observation ${i+1}: ${values[i]} ${unit}`;dot.append(tip);svg.append(dot);});
  const range=document.createElement('p');range.className='science-note';range.textContent=`Recent ${values.length} records · ${min.toPrecision(3)}–${max.toPrecision(3)} ${unit}`;section.append(svg,range);host.append(section);
 }
 export function renderSpaceWeather(host,data,{el,link}) {
