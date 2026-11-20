@@ -1230,6 +1230,7 @@ $('recoveryForm').onsubmit = async (e) => {
 
 $('scienceBtn').onclick = () => window.SpaceMindScience?.open();
 $('nasaDataBtn').onclick = () => window.SpaceMindScience?.open('asteroids');
+$('spaceWeatherBtn').onclick = () => window.SpaceMindScience?.open('space-weather');
 
 window.SpaceMindUI = {
   toast,
