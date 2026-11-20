@@ -222,7 +222,7 @@ export async function searchScholar(query, env, fetcher = fetch) {
       paperId: p.paperId,
     }));
 }
-const SPACE_WEATHER_QUESTION = /\b(solar\s+storm|geomagnetic|space\s+weather|solar\s+flare|solar\s+wind|\bkp\s*(?:index)?\b|magnetic\s+field|bz\b|coronal\s+mass\s+ejection|satellite.{0,30}solar)\b/i;
+const SPACE_WEATHER_QUESTION = /\b(solar\s+storms?|geomagnetic|space\s+weather|solar\s+flares?|solar\s+winds?|\bkp\s*(?:index)?\b|magnetic\s+fields?|bz\b|coronal\s+mass\s+ejection|satellite.{0,30}solar)\b/i;
 function spaceWeatherSnapshot(data) {
   const rows=data.rows||{}, latest=data.latest||{};
   return {
@@ -416,7 +416,7 @@ export async function research(input, history, deps) {
     }
     const snapshot=spaceWeatherSnapshot(weather);
     const output=await complete([
-      {role:'system',content:'You are SpaceMind, a scientifically careful space-weather assistant. Answer the user using ONLY the supplied NOAA/NASA structured observations for current/live measurements. Never invent or extrapolate missing values. State the observation timestamp for every live metric and the retrieval time; if timestamps are missing or old, explicitly say the data is stale/unknown rather than current. Include units: solar-wind speed km/s, proton density cm^-3, proton temperature K, magnetic field nT, GSM Bz nT. Kp is a 0–9 geomagnetic activity index; NOAA G1 minor storm threshold starts at Kp 5, G2 at 6, G3 at 7, G4 at 8, G5 at 9. Do not conflate Kp geomagnetic storm categories with solar flare C/M/X classes. A flare is not automatically an Earth-impacting event; discuss CME arrival/geomagnetic coupling only when evidence supports it. Clearly label observations, any forecast (only if explicitly supplied), and your interpretation. Explain satellite/aurora impacts as conditional, not deterministic. If a field is null/missing, say unavailable. Return JSON only with answer (string), follow_up_questions (up to 3 strings), and confident (boolean). Keep answer concise and user-friendly.'},
+      {role:'system',content:'You are SpaceMind, a scientifically careful space-weather assistant. Answer the user using ONLY the supplied NOAA/NASA structured observations for current/live measurements. Never invent or extrapolate missing values. State the observation timestamp for every live metric and the retrieval time. Use the supplied freshness metadata: plasma/magnetic records older than 30 minutes, Kp older than 180 minutes, and flare records older than 24 hours are stale; missing timestamps or ages are unknown. Explicitly say stale/unknown rather than current. Include units: solar-wind speed km/s, proton density cm^-3, proton temperature K, magnetic field nT, GSM Bz nT. Kp is a 0–9 geomagnetic activity index; NOAA G1 minor storm threshold starts at Kp 5, G2 at 6, G3 at 7, G4 at 8, G5 at 9. Do not conflate Kp geomagnetic storm categories with solar flare C/M/X classes. A flare is not automatically an Earth-impacting event; discuss CME arrival/geomagnetic coupling only when evidence supports it. Clearly label observations, any forecast (only if explicitly supplied), and your interpretation. Explain satellite/aurora impacts as conditional, not deterministic. If a field is null/missing, say unavailable. Return JSON only with answer (string), follow_up_questions (up to 3 strings), and confident (boolean). Keep answer concise and user-friendly.'},
       {role:'user',content:JSON.stringify({question:input.question,observations:snapshot})}
     ],true,4096);
     let parsed;
