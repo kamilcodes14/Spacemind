@@ -14,6 +14,7 @@ import {
 import { streamCompletion } from './stream.js';
 import { scienceInstructions, toolResult, explicitAsteroidRequest } from './science-tools.js';
 import { HttpError, fetchJSON, safeURL } from './http.js';
+import { queryProvider } from '../space-data/providers.js';
 /**
  * Validate and normalize a research request, including selected-paper/execution data.
  * This validates request shape; authentication and chat ownership are checked elsewhere.
@@ -220,6 +221,21 @@ export async function searchScholar(query, env, fetcher = fetch) {
       paperId: p.paperId,
     }));
 }
+const SPACE_WEATHER_QUESTION = /\\b(solar\\s+storm|geomagnetic|space\\s+weather|solar\\s+flare|solar\\s+wind|\\bkp\\s*(?:index)?\\b|magnetic\\s+field|bz\\b|coronal\\s+mass\\s+ejection|satellite.{0,30}solar)\\b/i;
+function spaceWeatherSnapshot(data) {
+  const rows=data.rows||{}, latest=data.latest||{};
+  return {
+    provider:'NOAA SWPC', retrieved_at:data.retrieved_at, observed_at:data.observed_at||{},
+    plasma:latest.plasma, magnetic_field:latest.mag, kp:latest.kp,
+    recent_flares:(rows.flares||[]).slice(-12),
+    recent_kp:(rows.kp||[]).slice(-12),
+    recent_plasma:(rows.plasma||[]).slice(-12),
+    recent_magnetic_field:(rows.mag||[]).slice(-12),
+    alerts:(rows.alerts||[]).slice(0,5),
+    recent_cmes:(rows.cmes||[]).slice(-5),
+    warnings:data.warnings||[], methodology:data.note
+  };
+}
 const chatResult = (answer) => ({
   answer,
   citations: [],
@@ -387,6 +403,23 @@ export async function research(input, history, deps) {
   const scoped = !!input.paperIds?.length;
   const quick = !scoped && quickReply(input.question);
   if (quick) return chatResult(quick);
+  if (!scoped && SPACE_WEATHER_QUESTION.test(input.question)) {
+    let weather;
+    try { weather = await queryProvider({kind:'weather',params:{}},fetch,env); }
+    catch {
+      return chatResult('I can’t retrieve verified NOAA space-weather observations right now, so I can’t confirm the current Kp index, solar-wind conditions, or whether a solar storm is occurring. Please retry shortly. I won’t guess live measurements.');
+    }
+    const snapshot=spaceWeatherSnapshot(weather);
+    const answer=await complete([
+      {role:'system',content:'You are SpaceMind, a scientifically careful space-weather assistant. Answer the user using ONLY the supplied NOAA/NASA structured observations for current/live measurements. Never invent or extrapolate missing values. State the observation timestamp for every live metric and the retrieval time; if timestamps are missing or old, explicitly say the data is stale/unknown rather than current. Include units: solar-wind speed km/s, proton density cm^-3, proton temperature K, magnetic field nT, GSM Bz nT. Kp is a 0–9 geomagnetic activity index; NOAA G1 minor storm threshold starts at Kp 5, G2 at 6, G3 at 7, G4 at 8, G5 at 9. Do not conflate Kp geomagnetic storm categories with solar flare C/M/X classes. A flare is not automatically an Earth-impacting event; discuss CME arrival/geomagnetic coupling only when evidence supports it. Clearly label observations, any forecast (only if explicitly supplied), and your interpretation. Explain satellite/aurora impacts as conditional, not deterministic. If a field is null/missing, say unavailable. Keep answer concise and user-friendly.'},
+      {role:'user',content:JSON.stringify({question:input.question,observations:snapshot})}
+    ],false,4096);
+    const result=chatResult(answer);
+    result.citations=[{source_file:'NOAA Space Weather Prediction Center · live observations',origin:'noaa_swpc',url:'https://www.swpc.noaa.gov/',snippet:JSON.stringify({retrieved_at:weather.retrieved_at,observed_at:weather.observed_at,latest:weather.latest})},{source_file:'NASA CCMC DONKI · CME catalog',origin:'nasa_donki',url:'https://ccmc.gsfc.nasa.gov/tools/DONKI/',snippet:JSON.stringify((weather.rows?.cmes||[]).slice(-5))}];
+    if(weather.warnings?.length) result.warnings=weather.warnings;
+    result.confident=false;
+    return result;
+  }
   let query = input.question.slice(0, 600);
   if (!scoped && input.useWeb === null && isDirectAstronomyQuestion(input.question)) {
     // Basic astronomy questions must enter evidence retrieval, not casual chat routing.
