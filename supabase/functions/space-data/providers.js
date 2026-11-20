@@ -70,7 +70,7 @@ export async function queryProvider(input,fetcher=fetch,env={}){
   }));
   return {kind,provider:'NASA NeoWs / JPL',source:'https://api.nasa.gov/neo/rest/v1/feed',retrieved_at,request:p,rows:rows.slice(0,500),note:'Close-approach forecasts, not live tracking or impact predictions. Hazard designation is a catalog classification, not a collision forecast. Estimated diameter is a range. Values and close-approach times come from NASA records.'};
  }
- if(kind==='weather'){
+ if(kind==='weather'||kind==='space-weather'){
   const feeds={
    flares:'/json/goes/primary/xray-flares-7-day.json',
    plasma:'/products/solar-wind/plasma-7-day.json',
