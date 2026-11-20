@@ -27,7 +27,7 @@ test('live space-weather questions fetch NOAA observations and ground Groq conte
   if(u.includes('/products/alerts.json'))return response([]);
   if(u.includes('DONKI'))return response([]);
   groqBody=JSON.parse(options.body);
-  return response({choices:[{message:{content:'The latest NOAA records show solar-wind speed of 620 km/s and Kp 5.67 at the supplied observation times. This is an observation, not a forecast.'}}]});
+  return response({choices:[{message:{content:JSON.stringify({answer:'The latest NOAA records show solar-wind speed of 620 km/s and Kp 5.67 at the supplied observation times. This is an observation, not a forecast.',follow_up_questions:[],confident:true})}}]});
  };
  const r=await research({...input,question:'What is the current Kp index and is there a solar storm?',useWeb:false},[],{env:{GROQ_API_KEY:'test'},lookupPapers:()=>assert.fail('weather must not query papers'),fetcher});
  assert.equal(r.answer.includes('620 km/s'),true);
