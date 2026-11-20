@@ -227,7 +227,7 @@ function spaceWeatherSnapshot(data) {
   const rows=data.rows||{}, latest=data.latest||{};
   return {
     provider:'NOAA SWPC', retrieved_at:data.retrieved_at, observed_at:data.observed_at||{},
-    freshness:Object.fromEntries(Object.entries({plasma:30,mag:30,kp:180,flares:1440}).map(([feed,limit])=>{const stamp=data.observed_at?.[feed];const age=stamp?Math.max(0,Math.round((Date.now()-Date.parse(stamp))/60000)):null;return [feed,{age_minutes:age,stale:age===null||age>limit,threshold_minutes:limit}];})),
+    freshness:Object.fromEntries(Object.entries({plasma:30,mag:30,kp:180,flares:1440}).map(([feed,limit])=>{const stamp=data.observed_at?.[feed];const parsed=stamp?Date.parse(stamp):NaN;const age=Number.isFinite(parsed)?Math.max(0,Math.round((Date.now()-parsed)/60000)):null;return [feed,{age_minutes:age,stale:age===null||age>limit,threshold_minutes:limit}];})),
     plasma:latest.plasma, magnetic_field:latest.mag, kp:latest.kp,
     recent_flares:(rows.flares||[]).slice(-12),
     recent_kp:(rows.kp||[]).slice(-12),
@@ -409,7 +409,10 @@ export async function research(input, history, deps) {
     let weather;
     try { weather = await cachedProvider(deps.admin, 'science:'+JSON.stringify({kind:'weather',params:{}}), () => queryProvider({kind:'weather',params:{}},fetcher,env), {ttl:60}); }
     catch {
-      return chatResult('I can’t retrieve verified NOAA space-weather observations right now, so I can’t confirm the current Kp index, solar-wind conditions, or whether a solar storm is occurring. Please retry shortly. I won’t guess live measurements.');
+      const unavailable=chatResult('I can’t retrieve verified NOAA space-weather observations right now, so I can’t confirm the current Kp index, solar-wind conditions, or whether a solar storm is occurring. Please retry shortly. I won’t guess live measurements.');
+      unavailable.confident=false;
+      unavailable.warnings=['NOAA live observations could not be retrieved.'];
+      return unavailable;
     }
     const snapshot=spaceWeatherSnapshot(weather);
     const answer=await complete([
