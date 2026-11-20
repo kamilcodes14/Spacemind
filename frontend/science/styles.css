@@ -16,3 +16,16 @@
   .science-date-fields input::-webkit-date-and-time-value{text-align:left;min-height:1.25em}
   .science-date-presets button{flex:1 1 auto}
 }
+
+/* NOAA Space Weather Center */
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin:18px 0}
+.sw-metric{min-width:0;padding:15px;border:1px solid #d8b57a38;border-radius:12px;background:#0a111c}
+.sw-label,.sw-time{display:block;color:#a5b2c5;font-size:11px;line-height:1.5}
+.sw-value{display:block;margin:9px 0 2px;font-size:clamp(21px,3vw,29px);font-weight:550;letter-spacing:-.7px;overflow-wrap:anywhere}
+.sw-unit{display:block;color:#d8bf98;font-size:11px}
+.sw-time{margin-top:8px;overflow-wrap:anywhere}
+.sw-plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px;margin:18px 0}
+.sw-chart{min-width:0;border:1px solid #ffffff16;border-radius:12px;padding:14px;background:#080e19}
+.sw-chart h4{margin:0 0 12px;font-size:13px;font-weight:550;color:#d9c49f}
+.sw-chart svg{width:100%;height:auto;display:block;color:#e5bc78;background:linear-gradient(180deg,#e5bc780d,transparent);border-radius:8px}
+@media(max-width:600px){.sw-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.sw-metric{padding:11px}.sw-plots{grid-template-columns:1fr}}

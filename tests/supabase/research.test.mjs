@@ -15,6 +15,34 @@ const model=answer=>async(_url,options)=>{
  }
  return response({choices:[{message:{content:JSON.stringify({answer,confident:true,follow_up_questions:['Why?']})}}]});
 };
+
+test('live space-weather questions fetch NOAA observations and ground Groq context in measurements',async()=>{
+ let groqBody,upstream=[];
+ const fetcher=async(url,options)=>{
+  const u=String(url);upstream.push(u);
+  if(u.includes('xray-flares'))return response([{begin_time:'2026-11-20T01:00:00Z',max_time:'2026-11-20T01:05:00Z',max_class:'M1.2'}]);
+  if(u.includes('plasma-7-day'))return response([['time_tag','density','speed','temperature'],['2026-11-20T01:00:00Z','5.5','620','100000']]);
+  if(u.includes('planetary-k-index'))return response([['time_tag','Kp'],['2026-11-20T00:00:00Z','5.67']]);
+  if(u.includes('mag-7-day'))return response([['time_tag','bz_gsm','bt'],['2026-11-20T01:00:00Z','-7.2','8.1']]);
+  if(u.includes('/products/alerts.json'))return response([]);
+  if(u.includes('DONKI'))return response([]);
+  groqBody=JSON.parse(options.body);
+  return response({choices:[{message:{content:JSON.stringify({answer:'The latest NOAA records show solar-wind speed of 620 km/s and Kp 5.67 at the supplied observation times. This is an observation, not a forecast.',follow_up_questions:[],confident:true})}}]});
+ };
+ const r=await research({...input,question:'Can solar storms affect satellites, and what is the current Kp index?',useWeb:false},[],{env:{GROQ_API_KEY:'test'},lookupPapers:()=>assert.fail('weather must not query papers'),fetcher});
+ assert.equal(r.answer.includes('620 km/s'),true);
+ assert.ok(r.citations.some(c=>c.origin==='noaa_swpc'));
+ assert.ok(groqBody.messages[1].content.includes('5.67'));
+ assert.ok(groqBody.messages[1].content.includes('620'));
+ assert.ok(upstream.some(u=>u.includes('plasma-7-day')));
+ assert.ok(upstream.some(u=>u.includes('planetary-k-index')));
+});
+test('live space-weather answers honestly report unavailable NOAA data',async()=>{
+ const r=await research({...input,question:'Is there a solar storm happening right now?',useWeb:false},[],{env:{},lookupPapers:()=>assert.fail(),fetcher:async()=>{throw Error('offline');}});
+ assert.match(r.answer,/can’t retrieve verified NOAA/);
+ assert.equal(r.citations.length,0);
+});
+
 test('validates question, chat and mode',()=>{assert.equal(validateQuestion({question:'Mars',chat_id:id}).question,'Mars');for(const value of [{question:'',chat_id:id},{question:'Mars',chat_id:'x'},{question:'Mars',chat_id:id,use_web:'true'}])assert.throws(()=>validateQuestion(value));});
 test('forced web fails explicitly without key and never queries papers',async()=>{await assert.rejects(research({...input,useWeb:true},[],{env:{},lookupPapers:()=>assert.fail('paper fallback')}),/currently unavailable/);});
 test('papers mode returns sourced short astronomy query',async()=>{const r=await research(input,[],{env:{GROQ_API_KEY:'test'},lookupPapers:async()=>[paper],fetcher:model('Mars has ice [1].')});assert.equal(r.confident,true);assert.equal(r.used_web,false);assert.equal(r.citations.length,1);});

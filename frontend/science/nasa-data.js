@@ -113,6 +113,66 @@ export function weatherSections(feeds = {}) {
   ].map((s) => ({ ...s, available: Array.isArray(feeds[s.key]) }));
 }
 
+function freshnessLabel(data,feed) { const f=data.freshness?.[feed]; if(!f) return 'Freshness unknown'; if(f.age_minutes===null) return 'Observation timestamp unavailable'; return (f.stale?'STALE · ':'')+'Observation age '+f.age_minutes+' min'; }
+function weatherMetric(host, title, value, unit, stamp, status='') {
+ const card=document.createElement('article');card.className='sw-metric';
+ const label=document.createElement('span');label.className='sw-label';label.textContent=title;
+ const main=document.createElement('strong');main.className='sw-value';main.textContent=value==null?'Unavailable':String(value);
+ const units=document.createElement('span');units.className='sw-unit';units.textContent=value==null?'No verified observation':unit;
+ const time=document.createElement('small');time.className='sw-time';time.textContent=stamp?'Observed '+stamp:'Observation time unavailable';
+ card.append(label,main,units,time);if(status){const note=document.createElement('small');note.className='sw-time';note.textContent=status;card.append(note);}host.append(card);
+}
+function chart(host,title,rows,key,label,unit) {
+ const section=document.createElement('section');section.className='sw-chart';
+ const h=document.createElement('h4');h.textContent=title;section.append(h);
+ const values=rows.map(r=>Number(r?.[key])).filter(Number.isFinite);
+ if(values.length<2){const p=document.createElement('p');p.className='science-note';p.textContent='Not enough valid observations for a historical plot.';section.append(p);host.append(section);return;}
+ const w=620,hg=150,pad=12,min=Math.min(...values),max=Math.max(...values),span=max-min||1;
+ const points=values.map((v,i)=>[pad+i*(w-2*pad)/(values.length-1),hg-pad-(v-min)*(hg-2*pad)/span]);
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox',`0 0 ${w} ${hg}`);svg.setAttribute('role','img');svg.setAttribute('aria-label',`${title}, ${values.length} recent ${label} observations in ${unit}`);
+ const path=document.createElementNS(ns,'polyline');path.setAttribute('points',points.map(p=>p.join(',')).join(' '));path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','2.5');path.setAttribute('vector-effect','non-scaling-stroke');svg.append(path);
+ points.forEach(([x,y],i)=>{const dot=document.createElementNS(ns,'circle');dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('r','3.5');dot.setAttribute('fill','currentColor');dot.setAttribute('tabindex','0');const tip=document.createElementNS(ns,'title');tip.textContent=`Observation ${i+1}: ${values[i]} ${unit}`;dot.append(tip);svg.append(dot);});
+ const range=document.createElement('p');range.className='science-note';range.textContent=`Recent ${values.length} records · ${min.toPrecision(3)}–${max.toPrecision(3)} ${unit}`;section.append(svg,range);host.append(section);
+}
+export function renderSpaceWeather(host,data,{el,link}) {
+ const latest=data.latest||{},rows=data.rows||{};
+ const grid=document.createElement('div');grid.className='sw-grid';
+ const plasma=latest.plasma||{},mag=latest.mag||{},kp=latest.kp||{};
+ const kpValue=kp.value;
+ const kpClass=kpValue==null?'Unavailable':kpValue>=9?'G5 · Extreme':kpValue>=8?'G4 · Severe':kpValue>=7?'G3 · Strong':kpValue>=6?'G2 · Moderate':kpValue>=5?'G1 · Minor':'Below G1 threshold';
+ weatherMetric(grid,'Solar wind speed',plasma.speed_km_s,'km/s',plasma.time_tag,freshnessLabel(data,'plasma'));
+ weatherMetric(grid,'Proton density',plasma.density_cm3,'protons/cm³',plasma.time_tag,freshnessLabel(data,'plasma'));
+ weatherMetric(grid,'Proton temperature',plasma.temperature_k,'K',plasma.time_tag,freshnessLabel(data,'plasma'));
+ weatherMetric(grid,'Magnetic field |B|',mag.bt_nt,'nT',mag.time_tag,freshnessLabel(data,'mag'));
+ weatherMetric(grid,'GSM Bz',mag.bz_gsm_nt,'nT',mag.time_tag,freshnessLabel(data,'mag')+' · Negative Bz can favor solar-wind coupling; context matters.');
+ weatherMetric(grid,'Planetary Kp',kpValue,'0–9 index',kp.time_tag,kpClass+' · '+freshnessLabel(data,'kp'));
+ host.append(grid);
+ const plots=document.createElement('div');plots.className='sw-plots';
+ chart(plots,'Solar-wind speed · last observations',rows.plasma,'speed','speed','km/s');
+ chart(plots,'Proton density · last observations',rows.plasma,'density','density','protons/cm³');
+ chart(plots,'Geomagnetic Kp · recent records',normalizeWeatherRows(rows.kp),'Kp','kp_index','index');
+ chart(plots,'Magnetic field strength · recent observations',rows.mag,'bt','Bt','nT');
+ chart(plots,'GSM Bz · recent observations',rows.mag,'bz_gsm','Bz','nT');
+ host.append(plots);
+ const flareRows=(rows.flares||[]).map(r=>({'Begin · UTC':r.begin_time??r.time_tag??'—','Peak · UTC':r.max_time??'—','Class':r.max_class??'—','End · UTC':r.end_time??'—'}));
+ host.append(el('h4',null,'Solar flare events · NOAA GOES'));
+ if(flareRows.length) renderSimpleTable(host,flareRows,el); else host.append(el('p','science-note','No flare records returned. This is not an all-clear.'));
+ const freshness=el('p','science-status',`Retrieved ${data.retrieved_at||'unknown'} · UTC. Per-feed observation times are shown above. Retrieval time is not observation time.`);host.append(freshness);
+ const note=el('p','science-note','Kp is a geomagnetic activity index; G1 begins at Kp 5. C/M/X are solar flare classes and are not geomagnetic storm levels. A solar flare alone does not establish an Earth-impacting storm. Measurements are observations, not forecasts.');host.append(note);
+ for(const warning of data.warnings||[])host.append(el('p','notice',warning));
+ const src=link('https://www.swpc.noaa.gov/','NOAA SWPC source ↗');if(src)host.append(src);
+}
+function normalizeWeatherRows(value) {
+ if(!Array.isArray(value)) return [];
+ if(Array.isArray(value[0])) return value.slice(1).map(r=>Object.fromEntries(value[0].map((k,i)=>[k,r[i]])));
+ return value;
+}
+function renderSimpleTable(host,rows,el) {
+ const scroll=el('div','science-table-scroll'),table=el('table','science-table'),head=el('thead'),tr=el('tr'),body=el('tbody');
+ Object.keys(rows[0]).forEach(k=>tr.append(el('th',null,k)));head.append(tr);
+ rows.forEach(row=>{const r=el('tr');Object.values(row).forEach(v=>r.append(el('td',null,String(v??'—'))));body.append(r);});
+ table.append(head,body);scroll.append(table);host.append(scroll);
+}
 export function renderNASA(host, data, { el, link }) {
   function table(rows) {
     if (!rows.length) {
