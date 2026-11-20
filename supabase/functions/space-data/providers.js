@@ -26,7 +26,6 @@ function normalizeNoaaRows(data) {
 }
 function finite(value) { const n=Number(value); return value!==null&&value!==''&&Number.isFinite(n)?n:null; }
 function recent(rows,count) { return rows.slice(-count); }
-let weatherCache={data:null,expires:0};
 export async function queryProvider(input,fetcher=fetch,env={}){
  let tool;try{tool=validateTool(input);}catch(e){throw new HttpError(422,e.message);}const {kind,params:p}=tool;
  const retrieved_at=new Date().toISOString();
@@ -72,7 +71,6 @@ export async function queryProvider(input,fetcher=fetch,env={}){
   return {kind,provider:'NASA NeoWs / JPL',source:'https://api.nasa.gov/neo/rest/v1/feed',retrieved_at,request:p,rows:rows.slice(0,500),note:'Close-approach forecasts, not live tracking or impact predictions. Hazard designation is a catalog classification, not a collision forecast. Estimated diameter is a range. Values and close-approach times come from NASA records.'};
  }
  if(kind==='weather'){
-  if(weatherCache.data&&weatherCache.expires>Date.now()) return {...weatherCache.data,cached:true};
   const feeds={
    flares:'/json/goes/primary/xray-flares-7-day.json',
    plasma:'/products/solar-wind/plasma-7-day.json',
@@ -109,7 +107,6 @@ export async function queryProvider(input,fetcher=fetch,env={}){
    kp:kp?{time_tag:kp.time_tag||kp.time_tag_utc||null,value:finite(kp.kp_index??kp.estimated_kp??kp.Kp??kp.kp)}:null
   };
   const result={kind,provider:'NOAA SWPC + NASA CCMC DONKI',source:endpoints.weather,sources:{noaa:endpoints.weather,cmes:cmeEndpoint},retrieved_at,observed_at:timestamps,rows,warnings,latest:normalized,note:'NOAA records are observations, not forecasts. Source observation timestamps are retained per feed; retrieval time does not guarantee fresh observations. Plasma: speed km/s, density protons/cm³, temperature K. Magnetic field: nT, Bz in GSM coordinates. Kp is a 0–9 geomagnetic index; G1 begins at Kp 5. Solar flare class is separate from geomagnetic storm class. Empty catalogs are not an all-clear.'};
-  weatherCache={data:result,expires:Date.now()+60000};
   return result;
  }
  if(kind==='launches'){
