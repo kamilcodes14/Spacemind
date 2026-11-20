@@ -83,6 +83,7 @@ export async function queryProvider(input,fetcher=fetch,env={}){
   await Promise.all(Object.entries(feeds).map(async([name,path])=>{
    try{
     const raw=await get(endpoints.weather+path,fetcher);
+    if(!Array.isArray(raw)) throw new Error('Unexpected NOAA response shape');
     const normalized=name==='alerts'||name==='flares'?raw:normalizeNoaaRows(raw);
     if(!Array.isArray(normalized)) throw new Error('Unexpected NOAA response shape');
     rows[name]=name==='flares'?recent(normalized,30):name==='alerts'?normalized.slice(0,10):recent(normalized,name==='kp'?24:120);
