@@ -262,10 +262,12 @@ async function fetchData(host, tool, trigger) {
     el('p', 'pending', 'Querying the scientific data source…'),
   );
   try {
+    const requestTool = tool.kind === 'space-weather' ? { kind: 'weather', params: {} } : tool;
     const data = await window.SpaceMindBackend.request('/space-data', {
       method: 'POST',
-      body: JSON.stringify(tool),
+      body: JSON.stringify(requestTool),
     });
+    if (tool.kind === 'space-weather') data.kind = 'space-weather';
     renderData(host, data);
   } catch (e) {
     host.replaceChildren(
