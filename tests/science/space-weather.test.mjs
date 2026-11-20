@@ -59,3 +59,16 @@ test('NOAA invalid tabular payload is reported as an unavailable feed, not a fab
  assert.equal(result.latest.plasma,null);
  assert.ok(result.warnings.some(w=>w.startsWith('plasma')));
 });
+
+test('space-weather tool alias uses the same NOAA provider',async()=>{
+ const result=await queryProvider({kind:'space-weather',params:{}},async url=>{
+  const u=String(url);
+  if(u.includes('xray-flares')||u.includes('alerts'))return Response.json([]);
+  if(u.includes('DONKI'))return Response.json([]);
+  if(u.includes('plasma-7-day'))return Response.json([['time_tag','density','speed','temperature']]);
+  if(u.includes('planetary-k-index'))return Response.json([['time_tag','Kp']]);
+  if(u.includes('mag-7-day'))return Response.json([['time_tag','bz_gsm','bt']]);
+  throw Error('Unexpected URL');
+ });
+ assert.equal(result.kind,'space-weather');
+});
