@@ -3,7 +3,7 @@ import { csv } from './notebook.js';
 import { mountPython } from './python-client.js';
 import { mountViewer, mountLagrange } from './viewer.js';
 import { recipe } from './recipes.js';
-import { asteroidDates, asteroidDateRange, renderNASA } from './nasa-data.js';
+import { asteroidDates, asteroidDateRange, renderNASA, renderSpaceWeather } from './nasa-data.js';
 import {
   validateTool,
   TOOL_ORIGIN,
@@ -25,6 +25,7 @@ const titles = {
   pds: 'Planetary Data System',
   asteroids: 'NASA Live Data · Asteroid approaches',
   weather: 'NASA / NOAA · Solar activity',
+  'space-weather': 'NOAA · Space Weather Center',
   launches: 'Launch schedule',
   lagrange: 'Lagrange points',
   python: 'Python workspace',
@@ -45,6 +46,7 @@ const defaults = {
   mast: { ra: 83.633, dec: 22.0145, radius: 0.02 },
   pds: { query: 'Mars' },
   weather: {},
+  'space-weather': {},
   launches: {},
   lagrange: { system: 'Earth–Moon' },
   python: {
@@ -144,14 +146,14 @@ function renderData(host, data) {
       download(data, 'spacemind-' + data.kind + '.json'),
     ),
   );
-  if (['asteroids', 'weather'].includes(data.kind)) {
+  if (['asteroids', 'weather', 'space-weather'].includes(data.kind)) {
     if (Array.isArray(data.rows))
       host.append(
         button('Download CSV', () =>
           download(csv(data.rows), 'spacemind-asteroids.csv', 'text/csv'),
         ),
       );
-    renderNASA(host, data, { el, link });
+    if(data.kind==='space-weather') renderSpaceWeather(host,data,{el,link}); else renderNASA(host, data, { el, link });
     return;
   }
   if (Array.isArray(data.rows)) {
@@ -481,7 +483,7 @@ function openLab(initialKind) {
         : select.value === 'weather'
           ? 'NASA DONKI coronal mass ejections and NOAA solar flares, Kp and alerts. Source observations may lag; this is research data.'
           : 'Editable examples. Set the inputs for your own research before running.';
-    open.textContent = ['asteroids', 'weather'].includes(select.value)
+    open.textContent = ['asteroids', 'weather', 'space-weather'].includes(select.value)
       ? 'Fetch NASA / NOAA data'
       : 'Open tool';
     if (['orbit', 'python'].includes(select.value)) return;
@@ -530,7 +532,7 @@ function openLab(initialKind) {
   const shortcuts = el('div', 'science-actions');
   for (const [kind, title] of [
     ['asteroids', 'NASA Live Data'],
-    ['weather', 'Solar activity'],
+    ['space-weather', 'Space Weather Center'],
   ]) {
     shortcuts.append(
       button(title, () => {
@@ -555,7 +557,7 @@ function openLab(initialKind) {
     try {
       mountTool(output, validateTool({ kind: select.value, params: values }), {
         saved: false,
-        live: ['asteroids', 'weather'].includes(select.value),
+        live: ['asteroids', 'weather', 'space-weather'].includes(select.value),
       });
     } catch (err) {
       output.append(el('p', 'error', err.message));
