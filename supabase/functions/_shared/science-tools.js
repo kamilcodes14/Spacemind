@@ -83,7 +83,7 @@ export function validateTool(value) {
         new Date(end).toISOString().slice(0,10) !== params.end_date ||
         end < start || end - start > 6 * 86400000)
       throw Error('Choose a valid UTC date range of up to seven calendar days.');
-  } else if (kind === 'weather' || kind === 'launches') {
+  } else if (kind === 'weather' || kind === 'space-weather' || kind === 'launches') {
     params = {};
   } else if (kind === 'lagrange') {
     if (!['Sun–Earth', 'Earth–Moon'].includes(p.system))
@@ -143,7 +143,7 @@ rocket: {isp:number,wet:number,dry:number}. Isp seconds, masses kg. Requires all
 spice or horizons: {target:"numeric NAIF ID",observer:"numeric NAIF ID",epoch:"YYYY-MM-DDTHH:mm:ssZ"}. SPICE requires user-uploaded kernels. Horizons fetches state vectors in equatorial J2000, geometric, km/s and km. Planet centers: Earth 399, Moon 301, Mars 499, Sun 10. Must clarify target, observer and epoch if not clear. Use date context for "now".
 mast: {ra:number,dec:number,radius:number}. ICRS degrees; cone radius .001–1 deg. Requires sky coordinates; do not invent target coordinates.
 pds: {query:"short dataset or target keywords"}.
-asteroids: {start_date:"YYYY-MM-DD",end_date:"YYYY-MM-DD"}. NASA NeoWs asteroid close approaches; maximum seven calendar days. Do not call NASA hazardous classification an impact prediction.\nweather: {}. NOAA solar flares, Kp and alerts plus NASA DONKI CME records; NOT a prediction of personal risk.
+asteroids: {start_date:"YYYY-MM-DD",end_date:"YYYY-MM-DD"}. NASA NeoWs asteroid close approaches; maximum seven calendar days. Do not call NASA hazardous classification an impact prediction.\nweather or space-weather: {}. Fetch current NOAA GOES solar flares, solar-wind plasma, planetary Kp, solar-wind magnetic field (including GSM Bz), alerts and NASA DONKI CME records. Use only retrieved measurements for live claims; state observation timestamps/freshness, units and missing feeds. Kp is a 0–9 geomagnetic index (G1 begins at Kp 5); solar flare C/M/X class is not a geomagnetic storm category. Distinguish observations from forecasts and AI interpretation; never infer Earth impact from a flare alone.
 launches: {}. Upcoming launch schedules; dates may change.
 lagrange: {system:"Sun–Earth"|"Earth–Moon"}. Circular restricted three-body illustration.
 python: {code:"Python script"}. Use for custom calculations unsupported above, only if requested. Available imports numpy, scipy, astropy, matplotlib, spiceypy; skyfield may need optional installation. No poliastro. Scripts run only after the user reviews and clicks Run. Avoid networking, shell/subprocess, package installs or filesystem writes outside /work. Include units, assumptions and numerical checks. No pretense that code has already run.`;
