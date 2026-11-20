@@ -227,6 +227,7 @@ function spaceWeatherSnapshot(data) {
   const rows=data.rows||{}, latest=data.latest||{};
   return {
     provider:'NOAA SWPC', retrieved_at:data.retrieved_at, observed_at:data.observed_at||{},
+    freshness:Object.fromEntries(Object.entries({plasma:30,mag:30,kp:180,flares:1440}).map(([feed,limit])=>{const stamp=data.observed_at?.[feed];const age=stamp?Math.max(0,Math.round((Date.now()-Date.parse(stamp))/60000)):null;return [feed,{age_minutes:age,stale:age===null||age>limit,threshold_minutes:limit}];})),
     plasma:latest.plasma, magnetic_field:latest.mag, kp:latest.kp,
     recent_flares:(rows.flares||[]).slice(-12),
     recent_kp:(rows.kp||[]).slice(-12),
