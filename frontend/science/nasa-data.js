@@ -151,6 +151,7 @@ export function renderSpaceWeather(host,data,{el,link}) {
  chart(plots,'Solar-wind speed · last observations',rows.plasma,'speed','speed','km/s');
  chart(plots,'Proton density · last observations',rows.plasma,'density','density','protons/cm³');
  chart(plots,'Geomagnetic Kp · recent records',normalizeWeatherRows(rows.kp),'Kp','kp_index','index');
+ chart(plots,'Magnetic field strength · recent observations',rows.mag,'bt','Bt','nT');
  chart(plots,'GSM Bz · recent observations',rows.mag,'bz_gsm','Bz','nT');
  host.append(plots);
  const flareRows=(rows.flares||[]).map(r=>({'Begin · UTC':r.begin_time??r.time_tag??'—','Peak · UTC':r.max_time??'—','Class':r.max_class??'—','End · UTC':r.end_time??'—'}));
