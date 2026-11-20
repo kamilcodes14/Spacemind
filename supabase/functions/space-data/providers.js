@@ -16,6 +16,17 @@ export function parseHorizons(data){
  if(!rows.length||rows.some(r=>Object.entries(r).some(([k,v])=>k!=='calendar_ut'&&!Number.isFinite(v))))throw new HttpError(503,'The ephemeris format changed. Please try again later.');
  return {rows,raw:data.result,signature:data.signature};
 }
+function normalizeNoaaRows(data) {
+ if(!Array.isArray(data)) return [];
+ if(data.length && Array.isArray(data[0])) {
+  const headers=data[0].map(String);
+  return data.slice(1).filter(Array.isArray).map(row=>Object.fromEntries(headers.map((key,i)=>[key,row[i]??null])));
+ }
+ return data.filter(row=>row&&typeof row==='object'&&!Array.isArray(row));
+}
+function finite(value) { const n=Number(value); return value!==null&&value!==''&&Number.isFinite(n)?n:null; }
+function recent(rows,count) { return rows.slice(-count); }
+let weatherCache={data:null,expires:0};
 export async function queryProvider(input,fetcher=fetch,env={}){
  let tool;try{tool=validateTool(input);}catch(e){throw new HttpError(422,e.message);}const {kind,params:p}=tool;
  const retrieved_at=new Date().toISOString();
@@ -61,20 +72,45 @@ export async function queryProvider(input,fetcher=fetch,env={}){
   return {kind,provider:'NASA NeoWs / JPL',source:'https://api.nasa.gov/neo/rest/v1/feed',retrieved_at,request:p,rows:rows.slice(0,500),note:'Close-approach forecasts, not live tracking or impact predictions. Hazard designation is a catalog classification, not a collision forecast. Estimated diameter is a range. Values and close-approach times come from NASA records.'};
  }
  if(kind==='weather'){
-  const feeds={flares:'/json/goes/primary/xray-flares-7-day.json',kp:'/products/noaa-planetary-k-index.json',alerts:'/products/alerts.json'};const rows={},warnings=[];
-  // Independent NOAA datasets; one missing feed must not hide the others.
-  for(const [name,path] of Object.entries(feeds)){try{const d=await get(endpoints.weather+path,fetcher);rows[name]=name==='kp'?[d[0],...d.slice(-12)]:d.slice(name==='alerts'?0:-20,name==='alerts'?10:undefined);}catch{warnings.push(`${name} data is unavailable.`);}}
+  if(weatherCache.data&&weatherCache.expires>Date.now()) return {...weatherCache.data,cached:true};
+  const feeds={
+   flares:'/json/goes/primary/xray-flares-7-day.json',
+   plasma:'/products/solar-wind/plasma-7-day.json',
+   kp:'/products/noaa-planetary-k-index.json',
+   mag:'/products/solar-wind/mag-7-day.json',
+   alerts:'/products/alerts.json'
+  };
+  const rows={},warnings=[],timestamps={};
+  // Fetch independent NOAA feeds in parallel; a partial outage must not hide healthy feeds.
+  await Promise.all(Object.entries(feeds).map(async([name,path])=>{
+   try{
+    const raw=await get(endpoints.weather+path,fetcher);
+    const normalized=name==='alerts'||name==='flares'?raw:normalizeNoaaRows(raw);
+    if(!Array.isArray(normalized)) throw new Error('Unexpected NOAA response shape');
+    rows[name]=name==='flares'?recent(normalized,30):name==='alerts'?normalized.slice(0,10):recent(normalized,name==='kp'?24:120);
+    const last=rows[name].slice().reverse().find(r=>r&&typeof r==='object');
+    timestamps[name]=last?.time_tag||last?.time||last?.begin_time||last?.issue_datetime||null;
+   }catch{warnings.push(`${name} data is unavailable or has an unrecognized format.`);}
+  }));
+  // Retain the existing NASA DONKI CME context without making it a dependency for NOAA observations.
   const start=new Date(Date.now()-7*86400000).toISOString().slice(0,10),end=new Date().toISOString().slice(0,10),cmeSource='https://ccmc.gsfc.nasa.gov/DONKI-API/get/CME?'+new URLSearchParams({startDate:start,endDate:end});
   let cmeEndpoint='https://api.nasa.gov/DONKI/CME';
-  const cmeRecords=async url=>{const data=await get(url,fetcher);if(!Array.isArray(data))throw new HttpError(503,'NASA CME catalog returned an invalid response.');return data;};
-  try{const nasaKey=env.NASA_API_KEY;const nasaUrl=new URL(cmeEndpoint);nasaUrl.search=new URLSearchParams({startDate:start,endDate:end,...(nasaKey?{api_key:nasaKey}:{api_key:'DEMO_KEY'})}).toString();rows.cmes=await cmeRecords(nasaUrl.href);}
-  catch{
-   // Official public NASA endpoint; never forward the API key to the fallback.
-   try{rows.cmes=await cmeRecords(cmeSource);cmeEndpoint=cmeSource;warnings.push('NASA API gateway unavailable; using the NASA CCMC DONKI public endpoint.');}
-   catch{warnings.push('NASA CME catalog is unavailable.');}
-  }
+  try{const nasaKey=env.NASA_API_KEY;const nasaUrl=new URL(cmeEndpoint);nasaUrl.search=new URLSearchParams({startDate:start,endDate:end,...(nasaKey?{api_key:nasaKey}:{api_key:'DEMO_KEY'})}).toString();const data=await get(nasaUrl.href,fetcher);if(!Array.isArray(data))throw new Error('Invalid CME response');rows.cmes=data;}
+  catch{try{const data=await get(cmeSource,fetcher);if(!Array.isArray(data))throw new Error('Invalid CME response');rows.cmes=data;cmeEndpoint=cmeSource;warnings.push('NASA API gateway unavailable; using the NASA CCMC DONKI public endpoint.');}catch{warnings.push('NASA CME catalog is unavailable.');}}
   if(!Object.keys(rows).length)throw new HttpError(503,'Space-weather data is temporarily unavailable.');
-  return {kind,provider:'NOAA SWPC + NASA CCMC DONKI',source:endpoints.weather,sources:{noaa:endpoints.weather,cmes:cmeEndpoint},retrieved_at,rows,warnings,note:'Observation/issue timestamps are in each record. Retrieval time does not guarantee fresh observations. CME records cover the past seven days and contain analyst measurements; updates may lag events. An empty catalog is not an all-clear.'};
+  const latest=(name,fields)=>{const list=rows[name]||[];for(let i=list.length-1;i>=0;i--){const r=list[i];if(fields.some(k=>finite(r?.[k])!==null))return r;}return null;};
+  const plasma=latest('plasma',['speed','density','temperature']);
+  const mag=latest('mag',['bt','bz_gsm','bz','bx_gsm','by_gsm']);
+  const kp=latest('kp',['kp_index','estimated_kp','Kp','kp']);
+  const normalized={
+   flares:rows.flares||[],alerts:rows.alerts||[],cmes:rows.cmes||[],
+   plasma:plasma?{time_tag:plasma.time_tag||plasma.time_tag_utc||null,speed_km_s:finite(plasma.speed),density_cm3:finite(plasma.density),temperature_k:finite(plasma.temperature)}:null,
+   mag:mag?{time_tag:mag.time_tag||mag.time_tag_utc||null,bt_nt:finite(mag.bt),bz_gsm_nt:finite(mag.bz_gsm??mag.bz),bx_gsm_nt:finite(mag.bx_gsm),by_gsm_nt:finite(mag.by_gsm)}:null,
+   kp:kp?{time_tag:kp.time_tag||kp.time_tag_utc||null,value:finite(kp.kp_index??kp.estimated_kp??kp.Kp??kp.kp)}:null
+  };
+  const result={kind,provider:'NOAA SWPC + NASA CCMC DONKI',source:endpoints.weather,sources:{noaa:endpoints.weather,cmes:cmeEndpoint},retrieved_at,observed_at:timestamps,rows,warnings,latest:normalized,note:'NOAA records are observations, not forecasts. Source observation timestamps are retained per feed; retrieval time does not guarantee fresh observations. Plasma: speed km/s, density protons/cm³, temperature K. Magnetic field: nT, Bz in GSM coordinates. Kp is a 0–9 geomagnetic index; G1 begins at Kp 5. Solar flare class is separate from geomagnetic storm class. Empty catalogs are not an all-clear.'};
+  weatherCache={data:result,expires:Date.now()+60000};
+  return result;
  }
  if(kind==='launches'){
   const u=endpoints.launches+'?limit=10&mode=list&hide_recent_previous=true';const data=await get(u,fetcher);
