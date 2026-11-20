@@ -113,6 +113,7 @@ export function weatherSections(feeds = {}) {
   ].map((s) => ({ ...s, available: Array.isArray(feeds[s.key]) }));
 }
 
+function freshnessLabel(data,feed) { const f=data.freshness?.[feed]; if(!f) return 'Freshness unknown'; if(f.age_minutes===null) return 'Observation timestamp unavailable'; return (f.stale?'STALE · ':'')+'Observation age '+f.age_minutes+' min'; }
 function weatherMetric(host, title, value, unit, stamp, status='') {
  const card=document.createElement('article');card.className='sw-metric';
  const label=document.createElement('span');label.className='sw-label';label.textContent=title;
@@ -138,12 +139,12 @@ export function renderSpaceWeather(host,data,{el,link}) {
  const plasma=latest.plasma||{},mag=latest.mag||{},kp=latest.kp||{};
  const kpValue=kp.value;
  const kpClass=kpValue==null?'Unavailable':kpValue>=9?'G5 · Extreme':kpValue>=8?'G4 · Severe':kpValue>=7?'G3 · Strong':kpValue>=6?'G2 · Moderate':kpValue>=5?'G1 · Minor':'Below G1 threshold';
- weatherMetric(grid,'Solar wind speed',plasma.speed_km_s,'km/s',plasma.time_tag);
- weatherMetric(grid,'Proton density',plasma.density_cm3,'protons/cm³',plasma.time_tag);
- weatherMetric(grid,'Proton temperature',plasma.temperature_k,'K',plasma.time_tag);
- weatherMetric(grid,'Magnetic field |B|',mag.bt_nt,'nT',mag.time_tag);
- weatherMetric(grid,'GSM Bz',mag.bz_gsm_nt,'nT',mag.time_tag,'Negative Bz can favor solar-wind coupling; context matters.');
- weatherMetric(grid,'Planetary Kp',kpValue,'0–9 index',kp.time_tag,kpClass);
+ weatherMetric(grid,'Solar wind speed',plasma.speed_km_s,'km/s',plasma.time_tag,freshnessLabel(data,'plasma'));
+ weatherMetric(grid,'Proton density',plasma.density_cm3,'protons/cm³',plasma.time_tag,freshnessLabel(data,'plasma'));
+ weatherMetric(grid,'Proton temperature',plasma.temperature_k,'K',plasma.time_tag,freshnessLabel(data,'plasma'));
+ weatherMetric(grid,'Magnetic field |B|',mag.bt_nt,'nT',mag.time_tag,freshnessLabel(data,'mag'));
+ weatherMetric(grid,'GSM Bz',mag.bz_gsm_nt,'nT',mag.time_tag,freshnessLabel(data,'mag')+' · Negative Bz can favor solar-wind coupling; context matters.');
+ weatherMetric(grid,'Planetary Kp',kpValue,'0–9 index',kp.time_tag,kpClass+' · '+freshnessLabel(data,'kp'));
  host.append(grid);
  const plots=document.createElement('div');plots.className='sw-plots';
  chart(plots,'Solar-wind speed · last observations',rows.plasma,'speed','speed','km/s');
