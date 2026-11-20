@@ -15,6 +15,7 @@ import { streamCompletion } from './stream.js';
 import { scienceInstructions, toolResult, explicitAsteroidRequest } from './science-tools.js';
 import { HttpError, fetchJSON, safeURL } from './http.js';
 import { queryProvider } from '../space-data/providers.js';
+import { cachedProvider } from './provider-cache.js';
 /**
  * Validate and normalize a research request, including selected-paper/execution data.
  * This validates request shape; authentication and chat ownership are checked elsewhere.
@@ -405,7 +406,7 @@ export async function research(input, history, deps) {
   if (quick) return chatResult(quick);
   if (!scoped && SPACE_WEATHER_QUESTION.test(input.question)) {
     let weather;
-    try { weather = await queryProvider({kind:'weather',params:{}},fetch,env); }
+    try { weather = await cachedProvider(deps.admin, 'science:'+JSON.stringify({kind:'weather',params:{}}), () => queryProvider({kind:'weather',params:{}},fetcher,env), {ttl:60}); }
     catch {
       return chatResult('I can’t retrieve verified NOAA space-weather observations right now, so I can’t confirm the current Kp index, solar-wind conditions, or whether a solar storm is occurring. Please retry shortly. I won’t guess live measurements.');
     }
