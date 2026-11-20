@@ -221,7 +221,7 @@ test('DONKI uses configured NASA key, preserves partial failure, and never leaks
     },
     { NASA_API_KEY: secret },
   );
-  assert.equal(result.warnings.length, 3);
+  assert.equal(result.warnings.length, 5);
   assert.equal(JSON.stringify(result).includes(secret), false);
   assert.equal(
     weatherSections(result.rows)[0].rows[0]['Analyzed speed · km/s'],
