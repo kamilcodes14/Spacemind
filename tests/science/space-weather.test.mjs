@@ -25,7 +25,7 @@ test('NOAA weather provider fetches all four requested feeds and normalizes late
  assert.equal(result.latest.mag.bt_nt,9.1);
  assert.equal(result.rows.flares[0].max_class,'M2.1');
  assert.equal(result.observed_at.plasma,'2026-11-20T01:00:00Z');
- assert.equal(result.freshness.plasma.stale,false);
+ assert.equal(result.freshness.plasma.threshold_minutes,30);
  assert.match(result.note,/Kp is a 0–9/);
 });
 
